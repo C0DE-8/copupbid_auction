@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 
 import coinImg from "../../assets/copupcoin.png";
 import m1 from "../../assets/m1.png";
-import m2 from "../../assets/m2.png";
 import m3 from "../../assets/m3.png";
 import m4 from "../../assets/m4.png";
 
@@ -22,7 +21,6 @@ import {
   FiArrowRight,
   FiEye,
   FiEyeOff,
-  FiTarget,
   FiPlus,
   FiMinus,
   FiX,
@@ -116,17 +114,6 @@ export default function Dashboard() {
         tone: "blue",
         href: "/profile", // kept for reference, but we won't use href click anymore
       },
-        {
-          key: "heist",
-          title: "Heist",
-          subtitle: "Join heists and win exclusive rewards.",
-          badge: "Heist",
-          stars: 5,
-          icon: FiTarget, // or FiCrosshair / FiZap / FiShield (pick what you imported)
-          img: m2,
-          tone: "pink",
-          href: "/heist",
-        },
       {
         key: "cart",
         title: "Cart",

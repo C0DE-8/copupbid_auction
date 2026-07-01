@@ -23,7 +23,6 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminWaitlist from "./pages/admin/AdminWaitlist";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminAuction from "./pages/admin/AdminAuction";
-import AdminHeists from "./pages/admin/AdminHeists";
 import AdminAffilates from "./pages/admin/AdminAffilates";
 import AdminPayout from "./pages/admin/AdminPayout";
 import AdminControl from "./pages/admin/AdminControl";
@@ -38,9 +37,6 @@ import Account from "./pages/Account/Account";
 import PaymentResult from "./pages/PaymentResult/PaymentResult";
 import Auctions from "./pages/Auctions/Auctions";
 import ComingSoon from "./pages/ComingSoon/ComingSoon";
-import Heist from "./pages/Heist/Heist";
-import HeistPlay from "./pages/Heist/HeistPlay";
-import HeistResult from "./pages/Heist/HeistResult";
 import Cart from "./pages/Cart/Cart";
 import Trade from "./pages/Trade/Trade";
 import Favorites from "./pages/Favorites/Favorites";
@@ -89,18 +85,6 @@ export default function App() {
         </Route>
 
          <Route element={<UserRoute />}>
-          <Route path="/heist" element={<Heist />} />
-        </Route>
-
-         <Route element={<UserRoute />}>
-          <Route path="/heist/:id" element={<HeistPlay />} />
-        </Route>
-
-        <Route element={<UserRoute />}>
-          <Route path="/heist/:id/result" element={<HeistResult />} />
-        </Route>
-
-         <Route element={<UserRoute />}>
           <Route path="/cart" element={<Cart />} />
         </Route>
 
@@ -143,10 +127,6 @@ export default function App() {
 
          <Route element={<AdminRoute />}>
           <Route path="/admin/auctions" element={<AdminAuction />} />
-        </Route>
-
-         <Route element={<AdminRoute />}>
-          <Route path="/admin/heists" element={<AdminHeists />} />
         </Route>
 
          <Route element={<AdminRoute />}>

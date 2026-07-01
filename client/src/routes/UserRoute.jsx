@@ -7,7 +7,13 @@ export default function UserRoute() {
   const role = (localStorage.getItem("role") || "user").toLowerCase();
 
   if (!token) {
-    return <Navigate to="/auth/login" replace state={{ from: loc.pathname }} />;
+    return (
+      <Navigate
+        to="/auth/login"
+        replace
+        state={{ from: `${loc.pathname}${loc.search || ""}` }}
+      />
+    );
   }
 
   // user-only route

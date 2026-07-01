@@ -3,8 +3,27 @@ import { Link } from "react-router-dom";
 import authStyles from "../../pages/Auth/Auth.module.css";
 import styles from "./LoginRequiredModal.module.css";
 
-export default function LoginRequiredModal({ open, onClose, title, message }) {
+function cleanRedirect(path) {
+  const value = String(path || "/").trim();
+  if (!value.startsWith("/") || value.startsWith("//")) return "/";
+  return value;
+}
+
+export default function LoginRequiredModal({
+  open,
+  onClose,
+  title,
+  message,
+  redirectTo = "/",
+}) {
   if (!open) return null;
+
+  const safeRedirect = cleanRedirect(redirectTo);
+  const authState = { from: safeRedirect };
+  const authSearch = `?redirect=${encodeURIComponent(safeRedirect)}`;
+  const rememberRedirect = () => {
+    localStorage.setItem("copup_auth_redirect", safeRedirect);
+  };
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true">
@@ -19,7 +38,7 @@ export default function LoginRequiredModal({ open, onClose, title, message }) {
                 </h1>
                 <div className={authStyles.brandSub}>
                   {message ||
-                    "You can browse freely, but you must login to buy, bid, heist, or favorite items."}
+                    "You can browse freely, but you must login to buy, bid, or favorite items."}
                 </div>
               </div>
             </div>
@@ -27,11 +46,21 @@ export default function LoginRequiredModal({ open, onClose, title, message }) {
 
           <div className={authStyles.cardBody}>
             <div className={authStyles.actions}>
-              <Link to="/auth/login" className={authStyles.btnPrimary}>
+              <Link
+                to={`/auth/login${authSearch}`}
+                state={authState}
+                className={authStyles.btnPrimary}
+                onClick={rememberRedirect}
+              >
                 Login
               </Link>
 
-              <Link to="/auth/register" className={authStyles.btnGhost}>
+              <Link
+                to={`/auth/register${authSearch}`}
+                state={authState}
+                className={authStyles.btnGhost}
+                onClick={rememberRedirect}
+              >
                 Create account
               </Link>
 
@@ -47,7 +76,7 @@ export default function LoginRequiredModal({ open, onClose, title, message }) {
             <div className={authStyles.hr} />
             <div className={authStyles.miniRow}>
               <span className={authStyles.helper}>
-                You’ll return to the shop after you login.
+                You’ll return to your selected page after you login.
               </span>
             </div>
           </div>

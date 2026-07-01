@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import styles from "../Auth.module.css";
 import { api } from "../../../lib/api";
 import coinImg from "../../../assets/copupcoin.png";
@@ -7,8 +7,21 @@ import coinImg from "../../../assets/copupcoin.png";
 const isEmail = (v) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
 
+function cleanRedirect(path) {
+  const value = String(path || "").trim();
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "";
+  if (value.startsWith("/auth/")) return "";
+  return value;
+}
+
 export default function Register() {
   const nav = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const intendedRedirect =
+    cleanRedirect(location.state?.from) ||
+    cleanRedirect(params.get("redirect")) ||
+    cleanRedirect(localStorage.getItem("copup_auth_redirect"));
 
   // step 1 = send otp, step 2 = register
   const [step, setStep] = useState(1);
@@ -84,7 +97,12 @@ export default function Register() {
       });
 
       setMsg(data?.message || "Registered successfully.");
-      nav("/auth/login");
+      const loginPath = intendedRedirect
+        ? `/auth/login?redirect=${encodeURIComponent(intendedRedirect)}`
+        : "/auth/login";
+      nav(loginPath, {
+        state: intendedRedirect ? { from: intendedRedirect } : undefined,
+      });
     } catch (e2) {
       const apiMsg =
         e2?.response?.data?.message || e2?.message || "Registration failed";
@@ -212,7 +230,15 @@ export default function Register() {
 
                 <div className={styles.hr} />
                 <div className={styles.miniRow}>
-                  <Link className={styles.link} to="/auth/login">
+                  <Link
+                    className={styles.link}
+                    to={
+                      intendedRedirect
+                        ? `/auth/login?redirect=${encodeURIComponent(intendedRedirect)}`
+                        : "/auth/login"
+                    }
+                    state={intendedRedirect ? { from: intendedRedirect } : undefined}
+                  >
                     I already have an account
                   </Link>
                   <div className={styles.helper}>Next: enter OTP + password</div>
@@ -310,7 +336,15 @@ export default function Register() {
 
                 <div className={styles.hr} />
                 <div className={styles.miniRow}>
-                  <Link className={styles.link} to="/auth/login">
+                  <Link
+                    className={styles.link}
+                    to={
+                      intendedRedirect
+                        ? `/auth/login?redirect=${encodeURIComponent(intendedRedirect)}`
+                        : "/auth/login"
+                    }
+                    state={intendedRedirect ? { from: intendedRedirect } : undefined}
+                  >
                     Already have an account?
                   </Link>
                   <div className={styles.helper}>OTP expires in 10 mins</div>

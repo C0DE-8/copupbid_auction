@@ -213,7 +213,7 @@
 .optionActive{
   background: rgba(113,84,232,0.12);
   border-color: rgba(113,84,232,0.18);
-  color: #7154e8;
+  color: #00a99d;
 }
 
 /* ✅ toolbar controls row - overflow FIX */
@@ -335,7 +335,7 @@
 .active{
   border-color: rgba(113,84,232,0.22);
   background: rgba(113,84,232,0.12);
-  color: #7154e8;
+  color: #00a99d;
 }
 
 @media (max-width: 820px){

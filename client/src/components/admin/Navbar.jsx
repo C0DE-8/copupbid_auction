@@ -10,7 +10,6 @@ import {
   FaTachometerAlt,
   FaUsers,
   FaGavel,
-  FaFlask,
   FaWallet,
   FaCog,
   FaSignOutAlt,
@@ -28,7 +27,6 @@ export default function AdminNavbar({ admin: adminProp }) {
       { to: "/admin-dashboard", label: "Dashboard", icon: <FaTachometerAlt /> },
       { to: "/admin/users", label: "Users", icon: <FaUsers /> },
       { to: "/admin/auctions", label: "Auctions", icon: <FaGavel /> },
-      { to: "/admin/heists", label: "Heists", icon: <FaFlask /> },
       { to: "/admin/payouts", label: "Payouts", icon: <FaWallet /> },
     ],
     []

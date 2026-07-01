@@ -143,19 +143,36 @@ export default function CopUpBidShop() {
 
   // ✅ login required modal state
   const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [loginModalMeta, setLoginModalMeta] = useState({ title: "", message: "" });
+  const [loginModalMeta, setLoginModalMeta] = useState({
+    title: "",
+    message: "",
+    redirectTo: "/",
+  });
 
-  const openLoginModal = useCallback((title, message) => {
+  const openLoginModal = useCallback((title, message, redirectTo = "/") => {
     setLoginModalMeta({
       title: title || "Login required",
       message:
         message ||
         "You can browse freely, but you must login to favorite or buy items.",
+      redirectTo,
     });
     setLoginModalOpen(true);
   }, []);
 
   const closeLoginModal = useCallback(() => setLoginModalOpen(false), []);
+
+  const goProtected = useCallback(
+    (path, title = "Login required", message = "Please login to continue.") => {
+      const token = getAuthToken();
+      if (!token) {
+        openLoginModal(title, message, path);
+        return;
+      }
+      navigate(path);
+    },
+    [navigate, openLoginModal]
+  );
 
   const explainAxiosError = (e) => {
     if (e?.response) {
@@ -331,7 +348,7 @@ export default function CopUpBidShop() {
     async (productId) => {
       const token = getAuthToken();
       if (!token) {
-        openLoginModal("Login required", "You must login to favorite items.");
+        openLoginModal("Login required", "You must login to favorite items.", "/favorites");
         return;
       }
 
@@ -412,7 +429,7 @@ export default function CopUpBidShop() {
 
       if (!token) {
         setBuyError("Please login to continue.");
-        openLoginModal("Login required", "You must login to buy items.");
+        openLoginModal("Login required", "You must login to buy items.", "/cart");
         return;
       }
 
@@ -586,15 +603,15 @@ export default function CopUpBidShop() {
     { label: "Home", icon: Home, active: true, onClick: resetFilters },
     { label: "Categories", icon: Boxes, onClick: scrollToCategories },
     { label: "Deals", icon: BadgePercent, onClick: scrollToCategories },
-    { label: "Auctions", icon: Tags, onClick: () => navigate("/auctions") },
-    { label: "Winners", icon: Star, onClick: () => navigate("/winners") },
+    { label: "Auctions", icon: Tags, onClick: () => goProtected("/auctions") },
+    { label: "Winners", icon: Star, onClick: () => goProtected("/winners") },
   ];
 
   const accountItems = [
-    { label: "Cart", icon: ShoppingBag, onClick: () => navigate("/cart") },
-    { label: "Favorites", icon: Heart, onClick: () => navigate("/favorites") },
-    { label: "Profile", icon: CircleUserRound, onClick: () => navigate("/profile") },
-    { label: "Account", icon: Settings, onClick: () => navigate("/account") },
+    { label: "Cart", icon: ShoppingBag, onClick: () => goProtected("/cart") },
+    { label: "Favorites", icon: Heart, onClick: () => goProtected("/favorites") },
+    { label: "Profile", icon: CircleUserRound, onClick: () => goProtected("/profile") },
+    { label: "Account", icon: Settings, onClick: () => goProtected("/account") },
   ];
 
   return (
@@ -711,12 +728,12 @@ export default function CopUpBidShop() {
               <strong>{visibleCount} live products</strong>
               <small>Shop now</small>
             </button>
-            <button type="button" className={styles.promoCard} onClick={() => navigate("/how-to-play")}>
+            <button type="button" className={styles.promoCard} onClick={() => goProtected("/how-to-play")}>
               <span>Easy bidding</span>
               <strong>Learn the rules</strong>
               <small>How it works</small>
             </button>
-            <button type="button" className={styles.promoCard} onClick={() => navigate("/affiliate")}>
+            <button type="button" className={styles.promoCard} onClick={() => goProtected("/affiliate")}>
               <span>Rewards</span>
               <strong>Invite and earn</strong>
               <small>Join program</small>
@@ -970,7 +987,7 @@ export default function CopUpBidShop() {
               <div><span>Subtotal</span><strong>{formatCoin(previewTotal)} COIN</strong></div>
               <div><span>Shipping</span><strong>Free</strong></div>
               <div className={styles.totalLine}><span>Total</span><strong>{formatCoin(previewTotal)} COIN</strong></div>
-              <button type="button" onClick={() => navigate("/cart")}>
+              <button type="button" onClick={() => goProtected("/cart")}>
                 <CreditCard size={16} />
                 Checkout
               </button>
@@ -1032,6 +1049,7 @@ export default function CopUpBidShop() {
         onClose={closeLoginModal}
         title={loginModalMeta.title}
         message={loginModalMeta.message}
+        redirectTo={loginModalMeta.redirectTo}
       />
     </div>
   );

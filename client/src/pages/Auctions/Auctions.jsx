@@ -149,8 +149,8 @@ export default function Auctions() {
           </div>
 
           <div className={styles.note}>
-            <b>Note:</b> CopUp Coins can be purchased or won from games
-            like CopUp Heist and other Copupbid competitions.
+            <b>Note:</b> CopUp Coins can be purchased and used for auctions,
+            shopping, and other Copupbid competitions.
           </div>
         </div>
 

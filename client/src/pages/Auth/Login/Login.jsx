@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import styles from "../Auth.module.css";
 import { api } from "../../../lib/api";
@@ -45,8 +45,16 @@ function isTokenExpired(token) {
   return nowSec >= exp;
 }
 
+function cleanRedirect(path) {
+  const value = String(path || "").trim();
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "";
+  if (value.startsWith("/auth/")) return "";
+  return value;
+}
+
 export default function Login() {
   const nav = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -68,9 +76,21 @@ export default function Login() {
     localStorage.removeItem("role");
   };
 
+  const intendedRedirect = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return (
+      cleanRedirect(location.state?.from) ||
+      cleanRedirect(params.get("redirect")) ||
+      cleanRedirect(localStorage.getItem("copup_auth_redirect"))
+    );
+  }, [location.search, location.state]);
+
   const redirectByRole = (role) => {
     if (role === "admin") nav("/admin-dashboard", { replace: true });
-    else nav("/", { replace: true });
+    else {
+      localStorage.removeItem("copup_auth_redirect");
+      nav(intendedRedirect || "/", { replace: true });
+    }
   };
 
   // ✅ Session check on mount:
@@ -379,7 +399,15 @@ export default function Login() {
 
                 <div className={styles.helper}>
                   New here?{" "}
-                  <Link className={styles.link} to="/auth/register">
+                  <Link
+                    className={styles.link}
+                    to={
+                      intendedRedirect
+                        ? `/auth/register?redirect=${encodeURIComponent(intendedRedirect)}`
+                        : "/auth/register"
+                    }
+                    state={intendedRedirect ? { from: intendedRedirect } : undefined}
+                  >
                     Create account
                   </Link>
                 </div>

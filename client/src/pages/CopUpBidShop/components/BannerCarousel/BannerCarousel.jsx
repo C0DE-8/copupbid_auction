@@ -113,7 +113,7 @@ export default function BannerCarousel({
       <div className={styles.wrap}>
         <div className={styles.fallback}>
           <div className={styles.fallbackTop}>{brand}</div>
-          <div className={styles.fallbackTitle}>Shop • Bid • Heist</div>
+          <div className={styles.fallbackTitle}>Shop • Bid • Win</div>
           <div className={styles.fallbackSub}>No banner is active yet.</div>
 
           <button className={styles.cta} type="button" onClick={onCtaClick}>
@@ -162,7 +162,7 @@ export default function BannerCarousel({
               <div className={styles.badge}>{brand}</div>
 
               <div className={styles.title}>
-                {active?.action_name || "Shop • Bid • Heist"}
+                {active?.action_name || "Shop • Bid • Win"}
               </div>
 
               {/* ✅ subtitle hidden by default */}

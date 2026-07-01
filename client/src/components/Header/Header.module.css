@@ -104,15 +104,15 @@
 }
 
 .joinBtn {
-  border: 1px solid rgba(113, 84, 232, 0.25);
-  color: #7154e8;
-  background: rgba(113, 84, 232, 0.08);
+  border: 1px solid rgba(0, 169, 157, 0.25);
+  color: #00a99d;
+  background: rgba(0, 169, 157, 0.08);
 }
 
 .joinBtn:hover {
-  background: rgba(113, 84, 232, 0.15);
-  border-color: rgba(113, 84, 232, 0.35);
-  color: #4f35b8;
+  background: rgba(0, 169, 157, 0.15);
+  border-color: rgba(0, 169, 157, 0.35);
+  color: #006f68;
   transform: translateY(-1px);
 }
 

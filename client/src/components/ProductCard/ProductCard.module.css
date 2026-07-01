@@ -32,7 +32,7 @@
 }
 
 .homeCard:hover {
-  border-color: rgba(113, 84, 232, 0.22);
+  border-color: rgba(0, 169, 157, 0.22);
   box-shadow: 0 22px 56px rgba(48, 38, 83, 0.12);
 }
 
@@ -274,8 +274,8 @@
 
 .homeCard .viewPill {
   background: #f4f2f8;
-  color: #7154e8;
-  border-color: rgba(113, 84, 232, 0.12);
+  color: #00a99d;
+  border-color: rgba(0, 169, 157, 0.12);
 }
 
 .homeCard .metaPill,
@@ -294,15 +294,15 @@
 }
 
 .homeCard .btnGhost {
-  border-color: rgba(113, 84, 232, 0.12);
-  background: #7154e8;
+  border-color: rgba(0, 169, 157, 0.12);
+  background: #00a99d;
   color: #fff;
   border-radius: 14px;
 }
 
 .homeCard .btnGhost:hover {
-  background: #6346d7;
-  box-shadow: 0 16px 34px rgba(113, 84, 232, 0.22);
+  background: #008f85;
+  box-shadow: 0 16px 34px rgba(0, 169, 157, 0.22);
 }
 
 /* ✅ vendor mini row (delivery_eta removed) */

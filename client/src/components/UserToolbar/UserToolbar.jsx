@@ -6,7 +6,6 @@ import {
   X,
   LayoutGrid,
   Gavel,
-  ShieldAlert,
   ShoppingCart,
   TrendingUp,
   Heart,
@@ -119,7 +118,7 @@ export default function UserToolbar() {
     fetchProfile();
   }, [token, fetchProfile]);
 
-  // ✅ 3) listen for balance updates (buy/bid/heist) and refetch immediately
+  // ✅ 3) listen for balance updates (buy/bid) and refetch immediately
   useEffect(() => {
     const onBalance = () => {
       // quick instant update from cached values (optional)
@@ -214,10 +213,6 @@ export default function UserToolbar() {
 
           <button className={styles.item} onClick={() => go("/auctions")}>
             <Gavel size={16} /> Auctions
-          </button>
-
-          <button className={styles.item} onClick={() => go("/heist")}>
-            <ShieldAlert size={16} /> Heist
           </button>
 
           <button className={styles.item} onClick={() => go("/cart")}>
