@@ -16,7 +16,7 @@ export default function NotFound() {
         <p className={styles.subtitle}>Oops... This page doesn’t exist.</p>
 
         <p className={styles.text}>
-          Looks like you tried to heist a page that isn’t here.
+          Looks like this page is not available.
         </p>
 
         <Link to="/" className={styles.btn}>

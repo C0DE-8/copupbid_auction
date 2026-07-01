@@ -8,7 +8,6 @@ import { api } from "../../lib/api";
 import {
   FaUsers,
   FaGavel,
-  FaFlask,
   FaWallet,
   FaLink,
   FaShoppingBag,
@@ -25,7 +24,6 @@ export default function AdminDashboard() {
 
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeAuctions, setActiveAuctions] = useState(0);
-  const [activeHeists, setActiveHeists] = useState(0);
   const [pendingPayouts, setPendingPayouts] = useState(0);
 
   const [error, setError] = useState("");
@@ -48,7 +46,6 @@ export default function AdminDashboard() {
           profileRes,
           usersCountRes,
           auctionsActiveRes,
-          heistsRes,
           payoutsPendingRes,
         ] = await Promise.all([
           api.get("/admin/profile"),
@@ -56,7 +53,6 @@ export default function AdminDashboard() {
           api.get("/admin/auctions", {
             params: { status: "active", page: 1, limit: 1 },
           }),
-          api.get("/admin/heists"), // ✅ FIXED: use main heists route
           api.get("/admin/payouts", { params: { status: "pending" } }),
         ]);
 
@@ -70,18 +66,6 @@ export default function AdminDashboard() {
 
         // active auctions (route returns { page, limit, total, data })
         setActiveAuctions(safeNumber(auctionsActiveRes.data?.total));
-
-        // ✅ ACTIVE HEISTS COUNT (from /admin/heists)
-        const heists = heistsRes.data?.data || [];
-
-        // Define what "active" means
-        // Here: hold OR started
-        const activeCount = heists.filter((h) => {
-          const st = String(h?.status || "").toLowerCase();
-          return st === "hold" || st === "started";
-        }).length;
-
-        setActiveHeists(activeCount);
 
         // pending payouts (route returns array)
         setPendingPayouts(
@@ -113,10 +97,9 @@ export default function AdminDashboard() {
     () => [
       { label: "Total Users", value: totalUsers, tone: "green" },
       { label: "Active Auctions", value: activeAuctions, tone: "blue" },
-      { label: "Active Heists", value: activeHeists, tone: "purple" },
       { label: "Pending Payouts", value: pendingPayouts, tone: "gold" },
     ],
-    [totalUsers, activeAuctions, activeHeists, pendingPayouts]
+    [totalUsers, activeAuctions, pendingPayouts]
   );
 
   const modules = useMemo(
@@ -144,14 +127,6 @@ export default function AdminDashboard() {
         icon: <FaGavel />,
         accent: "blue",
         cta: "Manage Auctions",
-      },
-      {
-        title: "Heist Management",
-        desc: "Create and manage heist games",
-        to: "/admin/heists",
-        icon: <FaFlask />,
-        accent: "purple",
-        cta: "Manage Heists",
       },
       {
         title: "Affiliate Management",
@@ -226,8 +201,8 @@ export default function AdminDashboard() {
         cta: "Manage Coins",
       },
       {
-        title: "Demo & Heist Control",
-        desc: "Manage cop users, participants & winners",
+        title: "Admin Control",
+        desc: "Manage platform controls and demo users",
         to: "/admin/control",
         icon: <FaShieldAlt />,
         accent: "green",

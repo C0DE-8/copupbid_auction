@@ -79,46 +79,6 @@ function sendAuctionStartedEmail(to, auctionName, auctionLink, imageUrl) {
   return sendEmail(to, `Auction started: ${auctionName}`, html);
 }
 
-function sendHeistStartedEmail(to, heistName, heistLink = "https://copupbid.top/heist") {
-  const name = escapeHtml(heistName || "Heist");
-  const year = new Date().getFullYear();
-  const subject = `Heist "${name}" has started!`;
-
-  const html = `
-    <html>
-      <body style="font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; background-color: #1c1c1c;">
-        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #2e2e2e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); color: white;">
-          <div style="text-align: center; background-color: rgb(86, 178, 183); padding: 15px 0; border-radius: 12px 12px 0 0; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);">
-            <h1 style="color: white; margin: 0; font-size: 32px;">Copupbid: Heist Mission</h1>
-          </div>
-          <div style="padding: 30px; text-align: center;">
-            <h2 style="color: rgb(86, 178, 183); font-size: 28px; font-weight: bold;">
-              The heist you joined, "${name}", has now started!
-            </h2>
-            <p style="font-size: 18px; color: #ccc; font-style: italic;">The clock is ticking, get ready for the mission!</p>
-            <p style="font-size: 16px; color: #ccc;">
-              Prepare for action, gear up, and make sure you're ready to contribute to the success of the mission!
-            </p>
-            <div style="margin-top: 20px; text-align: center;">
-              <a href="${heistLink}"
-                 style="padding: 12px 25px; background-color: rgb(86, 178, 183); color: white; text-decoration: none;
-                        font-size: 18px; font-weight: bold; border-radius: 6px; text-transform: uppercase;
-                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
-                Enter the Heist
-              </a>
-            </div>
-            <p style="font-size: 16px; color: #ccc; margin-top: 30px;">Only the best will survive. Are you ready?</p>
-          </div>
-          <div style="background-color: #1a1a1a; text-align: center; padding: 10px;">
-            <p style="font-size: 14px; color: #777;">&copy; ${year} Copupbid. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
-
-  return sendEmail(to, subject, html);
-}
 /* ---------- NEW: CopUp coin top-up success email ---------- */
 function buildCopupTopupSuccessHtml({ name, coins, amount, currency, txRef }) {
   const safeName = escapeHtml(name || "CopUpBid User");
@@ -140,7 +100,7 @@ function buildCopupTopupSuccessHtml({ name, coins, amount, currency, txRef }) {
           <p style="margin:0;"><strong>Transaction Ref:</strong> <span style="font-family:monospace;">${safeTxRef}</span></p>
         </div>
 
-        <p style="margin:0 0 10px 0;">You can now use your CopUp Coins to join auctions, heists, and other activities on CopUpBid.</p>
+        <p style="margin:0 0 10px 0;">You can now use your CopUp Coins to join auctions, shop, and use other CopUpBid activities.</p>
         <p style="margin:0 0 6px 0;">If you did not authorize this payment, please contact support immediately.</p>
 
         <p style="margin:18px 0 0 0;font-size:12px;color:#6b7280;text-align:center;">
@@ -201,7 +161,6 @@ module.exports = {
   sendRegistrationOtpEmail,
   sendPasswordResetOtpEmail,
   sendAuctionStartedEmail,  
-  sendHeistStartedEmail, 
   sendCopupTopupSuccessEmail,
   sendCopupTopupFailedEmail
 };

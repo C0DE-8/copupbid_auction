@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 const router = express.Router();
-const { sendAuctionStartedEmail, sendHeistStartedEmail, sendEmail } = require("../lib/mail");
+const { sendAuctionStartedEmail, sendEmail } = require("../lib/mail");
 // adjust path to your multer config:
 const { upload: imageUpload } = require("../middleware/upload");
 const { absUrl } = require('../middleware/upload');
@@ -605,11 +605,10 @@ router.delete("/users/:id", authenticateToken, authenticateAdmin, async (req, re
     // If your tables don’t have foreign keys with ON DELETE CASCADE,
     // uncomment and edit this section:
     /*
-    await pool.query("DELETE FROM product_favorites WHERE user_id = ?", [id]);
-    await pool.query("DELETE FROM bids_waitlist WHERE user_id = ?", [id]);
-    await pool.query("DELETE FROM auction_participants WHERE user_id = ?", [id]);
-    await pool.query("DELETE FROM heist_participants WHERE user_id = ?", [id]);
-    await pool.query("DELETE FROM shop_orders WHERE user_id = ?", [id]);
+	    await pool.query("DELETE FROM product_favorites WHERE user_id = ?", [id]);
+	    await pool.query("DELETE FROM bids_waitlist WHERE user_id = ?", [id]);
+	    await pool.query("DELETE FROM auction_participants WHERE user_id = ?", [id]);
+	    await pool.query("DELETE FROM shop_orders WHERE user_id = ?", [id]);
     */
 
     // Delete the user
@@ -1450,743 +1449,6 @@ router.get("/affiliate/list", authenticateToken, authenticateAdmin, async (req, 
     res.status(500).json({ message: "Error fetching auctions with affiliate requirements" });
   }
 });
-/* ───────────────── Set affiliate requirement for a HEIST (upsert) ───────────────── */
-router.post("/affiliate/set-requirement/heist/:heistId", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.heistId);
-  const targetUsers = Number(req.body?.targetUsers);
-  const rewardBidPoints = Number(req.body?.rewardBidPoints);
-
-    if (!Number.isInteger(heistId) || heistId <= 0) {
-      return res.status(400).json({ message: "Invalid heistId" });
-    }
-    if (!Number.isInteger(targetUsers) || targetUsers < 0) {
-      return res.status(400).json({ message: "targetUsers must be a non-negative integer" });
-    }
-    if (!Number.isInteger(rewardBidPoints) || rewardBidPoints < 0) {
-      return res.status(400).json({ message: "rewardBidPoints must be a non-negative integer" });
-    }
-
-    try {
-      const [result] = await pool.query(
-        `
-        INSERT INTO heist_affiliates (heist_id, target_users, reward_bid_points)
-        VALUES (?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-          target_users = VALUES(target_users),
-          reward_bid_points = VALUES(reward_bid_points),
-          updated_at = CURRENT_TIMESTAMP
-        `,
-        [heistId, targetUsers, rewardBidPoints]
-      );
-
-      // mysql2 note: affectedRows === 1 (insert), === 2 (update)
-      const created = result.affectedRows === 1;
-
-      res.status(created ? 201 : 200).json({
-        message: created
-          ? "Affiliate requirement created for heist"
-          : "Affiliate requirement updated for heist",
-        heist_id: heistId,
-        target_users: targetUsers,
-        reward_bid_points: rewardBidPoints,
-      });
-    } catch (error) {
-      console.error("Error setting affiliate requirement for heist:", error);
-      res.status(500).json({ message: "Error setting affiliate requirement for heist" });
-    }
-  }
-);
-/* ───────────────────── Delete affiliate requirement for a HEIST ─────────────────── */
-router.delete("/heist/affiliate/delete/:heistId", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.heistId);
-  if (!Number.isInteger(heistId) || heistId <= 0) {
-    return res.status(400).json({ message: "Invalid heistId" });
-    }
-
-    try {
-      const [result] = await pool.query(
-        `DELETE FROM heist_affiliates WHERE heist_id = ?`,
-        [heistId]
-      );
-
-      if (!result.affectedRows) {
-        return res.status(404).json({ message: "Heist affiliate requirements not found." });
-      }
-
-      res.status(200).json({ message: "Heist affiliate requirements deleted successfully." });
-    } catch (error) {
-      console.error("Error deleting heist affiliate requirements:", error);
-      res.status(500).json({ message: "Error deleting heist affiliate requirements" });
-    }
-  }
-);
-
-/// ----------------------- Most heists router ---------------------- */
-/** * ✅ GET /admin/heists * List all heists + variants count + image url */
-router.get("/heists", authenticateToken, authenticateAdmin, async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      `
-      SELECT
-        id, name, status, story,
-        min_users, ticket_price, retry_ticket_price,
-        prize, prize_name, prize_image,
-        countdown_duration_minutes,
-        question_variants,
-        created_at, updated_at,
-        countdown_started_at, countdown_ends_at,
-        submissions_locked, winner_id
-      FROM heist
-      ORDER BY id DESC
-      `
-    );
-
-    const data = rows.map((h) => {
-      const variants = safeJsonParse(h.question_variants, []);
-      return {
-        ...h,
-        prize_image: absUrl(req, h.prize_image),
-        variants_count: Array.isArray(variants) ? variants.length : 0,
-        question_variants: variants,
-      };
-    });
-
-    res.json({ data });
-  } catch (err) {
-    console.error("admin list heists error:", err);
-    res.status(500).json({ message: "Error fetching heists", error: err.message });
-  }
-});
-/** * ✅ GET /heists/:id */
-router.get("/heists/:id", authenticateToken, authenticateAdmin, async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "Invalid id" });
-
-  try {
-    const [rows] = await pool.query("SELECT * FROM heist WHERE id = ? LIMIT 1", [id]);
-    const h = rows[0];
-    if (!h) return res.status(404).json({ message: "Heist not found" });
-
-    const variants = safeJsonParse(h.question_variants, []);
-    res.json({
-      heist: {
-        ...h,
-        prize_image: absUrl(req, h.prize_image),
-        question_variants: variants,
-        variants_count: Array.isArray(variants) ? variants.length : 0,
-      },
-    });
-  } catch (err) {
-    console.error("admin get heist error:", err);
-    res.status(500).json({ message: "Error fetching heist", error: err.message });
-  }
-});
-// admin create heist with optional CopUpBot Q/A generation from story
-router.post("/heists",authenticateToken,authenticateAdmin,
-  upload.single("prize_image"),
-  async (req, res) => {
-    try {
-      const body = req.body || {};
-
-      const name = body.name;
-      const story = body.story ?? "";
-
-      const min_users = body.min_users;
-      const ticket_price = body.ticket_price;
-      const prize = body.prize;
-      const prize_name = body.prize_name ?? "";
-      const countdown_duration_minutes = body.countdown_duration_minutes ?? 10;
-      const retry_ticket_price = body.retry_ticket_price ?? 0;
-
-      const auto_generate_questions =
-        body.auto_generate_questions === undefined
-          ? true
-          : String(body.auto_generate_questions).toLowerCase() !== "false";
-
-      const questions_count = Number(body.questions_count || 6);
-
-      let prize_image = null;
-      if (req.file?.filename) {
-        prize_image = `/uploads/${req.file.filename}`;
-      } else if (body.prize_image) {
-        prize_image = String(body.prize_image);
-      }
-
-      if (!name) return res.status(400).json({ message: "name is required" });
-
-      const minUsers = Number(min_users);
-      const ticketPrice = Number(ticket_price);
-      const prizeVal = Number(prize);
-      const durationMins = Number(countdown_duration_minutes);
-      const retryCost = Number(retry_ticket_price);
-
-      if (!Number.isInteger(minUsers) || minUsers < 1)
-        return res.status(400).json({ message: "min_users must be >= 1" });
-
-      if (!Number.isInteger(ticketPrice) || ticketPrice < 0)
-        return res.status(400).json({ message: "ticket_price must be >= 0" });
-
-      if (!Number.isInteger(prizeVal) || prizeVal < 0)
-        return res.status(400).json({ message: "prize must be >= 0" });
-
-      if (!Number.isInteger(durationMins) || durationMins < 1)
-        return res.status(400).json({ message: "countdown_duration_minutes must be >= 1" });
-
-      if (!Number.isInteger(retryCost) || retryCost < 0)
-        return res.status(400).json({ message: "retry_ticket_price must be >= 0" });
-
-      let variantsObj = null;
-
-      if (body.question_variants !== undefined && body.question_variants !== null && body.question_variants !== "") {
-        const parsed = safeJsonParse(body.question_variants, body.question_variants);
-        variantsObj = Array.isArray(parsed) ? parsed : null;
-
-        if (!variantsObj || !variantsObj.length) {
-          return res.status(400).json({ message: "question_variants must be a non-empty array" });
-        }
-      } else if (auto_generate_questions) {
-        variantsObj = await generateVariantsFromStory(story, questions_count);
-      }
-
-      let variantsJson = null;
-      if (variantsObj) {
-        const normalized = enforceOneWordVariants(variantsObj);
-
-        if (!normalized.length) {
-          return res.status(400).json({ message: "question_variants must produce valid items" });
-        }
-
-        for (const v of normalized) {
-          if (!v || !v.question || !v.answer) {
-            return res.status(400).json({ message: "Each variant must have question + answer" });
-          }
-        }
-
-        variantsObj = normalized;
-        variantsJson = JSON.stringify(variantsObj);
-      }
-
-      const [result] = await pool.query(
-        `
-        INSERT INTO heist
-          (name, story, min_users, ticket_price, prize, status,
-           prize_name, prize_image,
-           countdown_duration_minutes, retry_ticket_price, question_variants,
-           submissions_locked)
-        VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, 0)
-        `,
-        [
-          name,
-          story,
-          minUsers,
-          ticketPrice,
-          prizeVal,
-          prize_name,
-          prize_image,
-          durationMins,
-          retryCost,
-          variantsJson,
-        ]
-      );
-
-      return res.status(201).json({
-        message: "Heist created successfully.",
-        id: result.insertId,
-        prize_image: absUrl(req, prize_image),
-        variants_count: variantsObj ? variantsObj.length : 0,
-        copupbot: variantsObj ? "generated" : "none",
-        ai_used: openaiConfigured(),
-      });
-    } catch (err) {
-      console.error("admin create heist error:", err);
-      res.status(500).json({ message: "Error creating heist", error: err.message });
-    }
-  }
-);
-/** * ✅ POST /heists/:id/generate-qa */
-router.post("/heists/:id/generate-qa",authenticateToken,authenticateAdmin,
-  async (req, res) => {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "Invalid id" });
-
-    try {
-      const { mode = "replace", questions_count = 6 } = req.body || {};
-
-      const [rows] = await pool.query(
-        "SELECT id, story, question_variants FROM heist WHERE id = ? LIMIT 1",
-        [id]
-      );
-      const h = rows[0];
-      if (!h) return res.status(404).json({ message: "Heist not found" });
-
-      const story = String(h.story || "").trim();
-      if (!story) {
-        return res.status(400).json({ message: "Heist has no story to generate questions from." });
-      }
-
-      const newVariants = enforceOneWordVariants(
-        await generateVariantsFromStory(story, Number(questions_count || 6))
-      );
-
-      const current = safeJsonParse(h.question_variants, []);
-      const combined =
-        String(mode).toLowerCase() === "append"
-          ? enforceOneWordVariants([...(Array.isArray(current) ? current : []), ...newVariants])
-          : newVariants;
-
-      await pool.query(
-        "UPDATE heist SET question_variants = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-        [JSON.stringify(combined), id]
-      );
-
-      res.json({
-        message: "CopUpBot generated questions successfully.",
-        heistId: id,
-        mode,
-        ai_used: openaiConfigured(),
-        variants_count: combined.length,
-        question_variants: combined,
-      });
-    } catch (err) {
-      console.error("admin generate-qa error:", err);
-      res.status(500).json({ message: "Error generating questions", error: err.message });
-    }
-  }
-);
-/** * ✅ PUT /heists/:id */
-router.put("/heists/:id",authenticateToken,authenticateAdmin,
-  upload.single("prize_image"),
-  async (req, res) => {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "Invalid id" });
-
-    try {
-      const body = req.body || {};
-
-      const fields = [];
-      const params = [];
-
-      if (body.name !== undefined) {
-        fields.push("name = ?");
-        params.push(body.name);
-      }
-      if (body.story !== undefined) {
-        fields.push("story = ?");
-        params.push(body.story);
-      }
-
-      if (body.min_users !== undefined) {
-        const v = Number(body.min_users);
-        if (!Number.isInteger(v) || v < 1) return res.status(400).json({ message: "min_users must be >= 1" });
-        fields.push("min_users = ?");
-        params.push(v);
-      }
-
-      if (body.ticket_price !== undefined) {
-        const v = Number(body.ticket_price);
-        if (!Number.isInteger(v) || v < 0) return res.status(400).json({ message: "ticket_price must be >= 0" });
-        fields.push("ticket_price = ?");
-        params.push(v);
-      }
-
-      if (body.prize !== undefined) {
-        const v = Number(body.prize);
-        if (!Number.isInteger(v) || v < 0) return res.status(400).json({ message: "prize must be >= 0" });
-        fields.push("prize = ?");
-        params.push(v);
-      }
-
-      if (body.retry_ticket_price !== undefined) {
-        const v = Number(body.retry_ticket_price);
-        if (!Number.isInteger(v) || v < 0) return res.status(400).json({ message: "retry_ticket_price must be >= 0" });
-        fields.push("retry_ticket_price = ?");
-        params.push(v);
-      }
-
-      if (body.countdown_duration_minutes !== undefined) {
-        const v = Number(body.countdown_duration_minutes);
-        if (!Number.isInteger(v) || v < 1) return res.status(400).json({ message: "countdown_duration_minutes must be >= 1" });
-        fields.push("countdown_duration_minutes = ?");
-        params.push(v);
-      }
-
-      if (body.prize_name !== undefined) {
-        fields.push("prize_name = ?");
-        params.push(body.prize_name);
-      }
-
-      if (req.file?.filename) {
-        const p = `/uploads/${req.file.filename}`;
-        fields.push("prize_image = ?");
-        params.push(p);
-      } else if (body.prize_image !== undefined) {
-        fields.push("prize_image = ?");
-        params.push(body.prize_image);
-      }
-
-      if (String(body.remove_prize_image || "") === "1") {
-        fields.push("prize_image = ?");
-        params.push(null);
-      }
-
-      if (body.status !== undefined) {
-        const s = String(body.status).toLowerCase();
-        if (!["pending", "hold", "started", "completed"].includes(s)) {
-          return res.status(400).json({ message: "Invalid status" });
-        }
-        fields.push("status = ?");
-        params.push(s);
-      }
-
-      if (body.submissions_locked !== undefined) {
-        fields.push("submissions_locked = ?");
-        params.push(body.submissions_locked ? 1 : 0);
-      }
-
-      if (body.question_variants !== undefined) {
-        const variantsObj = safeJsonParse(body.question_variants, null);
-        if (!Array.isArray(variantsObj) || !variantsObj.length) {
-          return res.status(400).json({ message: "question_variants must be a non-empty JSON array" });
-        }
-
-        const normalized = enforceOneWordVariants(variantsObj);
-        if (!normalized.length) {
-          return res.status(400).json({ message: "question_variants must contain valid items" });
-        }
-
-        fields.push("question_variants = ?");
-        params.push(JSON.stringify(normalized));
-      }
-
-      if (!fields.length) return res.status(400).json({ message: "No fields to update" });
-
-      fields.push("updated_at = CURRENT_TIMESTAMP");
-
-      const [result] = await pool.query(`UPDATE heist SET ${fields.join(", ")} WHERE id = ?`, [
-        ...params,
-        id,
-      ]);
-
-      if (!result.affectedRows) return res.status(404).json({ message: "Heist not found" });
-
-      const [rows] = await pool.query("SELECT * FROM heist WHERE id = ? LIMIT 1", [id]);
-      const h = rows[0];
-
-      res.json({
-        message: "Heist updated successfully.",
-        heist: {
-          ...h,
-          prize_image: absUrl(req, h?.prize_image),
-          question_variants: safeJsonParse(h?.question_variants, []),
-        },
-      });
-    } catch (err) {
-      console.error("admin update heist error:", err);
-      res.status(500).json({ message: "Error updating heist", error: err.message });
-    }
-  }
-);
-/** * DELETE /heists/:heistId */
-router.delete("/heists/:heistId", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.heistId);
-  if (!Number.isInteger(heistId) || heistId <= 0) return res.status(400).json({ message: "Invalid heistId" });
-
-  try {
-    const [rows] = await pool.query("SELECT id, status FROM heist WHERE id = ? LIMIT 1", [heistId]);
-    const heist = rows[0];
-    if (!heist) return res.status(404).json({ message: "Heist not found" });
-
-    if (heist.status !== "pending") {
-      return res.status(400).json({ message: "Only pending heists can be deleted." });
-    }
-
-    await pool.query("DELETE FROM heist WHERE id = ?", [heistId]);
-    res.json({ message: "Heist deleted successfully." });
-  } catch (err) {
-    console.error("admin delete heist error:", err);
-    res.status(500).json({ message: "Error deleting heist", error: err.message });
-  }
-});
-/** * POST /heists/:id/start */
-router.post("/heists/:id/start", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.id);
-  const conn = await pool.getConnection();
-
-  try {
-    await conn.beginTransaction();
-
-    const [hRows] = await conn.query("SELECT * FROM heist WHERE id = ? FOR UPDATE", [heistId]);
-    const heist = hRows[0];
-    if (!heist) {
-      await conn.rollback();
-      return res.status(404).json({ message: "Heist not found" });
-    }
-
-    if (heist.status === "completed") {
-      await conn.rollback();
-      return res.status(400).json({ message: "Heist already completed" });
-    }
-
-    if (!heist.countdown_started_at) {
-      const startedAt = nowSql();
-      const endsAt = addMinutesSql(Number(heist.countdown_duration_minutes || 10));
-
-      await conn.query(
-        `
-        UPDATE heist
-        SET
-          status = 'started',
-          countdown_started_at = ?,
-          countdown_ends_at = ?,
-          submissions_locked = 0,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-        `,
-        [startedAt, endsAt, heistId]
-      );
-    } else {
-      await conn.query("UPDATE heist SET status = 'started' WHERE id = ?", [heistId]);
-    }
-
-    await conn.commit();
-    res.json({ message: "Heist started." });
-  } catch (err) {
-    try {
-      await conn.rollback();
-    } catch {}
-    console.error("admin start heist error:", err);
-    res.status(500).json({ message: "Error starting heist", error: err.message });
-  } finally {
-    conn.release();
-  }
-});
-/** * POST /heists/:id/end*/
-router.post("/heists/:id/end", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.id);
-  const conn = await pool.getConnection();
-
-  try {
-    await conn.beginTransaction();
-
-    const [hRows] = await conn.query("SELECT * FROM heist WHERE id = ? FOR UPDATE", [heistId]);
-    const heist = hRows[0];
-    if (!heist) {
-      await conn.rollback();
-      return res.status(404).json({ message: "Heist not found" });
-    }
-
-    await conn.query(
-      "UPDATE heist SET submissions_locked = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [heistId]
-    );
-
-    const fin = await finalizeHeistIfEnded(conn, heistId);
-
-    await conn.commit();
-    res.json({
-      message: "Heist ended and finalized.",
-      winner_id: fin.heist?.winner_id || null,
-      status: fin.heist?.status || "completed",
-    });
-  } catch (err) {
-    try {
-      await conn.rollback();
-    } catch {}
-    console.error("admin end heist error:", err);
-    res.status(500).json({ message: "Error ending heist", error: err.message });
-  } finally {
-    conn.release();
-  }
-});
-/** * GET /heists/:id/leaderboard */
-router.get("/heists/:id/leaderboard", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.id);
-
-  try {
-    const [rows] = await pool.query(
-      `
-      SELECT
-        a.user_id,
-        MIN(CASE WHEN a.is_correct = 1 THEN a.total_time_seconds END) AS best_time,
-        COUNT(*) AS attempts_count,
-        SUM(a.is_correct = 1) AS correct_attempts
-      FROM heist_attempts a
-      WHERE a.heist_id = ?
-      GROUP BY a.user_id
-      ORDER BY
-        (SUM(a.is_correct = 1) > 0) DESC,
-        best_time ASC,
-        attempts_count ASC
-      LIMIT 200
-      `,
-      [heistId]
-    );
-
-    res.json({
-      heistId,
-      data: rows.map((r) => ({
-        user_id: r.user_id,
-        best_time: r.best_time != null ? Number(r.best_time) : null,
-        attempts_count: Number(r.attempts_count || 0),
-        correct_attempts: Number(r.correct_attempts || 0),
-      })),
-    });
-  } catch (err) {
-    console.error("admin leaderboard error:", err);
-    res.status(500).json({ message: "Error fetching admin leaderboard", error: err.message });
-  }
-});
-/** * GET /heists/:id/attempts */
-router.get("/heists/:id/attempts", authenticateToken, authenticateAdmin, async (req, res) => {
-  const heistId = Number(req.params.id);
-  const { page = 1, limit = 50 } = req.query;
-
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const lim = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
-  const offset = (pageNum - 1) * lim;
-
-  try {
-    const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM heist_attempts WHERE heist_id = ?`, [
-      heistId,
-    ]);
-
-    const [rows] = await pool.query(
-      `
-      SELECT
-        id, heist_id, user_id,
-        question_variant, correct_answer, submitted_answer,
-        is_correct, start_time, end_time, total_time_seconds, created_at
-      FROM heist_attempts
-      WHERE heist_id = ?
-      ORDER BY id DESC
-      LIMIT ? OFFSET ?
-      `,
-      [heistId, lim, offset]
-    );
-
-    res.json({ page: pageNum, limit: lim, total, data: rows });
-  } catch (err) {
-    console.error("admin attempts error:", err);
-    res.status(500).json({ message: "Error fetching attempts", error: err.message });
-  }
-});
-
-
-/* ─────────── Admin: Add MANY cop demo users to a heist using range/count ─────────── */
-router.post("/heists/:id/add-cop-users", authenticateToken, authenticateAdmin,
-  async (req, res) => {
-    const heistId = Number(req.params.id);
-
-    if (!Number.isInteger(heistId) || heistId <= 0) {
-      return res.status(400).json({ message: "Invalid heist id" });
-    }
-
-    // parse input
-    const body = req.body || {};
-    const from = body.from !== undefined ? Number(body.from) : null;
-    const to = body.to !== undefined ? Number(body.to) : null;
-    const count = body.count !== undefined ? Number(body.count) : null;
-    const numbersRaw = Array.isArray(body.numbers) ? body.numbers : null;
-
-    let numbers = [];
-
-    if (numbersRaw && numbersRaw.length) {
-      numbers = numbersRaw.map((n) => Number(n)).filter((n) => Number.isInteger(n) && n > 0);
-    } else if (from !== null && to !== null) {
-      if (!Number.isInteger(from) || !Number.isInteger(to) || from <= 0 || to <= 0 || to < from) {
-        return res.status(400).json({ message: "Invalid range. Use { from: 2, to: 5 }" });
-      }
-      for (let i = from; i <= to; i++) numbers.push(i);
-    } else if (count !== null) {
-      if (!Number.isInteger(count) || count <= 0) {
-        return res.status(400).json({ message: "Invalid count. Use { count: 5 }" });
-      }
-      // default: 1..count
-      for (let i = 1; i <= count; i++) numbers.push(i);
-    } else {
-      return res.status(400).json({
-        message: "Provide {count} OR {from,to} OR {numbers:[...]}.",
-      });
-    }
-
-    // limit safety
-    if (numbers.length > 100) {
-      return res.status(400).json({ message: "Too many cop users requested (max 100)." });
-    }
-
-    // make unique, sorted
-    numbers = Array.from(new Set(numbers)).sort((a, b) => a - b);
-
-    const conn = await pool.getConnection();
-    try {
-      await conn.beginTransaction();
-
-      // heist exists?
-      const [hRows] = await conn.query("SELECT id FROM heist WHERE id = ? LIMIT 1", [heistId]);
-      if (!hRows.length) {
-        await conn.rollback();
-        return res.status(404).json({ message: "Heist not found" });
-      }
-
-      const created = [];
-      const joined = [];
-      const skipped = [];
-
-      for (const n of numbers) {
-        // ids like cop_2, cop_5, etc
-        const copId = `cop_${n}`;
-        const username = `cop${String(n).padStart(3, "0")}`; // cop002, cop005...
-        const fullName = `Cop Player ${n}`;
-
-        // ensure demo user exists
-        const [dExists] = await conn.query("SELECT id FROM demo_users WHERE id = ? LIMIT 1", [copId]);
-        if (!dExists.length) {
-          await conn.query(
-            "INSERT INTO demo_users (id, username, full_name, avatar) VALUES (?, ?, ?, ?)",
-            [copId, username, fullName, null]
-          );
-          created.push(copId);
-        }
-
-        // already joined?
-        const [pRows] = await conn.query(
-          "SELECT 1 FROM heist_participants WHERE heist_id = ? AND user_id = ? LIMIT 1",
-          [heistId, copId]
-        );
-        if (pRows.length) {
-          skipped.push(copId);
-          continue;
-        }
-
-        await conn.query(
-          "INSERT INTO heist_participants (heist_id, user_id) VALUES (?, ?)",
-          [heistId, copId]
-        );
-        joined.push(copId);
-      }
-
-      await conn.commit();
-
-      return res.status(201).json({
-        message: "Cop users processed successfully.",
-        heist_id: heistId,
-        requested_numbers: numbers,
-        created_count: created.length,
-        joined_count: joined.length,
-        skipped_count: skipped.length,
-        created_ids: created,
-        joined_ids: joined,
-        skipped_ids: skipped,
-      });
-    } catch (error) {
-      await conn.rollback();
-      console.error("Error adding cop users to heist:", error);
-      return res.status(500).json({ message: "Internal server error", error: error.message });
-    } finally {
-      conn.release();
-    }
-  }
-);
 /* ───────────── Admin: Create cop user (marketing/testing) ───────────── */
 router.post("/demo-users",authenticateToken,authenticateAdmin,
   imageUpload.single("avatar"),
@@ -2412,23 +1674,6 @@ router.delete("/demo-users/:id",authenticateToken, authenticateAdmin,
         });
       }
 
-      // Is user used in any heist?
-      const [[usage]] = await pool.query(
-        `
-        SELECT
-          EXISTS(SELECT 1 FROM heist_participants WHERE user_id = ?) AS in_participants,
-          EXISTS(SELECT 1 FROM heist WHERE winner_id = ?) AS is_winner
-        `,
-        [id, id]
-      );
-
-      if (usage.in_participants || usage.is_winner) {
-        return res.status(400).json({
-          message:
-            "Cannot delete this cop user because it is already used in heists.",
-        });
-      }
-
       await pool.query("DELETE FROM demo_users WHERE id = ?", [id]);
 
       return res.json({
@@ -2467,18 +1712,6 @@ router.delete("/demo-users/:id/force",authenticateToken,authenticateAdmin,
         });
       }
 
-      // Remove from participants
-      await pool.query(
-        "DELETE FROM heist_participants WHERE user_id = ?",
-        [id]
-      );
-
-      // Remove as winner
-      await pool.query(
-        "UPDATE heist SET winner_id = NULL WHERE winner_id = ?",
-        [id]
-      );
-
       // Delete user
       await pool.query("DELETE FROM demo_users WHERE id = ?", [id]);
 
@@ -2492,99 +1725,6 @@ router.delete("/demo-users/:id/force",authenticateToken,authenticateAdmin,
         message: "Internal server error",
         error: error.message,
       });
-    }
-  }
-);
-/* ----------------------- Admin: Set heist winner ----------------------- */
-router.post("/heists/:id/set-winner", authenticateToken, authenticateAdmin,
-  async (req, res) => {
-    try {
-      const heistId = Number(req.params.id);
-      const { winner_id } = req.body || {};
-
-      if (!Number.isInteger(heistId) || heistId <= 0) {
-        return res.status(400).json({ message: "Invalid heist id" });
-      }
-      if (winner_id === undefined || winner_id === null || String(winner_id).trim() === "") {
-        return res.status(400).json({ message: "winner_id is required" });
-      }
-
-      const winnerIdStr = String(winner_id).trim();
-
-      // heist exists?
-      const [hRows] = await pool.query(
-        "SELECT id, status FROM heist WHERE id = ? LIMIT 1",
-        [heistId]
-      );
-      if (!hRows.length) return res.status(404).json({ message: "Heist not found" });
-
-      // Validate winner exists (users OR demo_users)
-      let winner = null;
-
-      if (isCopId(winnerIdStr)) {
-        const [dRows] = await pool.query(
-          "SELECT id, username, full_name, avatar FROM demo_users WHERE id = ? LIMIT 1",
-          [winnerIdStr]
-        );
-        if (!dRows.length) return res.status(404).json({ message: "Cop winner not found." });
-
-        const d = dRows[0];
-        winner = {
-          id: d.id,
-          username: d.username,
-          full_name: d.full_name,
-          avatar: absUrl(req, d.avatar),
-          is_demo: true,
-        };
-      } else if (isNumericId(winnerIdStr)) {
-        const uid = Number(winnerIdStr);
-        const [uRows] = await pool.query(
-          "SELECT id, username FROM users WHERE id = ? LIMIT 1",
-          [uid]
-        );
-        if (!uRows.length) return res.status(404).json({ message: "Winner user not found." });
-
-        const u = uRows[0];
-        winner = {
-          id: u.id,
-          username: u.username,
-          full_name: null,
-          avatar: null,
-          is_demo: false,
-        };
-      } else {
-        return res.status(400).json({ message: "winner_id must be a numeric user id or cop_***" });
-      }
-
-      // Ensure winner is a participant (keeps data consistent)
-      const [pRows] = await pool.query(
-        "SELECT 1 FROM heist_participants WHERE heist_id = ? AND user_id = ? LIMIT 1",
-        [heistId, winnerIdStr]
-      );
-      if (!pRows.length) {
-        await pool.query(
-          "INSERT INTO heist_participants (heist_id, user_id) VALUES (?, ?)",
-          [heistId, winnerIdStr]
-        );
-      }
-
-      // Set winner + complete
-      await pool.query(
-        `UPDATE heist
-            SET winner_id = ?, status = 'completed', updated_at = NOW()
-          WHERE id = ?`,
-        [winnerIdStr, heistId]
-      );
-
-      return res.status(200).json({
-        message: "Winner set successfully.",
-        heist_id: heistId,
-        winner_id: winnerIdStr,
-        winner,
-      });
-    } catch (error) {
-      console.error("Error setting heist winner:", error);
-      return res.status(500).json({ message: "Internal server error", error: error.message });
     }
   }
 );
@@ -3116,7 +2256,6 @@ function normalizePrices(body) {
   // Accept both singular and the user's "plural" keys just in case
   const cash = parseMoney(body.cash_price ?? body.cash_prices);
   const auction = parseMoney(body.auction_price ?? body.auction_prices);
-  const heist = parseMoney(body.heist_price ?? body.heist_prices);
 
   const out = {};
   if (cash !== null) {
@@ -3126,10 +2265,6 @@ function normalizePrices(body) {
   if (auction !== null) {
     if (Number.isNaN(auction) || auction < 0) throw new Error('Invalid auction_price');
     out.auction_price = auction;
-  }
-  if (heist !== null) {
-    if (Number.isNaN(heist) || heist < 0) throw new Error('Invalid heist_price');
-    out.heist_price = heist;
   }
   return out;
 }
@@ -3249,12 +2384,10 @@ router.patch('/products/:id', authenticateToken, authenticateAdmin, async (req, 
     const prices = normalizePrices(req.body);
     if (prices.cash_price !== undefined)    { fields.push('cash_price = ?');    values.push(prices.cash_price); }
     if (prices.auction_price !== undefined) { fields.push('auction_price = ?'); values.push(prices.auction_price); }
-    if (prices.heist_price !== undefined)   { fields.push('heist_price = ?');   values.push(prices.heist_price); }
 
     // NEW: flags
     if (req.body.allow_cash !== undefined)    { fields.push('allow_cash = ?');    values.push(parseBool(req.body.allow_cash, true) ? 1 : 0); }
     if (req.body.allow_auction !== undefined) { fields.push('allow_auction = ?'); values.push(parseBool(req.body.allow_auction, true) ? 1 : 0); }
-    if (req.body.allow_heist !== undefined)   { fields.push('allow_heist = ?');   values.push(parseBool(req.body.allow_heist, true) ? 1 : 0); }
 
     if (fields.length === 0) {
       return res.status(400).json({ message: 'No valid fields to update' });
@@ -3321,7 +2454,6 @@ router.post(
       const prices = normalizePrices(body);
       const cash = prices.cash_price ?? 0;
       const auction = prices.auction_price ?? 0;
-      const heist = prices.heist_price ?? 0;
 
       // extra fields
       const short_description =
@@ -3358,8 +2490,8 @@ router.post(
       const [result] = await pool.query(
         `INSERT INTO products
           (name, short_description, description, vendor_name, stock_status, shipping_cost, delivery_eta,
-           cash_price, auction_price, heist_price, image_path)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           cash_price, auction_price, image_path)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           String(name).trim(),
           short_description || null,
@@ -3370,7 +2502,6 @@ router.post(
           delivery_eta || null,
           cash,
           auction,
-          heist,
           imagePath,
         ]
       );
@@ -3455,7 +2586,6 @@ router.post(
 
         cash_price: cash,
         auction_price: auction,
-        heist_price: heist,
 
         image_path: imagePath,
         image_url: absUrl(req, imagePath),
@@ -3508,7 +2638,6 @@ router.get("/products", authenticateToken, authenticateAdmin, async (req, res) =
 
         p.cash_price,
         p.auction_price,
-        p.heist_price,
 
         p.image_path,
         p.created_at,
@@ -3564,7 +2693,6 @@ router.get("/products/:id", authenticateToken, authenticateAdmin, async (req, re
          delivery_eta,
          cash_price,
          auction_price,
-         heist_price,
          image_path,
          created_at,
 
@@ -3642,7 +2770,7 @@ router.put(
         `SELECT
            id, name, short_description, description, vendor_name, stock_status,
            shipping_cost, delivery_eta,
-           cash_price, auction_price, heist_price, image_path
+           cash_price, auction_price, image_path
          FROM products WHERE id = ? LIMIT 1`,
         [id]
       );
@@ -3690,9 +2818,6 @@ router.put(
         prices.cash_price !== undefined ? prices.cash_price : current.cash_price;
       const newAuction =
         prices.auction_price !== undefined ? prices.auction_price : current.auction_price;
-      const newHeist =
-        prices.heist_price !== undefined ? prices.heist_price : current.heist_price;
-
       // primary image replacement
       const primaryFile = req.files?.image?.[0] || null;
       const newImagePath = primaryFile ? `/uploads/${primaryFile.filename}` : current.image_path;
@@ -3709,7 +2834,6 @@ router.put(
                 delivery_eta = ?,
                 cash_price = ?,
                 auction_price = ?,
-                heist_price = ?,
                 image_path = ?
           WHERE id = ?`,
         [
@@ -3722,7 +2846,6 @@ router.put(
           delivery_eta,
           newCash,
           newAuction,
-          newHeist,
           newImagePath,
           id,
         ]
@@ -3813,7 +2936,7 @@ router.put(
         `SELECT
            id, name, short_description, description, vendor_name, stock_status,
            shipping_cost, delivery_eta,
-           cash_price, auction_price, heist_price, image_path, created_at
+           cash_price, auction_price, image_path, created_at
          FROM products WHERE id = ? LIMIT 1`,
         [id]
       );
@@ -3925,7 +3048,6 @@ router.get("/featured/products",authenticateToken,authenticateAdmin,
              p.name,
              p.cash_price,
              p.auction_price,
-             p.heist_price,
              p.image_path,
              MAX(p.is_featured) AS is_featured,
              p.created_at,
@@ -3950,7 +3072,6 @@ router.get("/featured/products",authenticateToken,authenticateAdmin,
            p.name,
            p.cash_price,
            p.auction_price,
-           p.heist_price,
            p.image_path,
            MAX(p.is_featured) AS is_featured,
            p.created_at,
@@ -4033,7 +3154,7 @@ router.get('/categories/:categoryId/products', authenticateToken, authenticateAd
       return res.status(400).json({ message: 'Invalid category id' });
     }
     const [rows] = await pool.query(
-      `SELECT p.id, p.name, p.cash_price, p.auction_price, p.heist_price, p.created_at
+      `SELECT p.id, p.name, p.cash_price, p.auction_price, p.created_at
        FROM product_categories pc
        JOIN products p ON p.id = pc.product_id
        WHERE pc.category_id = ?
@@ -4082,7 +3203,7 @@ router.get('/waitlist', authenticateToken, authenticateAdmin, async (req, res) =
 
     if (productId && !Number.isFinite(productId)) return res.status(400).json({ message: 'Invalid productId' });
     if (userId && !Number.isFinite(userId)) return res.status(400).json({ message: 'Invalid userId' });
-    if (mode && !['auction','heist'].includes(mode)) return res.status(400).json({ message: "mode must be 'auction' or 'heist'" });
+    if (mode && mode !== 'auction') return res.status(400).json({ message: "mode must be 'auction'" });
     if (status && !['queued','won','fulfilled','cancelled'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
 
     const limit  = Math.max(1, Math.min(200, Number(req.query.limit || 50)));
@@ -4140,7 +3261,7 @@ router.get('/waitlist/summary', authenticateToken, authenticateAdmin, async (req
     const mode   = (req.query.mode || '').toLowerCase();
     const status = (req.query.status || '').toLowerCase();
 
-    if (mode && !['auction','heist'].includes(mode)) return res.status(400).json({ message: "mode must be 'auction' or 'heist'" });
+    if (mode && mode !== 'auction') return res.status(400).json({ message: "mode must be 'auction'" });
     if (status && !['queued','won','fulfilled','cancelled'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
 
     const where = [];
@@ -4183,8 +3304,8 @@ router.get('/products/:productId/waitlist', authenticateToken, authenticateAdmin
     const modeRaw   = (req.query.mode || '').toLowerCase().trim();
     const statusRaw = (req.query.status || '').toLowerCase().trim();
 
-    if (modeRaw && !['auction','heist'].includes(modeRaw)) {
-      return res.status(400).json({ message: "mode must be 'auction' or 'heist'" });
+    if (modeRaw && modeRaw !== 'auction') {
+      return res.status(400).json({ message: "mode must be 'auction'" });
     }
     if (statusRaw && !['queued','won','fulfilled','cancelled'].includes(statusRaw)) {
       return res.status(400).json({ message: 'Invalid status' });
@@ -4257,7 +3378,7 @@ router.get('/products/:productId/waitlist', authenticateToken, authenticateAdmin
       entries: 0, users: 0, total_locked: 0,
       by_status: { queued: {count:0,total_locked:0}, won:{count:0,total_locked:0}, fulfilled:{count:0,total_locked:0}, cancelled:{count:0,total_locked:0} }
     });
-    const summaryModes = { auction: baseMode(), heist: baseMode() };
+    const summaryModes = { auction: baseMode() };
 
     for (const r of perModeAgg) {
       const m = r.mode;
@@ -4306,7 +3427,6 @@ router.get('/products/:productId/waitlist', authenticateToken, authenticateAdmin
     );
 
     const auctionItems = [];
-    const heistItems   = [];
     for (const it of rows) {
       const formatted = {
         id: it.id,
@@ -4323,12 +3443,11 @@ router.get('/products/:productId/waitlist', authenticateToken, authenticateAdmin
         status: it.status,
         created_at: it.created_at
       };
-      (it.mode === 'auction' ? auctionItems : heistItems).push(formatted);
+      auctionItems.push(formatted);
     }
 
     // Distinct users in current page (convenience)
     const pagedAuctionUsers = new Set(auctionItems.map(i => i.user.id)).size;
-    const pagedHeistUsers   = new Set(heistItems.map(i => i.user.id)).size;
 
     // ---------- RESPONSE ----------
     res.json({
@@ -4340,18 +3459,12 @@ router.get('/products/:productId/waitlist', authenticateToken, authenticateAdmin
           users: Number(overallAgg.users) || 0,
           total_locked: Number(overallAgg.total_locked) || 0
         },
-        auction: summaryModes.auction,
-        heist: summaryModes.heist
+        auction: summaryModes.auction
       },
       auction: {
         count: auctionItems.length,
         distinct_users_in_page: pagedAuctionUsers,
         items: auctionItems
-      },
-      heist: {
-        count: heistItems.length,
-        distinct_users_in_page: pagedHeistUsers,
-        items: heistItems
       }
     });
   } catch (e) {
@@ -4462,115 +3575,6 @@ router.post('/auctions/from-waitlist', authenticateToken, authenticateAdmin, asy
     conn.release();
   }
 });
-// POST /api/admin/heists/from-waitlist
-router.post('/heists/from-waitlist', authenticateToken, authenticateAdmin, async (req, res) => {
-  const {
-    product_id,
-    name,
-    story = '',
-    question = '',
-    answer = '',
-    min_users,
-    ticket_price,
-    prize,
-    category,
-    prize_name = '',
-    update_waitlist
-  } = req.body || {};
-
-  if (!name || !category) {
-    return res.status(400).json({ message: "name and category are required" });
-  }
-  if (!['cash','product'].includes(String(category).toLowerCase())) {
-    return res.status(400).json({ message: "Invalid category. Must be 'cash' or 'product'." });
-  }
-  const minUsers = Number(min_users);
-  const ticket   = Number(ticket_price);
-  const prizeVal = Number(prize);
-  if (!Number.isInteger(minUsers) || minUsers < 1) {
-    return res.status(400).json({ message: "min_users must be an integer >= 1" });
-  }
-  if (!Number.isInteger(ticket) || ticket < 0) {
-    return res.status(400).json({ message: "ticket_price must be a non-negative integer" });
-  }
-  if (!Number.isInteger(prizeVal) || prizeVal < 0) {
-    return res.status(400).json({ message: "prize must be a non-negative integer" });
-  }
-  if (!Number.isFinite(Number(product_id))) {
-    return res.status(400).json({ message: "product_id is required (number)" });
-  }
-  const productId = Number(product_id);
-
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-
-    // --- HARD BLOCK: if any waitlist rows already in_progress for this product & mode='heist'
-    const [[busy]] = await conn.query(
-      `SELECT COUNT(*) AS cnt
-         FROM bids_waitlist
-        WHERE product_id = ? AND mode = 'heist' AND status = 'in_progress'`,
-      [productId]
-    );
-    if (Number(busy.cnt) > 0) {
-      await conn.rollback();
-      return res.status(409).json({
-        message: "Heist already being processed for this product (waitlist in_progress). Finish or cancel before creating another."
-      });
-    }
-
-    // Create heist (status 'pending'), saving product_id
-    const [insHeist] = await conn.query(
-      `INSERT INTO heist
-         (name, story, question, answer, min_users, ticket_price, prize, category, status, prize_name, prize_image, product_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, NULL, ?)`,
-      [name, story, question, answer, minUsers, ticket, prizeVal, category.toLowerCase(), prize_name, productId]
-    );
-    const heistId = insHeist.insertId;
-
-    // Seed participants from waitlist (mode='heist', status='queued')
-    const [waiters] = await conn.query(
-      `SELECT DISTINCT user_id
-         FROM bids_waitlist
-        WHERE product_id = ? AND mode = 'heist' AND status = 'queued'`,
-      [productId]
-    );
-
-    if (waiters.length) {
-      const users = [...new Set(waiters.map(r => Number(r.user_id)))];
-      const vals = users.map(uid => [heistId, uid]);
-      await conn.query(
-        `INSERT IGNORE INTO heist_participants (heist_id, user_id)
-         VALUES ${vals.map(()=>'(?, ?)').join(',')}`,
-        vals.flat()
-      );
-
-      if (update_waitlist) {
-        try {
-          await conn.query(
-            `UPDATE bids_waitlist SET status='in_progress'
-              WHERE product_id=? AND mode='heist' AND status='queued'
-                AND user_id IN (${users.map(()=>'?').join(',')})`,
-            [productId, ...users]
-          );
-        } catch (_) { /* ignore if enum/value doesn't exist */ }
-      }
-    }
-
-    await conn.commit();
-    return res.status(201).json({
-      message: "Heist created successfully from waitlist",
-      id: heistId,
-      product_id: productId
-    });
-  } catch (err) {
-    await conn.rollback();
-    console.error("POST /admin/heists/from-waitlist error:", err);
-    return res.status(500).json({ error: "Error creating heist from waitlist.", details: err.message });
-  } finally {
-    conn.release();
-  }
-});
 // POST /api/admin/waitlist/cancel
 router.post('/waitlist/cancel', authenticateToken, authenticateAdmin, async (req, res) => {
   const productId = Number(req.body.product_id);
@@ -4579,8 +3583,8 @@ router.post('/waitlist/cancel', authenticateToken, authenticateAdmin, async (req
   if (!Number.isFinite(productId)) {
     return res.status(400).json({ message: 'product_id is required (number)' });
   }
-  if (!['auction', 'heist'].includes(mode)) {
-    return res.status(400).json({ message: "mode must be 'auction' or 'heist'" });
+  if (mode !== 'auction') {
+    return res.status(400).json({ message: "mode must be 'auction'" });
   }
 
   const conn = await pool.getConnection();
@@ -4820,7 +3824,6 @@ router.get('/favorites/summary', authenticateToken, authenticateAdmin, async (re
          p.image_path,
          p.cash_price,
          p.auction_price,
-         p.heist_price,
          p.created_at,
          p.is_featured,
          COUNT(pf.id)                      AS favorite_count,

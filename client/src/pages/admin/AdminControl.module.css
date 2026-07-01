@@ -226,7 +226,7 @@
     grid-template-columns: 1fr;
   }
 }
-/* Available heists UI */
+/* Available admin UI */
 .availGrid {
   padding: 14px;
   display: grid;

@@ -182,38 +182,38 @@
 
   <main class="mx-auto max-w-6xl px-4 py-8 space-y-8">
 
-    <!-- Enhanced Heist Requirement section -->
+    <!-- Enhanced auction Requirement section -->
     <section class="glass p-8 animate-fade-in-up">
       <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
           <h2 class="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-            Heist Affiliate Requirement
+            auction Affiliate Requirement
           </h2>
-          <p class="text-slate-400 mt-2 text-lg">Set or remove the required referrals and reward for a heist.</p>
+          <p class="text-slate-400 mt-2 text-lg">Set or remove the required referrals and reward for a auction.</p>
         </div>
         <span class="badge bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400/30">
-          🏛️ Heists
+          🏛️ auctions
         </span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-[220px_1fr_1fr_auto_auto] gap-4 mb-8">
-        <input id="heistId" type="number" min="1" placeholder="Heist ID" class="input-enhanced">
-        <input id="heistTarget" type="number" min="0" placeholder="Target Users" class="input-enhanced">
-        <input id="heistReward" type="number" min="0" placeholder="Reward Bid Points" class="input-enhanced">
-        <button id="saveHeistBtn" class="btn btn-primary">💾 Save</button>
-        <button id="delHeistBtn" class="btn btn-danger">🗑️ Delete</button>
+        <input id="auctionId" type="number" min="1" placeholder="auction ID" class="input-enhanced">
+        <input id="auctionTarget" type="number" min="0" placeholder="Target Users" class="input-enhanced">
+        <input id="auctionReward" type="number" min="0" placeholder="Reward Bid Points" class="input-enhanced">
+        <button id="saveauctionBtn" class="btn btn-primary">💾 Save</button>
+        <button id="delauctionBtn" class="btn btn-danger">🗑️ Delete</button>
       </div>
 
-      <!-- Enhanced heist search section -->
+      <!-- Enhanced auction search section -->
       <div class="glass p-6">
         <div class="flex items-center justify-between gap-4 mb-4">
-          <div class="text-slate-200 font-semibold text-lg">🔍 Quick Find Heist</div>
+          <div class="text-slate-200 font-semibold text-lg">🔍 Quick Find auction</div>
           <div class="flex items-center gap-3">
-            <input id="heistSearch" placeholder="Search name/story…" class="input-enhanced min-w-[250px]">
-            <button id="findHeistsBtn" class="btn">Search</button>
+            <input id="auctionsearch" placeholder="Search name/story…" class="input-enhanced min-w-[250px]">
+            <button id="findauctionsBtn" class="btn">Search</button>
           </div>
         </div>
-        <div id="heistTableWrap" class="overflow-auto border border-white/10 rounded-xl bg-white/5">
+        <div id="auctionTableWrap" class="overflow-auto border border-white/10 rounded-xl bg-white/5">
           <table class="table-enhanced">
             <thead>
               <tr>
@@ -227,7 +227,7 @@
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody id="heistRows"></tbody>
+            <tbody id="auctionRows"></tbody>
           </table>
         </div>
       </div>
@@ -439,47 +439,47 @@
       }
     );
 
-    async function deleteHeistReq() {
-      const heistId = Number($("heistId").value);
-      if (!Number.isInteger(heistId) || heistId <= 0) return setErr("Enter a valid Heist ID.");
+    async function deleteauctionReq() {
+      const auctionId = Number($("auctionId").value);
+      if (!Number.isInteger(auctionId) || auctionId <= 0) return setErr("Enter a valid auction ID.");
       
-      const confirmed = await showConfirm("Delete affiliate requirement for this heist? This action cannot be undone.");
+      const confirmed = await showConfirm("Delete affiliate requirement for this auction? This action cannot be undone.");
       if (!confirmed) return;
 
-      start($("delHeistBtn"));
+      start($("delauctionBtn"));
       try {
-        const { data } = await axios.delete(`/heist/affiliate/delete/${heistId}`);
-        setOk(data?.message || "Heist requirement deleted successfully.");
-        $("heistTarget").value = "";
-        $("heistReward").value = "";
-        await findHeists();
+        const { data } = await axios.delete(`/auction/affiliate/delete/${auctionId}`);
+        setOk(data?.message || "auction requirement deleted successfully.");
+        $("auctionTarget").value = "";
+        $("auctionReward").value = "";
+        await findauctions();
       } catch (e) {
-        setErr(e?.response?.data?.message || "Error deleting heist requirement");
+        setErr(e?.response?.data?.message || "Error deleting auction requirement");
       } finally {
-        stop($("delHeistBtn"));
+        stop($("delauctionBtn"));
       }
     }
 
-    async function saveHeistReq() {
+    async function saveauctionReq() {
       clearMsgs();
-      const heistId = Number($("heistId").value);
-      const target  = Number($("heistTarget").value);
-      const reward  = Number($("heistReward").value);
-      if (!Number.isInteger(heistId) || heistId <= 0) return setErr("Enter a valid Heist ID.");
+      const auctionId = Number($("auctionId").value);
+      const target  = Number($("auctionTarget").value);
+      const reward  = Number($("auctionReward").value);
+      if (!Number.isInteger(auctionId) || auctionId <= 0) return setErr("Enter a valid auction ID.");
       if (!Number.isInteger(target) || target < 0)    return setErr("Target Users must be a non-negative integer.");
       if (!Number.isInteger(reward) || reward < 0)    return setErr("Reward must be a non-negative integer.");
 
-      start($("saveHeistBtn"));
+      start($("saveauctionBtn"));
       try {
-        const { data } = await axios.post(`/affiliate/set-requirement/heist/${heistId}`, {
+        const { data } = await axios.post(`/affiliate/set-requirement/auction/${auctionId}`, {
           targetUsers: target, rewardBidPoints: reward
         });
-        setOk(data?.message || "Heist requirement saved.");
-        await findHeists(); // refresh table (shows target/reward columns)
+        setOk(data?.message || "auction requirement saved.");
+        await findauctions(); // refresh table (shows target/reward columns)
       } catch (e) {
-        setErr(e?.response?.data?.message || "Error saving heist requirement");
+        setErr(e?.response?.data?.message || "Error saving auction requirement");
       } finally {
-        stop($("saveHeistBtn"));
+        stop($("saveauctionBtn"));
       }
     }
 
@@ -536,19 +536,19 @@
       }
     }
 
-    async function findHeists() {
-      const q = $("heistSearch").value.trim();
+    async function findauctions() {
+      const q = $("auctionsearch").value.trim();
       const params = { q, page: 1, limit: 20 };
       try {
-        const { data } = await axios.get("/heists", { params });
+        const { data } = await axios.get("/auctions", { params });
         const rows = Array.isArray(data?.data) ? data.data : [];
-        $("heistRows").innerHTML = rows.map(createHeistRow).join("");
+        $("auctionRows").innerHTML = rows.map(createauctionRow).join("");
         if (rows.length === 0) {
-          $("heistRows").innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400">No heists found</td></tr>';
+          $("auctionRows").innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400">No auctions found</td></tr>';
         }
       } catch (e) {
-        $("heistRows").innerHTML = '<tr><td colspan="8" class="p-8 text-center text-red-400">Error loading heists</td></tr>';
-        setErr(e?.response?.data?.message || "Error searching heists");
+        $("auctionRows").innerHTML = '<tr><td colspan="8" class="p-8 text-center text-red-400">Error loading auctions</td></tr>';
+        setErr(e?.response?.data?.message || "Error searching auctions");
       }
     }
 
@@ -568,12 +568,12 @@
       }
     }
 
-    function pickHeist(id, target = 0, reward = 0) {
-      $("heistId").value = id;
-      $("heistTarget").value = Number.isFinite(target) ? target : "";
-      $("heistReward").value = Number.isFinite(reward) ? reward : "";
+    function pickauction(id, target = 0, reward = 0) {
+      $("auctionId").value = id;
+      $("auctionTarget").value = Number.isFinite(target) ? target : "";
+      $("auctionReward").value = Number.isFinite(reward) ? reward : "";
       window.scrollTo({ top: 0, behavior: "smooth" });
-      setOk(`Heist #${id} selected and ready for configuration.`);
+      setOk(`auction #${id} selected and ready for configuration.`);
     }
     
     function pickAuction(id, target, reward) {
@@ -586,7 +586,7 @@
     function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
     function logout(){ localStorage.removeItem("authToken"); window.location.href = LOGIN_URL; }
 
-    function createHeistRow(h) {
+    function createauctionRow(h) {
       return `
         <tr class="hover:bg-white/5 transition-colors duration-200">
           <td class="p-4 font-mono text-brand-400">#${h.id}</td>
@@ -606,7 +606,7 @@
           <td class="p-4 text-center">${h.reward_bid_points ?? "—"}</td>
           <td class="p-4">
             <button class="btn text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-400/30 hover:from-blue-500/30 hover:to-purple-500/30" 
-                    onclick="pickHeist(${h.id}, ${h.target_users ?? 0}, ${h.reward_bid_points ?? 0})">
+                    onclick="pickauction(${h.id}, ${h.target_users ?? 0}, ${h.reward_bid_points ?? 0})">
               📌 Pick
             </button>
           </td>
@@ -652,9 +652,9 @@
       $("logoutBtn").addEventListener("click", logout);
       $("backBtn").addEventListener("click", () => window.location.href = DASHBOARD);
 
-      $("saveHeistBtn").addEventListener("click", saveHeistReq);
-      $("delHeistBtn").addEventListener("click", deleteHeistReq);
-      $("findHeistsBtn").addEventListener("click", findHeists);
+      $("saveauctionBtn").addEventListener("click", saveauctionReq);
+      $("delauctionBtn").addEventListener("click", deleteauctionReq);
+      $("findauctionsBtn").addEventListener("click", findauctions);
 
       $("saveAuctionBtn").addEventListener("click", saveAuctionReq);
       $("findAuctionsBtn").addEventListener("click", findAuctions);
@@ -662,7 +662,7 @@
       $("refreshListBtn").addEventListener("click", loadAffAuctions);
 
       // initial loads
-      await Promise.all([findHeists(), findAuctions(), loadAffAuctions()]);
+      await Promise.all([findauctions(), findAuctions(), loadAffAuctions()]);
     });
   </script>
 </body>

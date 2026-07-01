@@ -48,8 +48,8 @@
             <div id="auction" class="text-2xl font-bold">—</div>
           </div>
           <div class="rounded-xl glass ring-glow p-4 text-center">
-            <div class="text-xs text-white/60 font-medium mb-2">Heist Mode</div>
-            <div id="heist" class="text-2xl font-bold">—</div>
+            <div class="text-xs text-white/60 font-medium mb-2">auction Mode</div>
+            <div id="auction" class="text-2xl font-bold">—</div>
           </div>
         </div>
 
@@ -57,7 +57,7 @@
           <button id="btnBuy" class="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-bold text-lg hover:shadow-2xl transition">💵 Buy Now</button>
           <div class="grid grid-cols-2 gap-3">
             <button id="btnAuction" class="px-4 py-3 rounded-xl border-2 border-white/20 hover:bg-white/5 font-bold transition">🏁 Auction</button>
-            <button id="btnHeist" class="px-4 py-3 rounded-xl border-2 border-white/20 hover:bg-white/5 font-bold transition">⚔️ Heist</button>
+            <button id="btnauction" class="px-4 py-3 rounded-xl border-2 border-white/20 hover:bg-white/5 font-bold transition">⚔️ auction</button>
           </div>
         </div>
         <p class="text-white/70 text-sm">Added: <span id="pdate" class="font-medium">—</span></p>
@@ -108,18 +108,18 @@
         document.getElementById('pimg').src = p.image_url || '';
         document.getElementById('cash').textContent = '₦ ' + fmtN(p.cash_price);
         document.getElementById('auction').textContent = fmtN(p.auction_price);
-        document.getElementById('heist').textContent = fmtN(p.heist_price) + ' CP';
+        document.getElementById('auction').textContent = fmtN(p.auction_price) + ' CP';
         document.getElementById('pdate').textContent = new Date(p.created_at).toLocaleString();
         const cats = (p.categories || []).map(c => c.name).join(', ');
         document.getElementById('pcats').textContent = cats || '—';
 
         const btnBuy = document.getElementById('btnBuy');
         const btnAuction = document.getElementById('btnAuction');
-        const btnHeist = document.getElementById('btnHeist');
+        const btnauction = document.getElementById('btnauction');
 
         if (p.allow_cash === 0) { btnBuy.disabled = true; btnBuy.classList.add('opacity-50','cursor-not-allowed'); }
         if (p.allow_auction === 0) { btnAuction.disabled = true; btnAuction.classList.add('opacity-50','cursor-not-allowed'); }
-        if (p.allow_heist === 0) { btnHeist.disabled = true; btnHeist.classList.add('opacity-50','cursor-not-allowed'); }
+        if (p.allow_auction === 0) { btnauction.disabled = true; btnauction.classList.add('opacity-50','cursor-not-allowed'); }
 
         btnBuy.addEventListener('click', async () => {
           try{ btnBuy.disabled = true; btnBuy.style.opacity = .6;
@@ -142,12 +142,12 @@
           finally{ btnAuction.disabled = false; btnAuction.style.opacity = ''; }
         });
 
-        btnHeist.addEventListener('click', async () => {
-          try{ btnHeist.disabled = true; btnHeist.style.opacity = .6;
-            const data = await checkPay(p.id, 'heist');
-            toast(data.message || 'Added to heist ✓');
+        btnauction.addEventListener('click', async () => {
+          try{ btnauction.disabled = true; btnauction.style.opacity = .6;
+            const data = await checkPay(p.id, 'auction');
+            toast(data.message || 'Added to auction ✓');
           }catch(err){ toast(err?.response?.data?.message || 'Failed','error'); }
-          finally{ btnHeist.disabled = false; btnHeist.style.opacity = ''; }
+          finally{ btnauction.disabled = false; btnauction.style.opacity = ''; }
         });
 
       }catch(err){ toast(err?.response?.data?.message || 'Failed to load','error'); }

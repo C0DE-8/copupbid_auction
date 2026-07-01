@@ -67,7 +67,6 @@ router.get("/public/products", async (req, res) => {
 
           p.cash_price,
           p.auction_price,
-          p.heist_price,
 
           p.image_path,
           p.created_at,
@@ -110,7 +109,6 @@ router.get("/public/products", async (req, res) => {
 
         p.cash_price,
         p.auction_price,
-        p.heist_price,
 
         p.image_path,
         p.created_at,
@@ -159,7 +157,6 @@ router.get("/public/products/:id", async (req, res) => {
 
         cash_price,
         auction_price,
-        heist_price,
 
         image_path,
         created_at
@@ -241,7 +238,6 @@ router.get("/public/categories/:categoryId/products", async (req, res) => {
 
          p.cash_price,
          p.auction_price,
-         p.heist_price,
 
          p.image_path,
          p.created_at,
@@ -303,7 +299,6 @@ router.get('/public/featured/products',
              p.name,
              p.cash_price,
              p.auction_price,
-             p.heist_price,
              p.image_path,
              p.is_featured,
              p.created_at,
@@ -325,7 +320,6 @@ router.get('/public/featured/products',
            p.name,
            p.cash_price,
            p.auction_price,
-           p.heist_price,
            p.image_path,
            p.is_featured,
            p.created_at,

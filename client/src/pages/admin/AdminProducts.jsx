@@ -118,7 +118,6 @@ export default function AdminProducts() {
   // prices are COINS
   const [pCash, setPCash] = useState("0");
   const [pAuction, setPAuction] = useState("0");
-  const [pHeist, setPHeist] = useState("0");
 
   const [pCats, setPCats] = useState([]); // array of category IDs (numbers)
   const [galleryMode, setGalleryMode] = useState("append"); // append | replace
@@ -243,7 +242,6 @@ export default function AdminProducts() {
 
     setPCash("0");
     setPAuction("0");
-    setPHeist("0");
 
     setPCats([]);
     setGalleryMode("append");
@@ -284,7 +282,6 @@ export default function AdminProducts() {
       // still COINS
       setPCash(String(p.cash_price ?? "0"));
       setPAuction(String(p.auction_price ?? "0"));
-      setPHeist(String(p.heist_price ?? "0"));
 
       const catIds = Array.isArray(p.categories) ? p.categories.map((c) => Number(c.id)) : [];
       setPCats(catIds);
@@ -325,7 +322,6 @@ export default function AdminProducts() {
       // COINS (not fiat)
       fd.append("cash_price", String(pCash || "0"));
       fd.append("auction_price", String(pAuction || "0"));
-      fd.append("heist_price", String(pHeist || "0"));
 
       if (pCats.length) fd.append("categoryIds", pCats.join(","));
       fd.append("gallery_mode", String(galleryMode || "append"));
@@ -432,7 +428,6 @@ export default function AdminProducts() {
   // computed conversion helpers for modal
   const cashFiat = useMemo(() => coinsToFiat(pCash, coinRate), [pCash, coinRate]);
   const auctionFiat = useMemo(() => coinsToFiat(pAuction, coinRate), [pAuction, coinRate]);
-  const heistFiat = useMemo(() => coinsToFiat(pHeist, coinRate), [pHeist, coinRate]);
 
   return (
     <div className={styles.page}>
@@ -547,7 +542,6 @@ export default function AdminProducts() {
             filteredProducts.map((p) => {
               const cashV = coinsToFiat(p.cash_price, coinRate);
               const auctionV = coinsToFiat(p.auction_price, coinRate);
-              const heistV = coinsToFiat(p.heist_price, coinRate);
 
               return (
                 <div key={p.id} className={styles.card}>
@@ -615,15 +609,6 @@ export default function AdminProducts() {
                           </div>
                         </div>
 
-                        <div className={styles.priceBox}>
-                          <div className={styles.priceLabel}>Heist</div>
-                          <div className={styles.priceValue}>
-                            {fmtNum(p.heist_price)} <span className={styles.coinUnit}>COINS</span>
-                          </div>
-                          <div className={styles.priceSub}>
-                            {heistV == null ? "Rate not set" : fmtFiat(heistV, coinRate.currency)}
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -802,18 +787,6 @@ export default function AdminProducts() {
                       </div>
                     </label>
 
-                    <label className={styles.label}>
-                      Heist (coins)
-                      <input
-                        className={styles.input}
-                        value={pHeist}
-                        onChange={(e) => setPHeist(e.target.value)}
-                        placeholder="0"
-                      />
-                      <div className={styles.inputHint}>
-                        ≈ {heistFiat == null ? "Rate not set" : fmtFiat(heistFiat, coinRate.currency)}
-                      </div>
-                    </label>
                   </div>
 
                   <div className={styles.uploadRow}>

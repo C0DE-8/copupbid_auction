@@ -398,9 +398,6 @@ function AdminFavoritesInner() {
                             <div className={styles.mutedSmall}>
                               Auction: <span className={styles.mono}>{safeNum(r.auction_price, 0)}</span>
                             </div>
-                            <div className={styles.mutedSmall}>
-                              Heist: <span className={styles.mono}>{safeNum(r.heist_price, 0)}</span>
-                            </div>
                           </td>
 
                           <td className={styles.mutedSmall}>

@@ -442,7 +442,7 @@ function renderFavoritesTable(rows) {
 
     const cash = r.cash_price != null ? `₦${formatMoney(r.cash_price)}` : "—";
     const auction = r.auction_price != null ? `₦${formatMoney(r.auction_price)}` : "—";
-    const heist = r.heist_price != null ? `₦${formatMoney(r.heist_price)}` : "—";
+    const auction = r.auction_price != null ? `₦${formatMoney(r.auction_price)}` : "—";
 
     return `
       <tr class="hover:bg-white/5">
@@ -466,7 +466,7 @@ function renderFavoritesTable(rows) {
         <td class="px-3 py-2 align-top text-xs">
           <div>Cash: <span class="text-emerald-200">${cash}</span></div>
           <div>Auction: <span class="text-blue-200">${auction}</span></div>
-          <div>Heist: <span class="text-purple-200">${heist}</span></div>
+          <div>auction: <span class="text-purple-200">${auction}</span></div>
         </td>
         <td class="px-3 py-2 align-top text-xs">
           <div class="text-slate-100 font-semibold">${r.favorite_count || 0}</div>

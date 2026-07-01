@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Demo & Heist Control - Admin</title>
+  <title>Demo & auction Control - Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
@@ -64,8 +64,8 @@
         </svg>
       </button>
       <div>
-        <h1 class="text-2xl font-bold text-emerald-400">Demo & Heist Control</h1>
-        <p class="text-xs text-gray-400">Manage cop demo users, heist participants & winners</p>
+        <h1 class="text-2xl font-bold text-emerald-400">Demo & auction Control</h1>
+        <p class="text-xs text-gray-400">Manage cop demo users, auction participants & winners</p>
       </div>
     </div>
 
@@ -96,16 +96,16 @@
       </button>
 
       <button class="tab-btn glass-effect rounded-xl px-4 py-3 text-left border border-white/10 hover:bg-white/10 transition-colors"
-              data-tab="tab-heists"
-              onclick="switchTab('tab-heists')">
-        <div class="font-bold">Heists</div>
-        <div class="text-xs text-gray-400">List & filter heists (paginated)</div>
+              data-tab="tab-auctions"
+              onclick="switchTab('tab-auctions')">
+        <div class="font-bold">auctions</div>
+        <div class="text-xs text-gray-400">List & filter auctions (paginated)</div>
       </button>
 
       <button class="tab-btn glass-effect rounded-xl px-4 py-3 text-left border border-white/10 hover:bg-white/10 transition-colors"
               data-tab="tab-add"
               onclick="switchTab('tab-add')">
-        <div class="font-bold">Add Cop Users to Heist</div>
+        <div class="font-bold">Add Cop Users to auction</div>
         <div class="text-xs text-gray-400">Range / Count / Custom numbers</div>
       </button>
 
@@ -113,7 +113,7 @@
               data-tab="tab-winner"
               onclick="switchTab('tab-winner')">
         <div class="font-bold">Set Winner</div>
-        <div class="text-xs text-gray-400">Force winner for a heist</div>
+        <div class="text-xs text-gray-400">Force winner for a auction</div>
       </button>
     </div>
 
@@ -202,25 +202,25 @@
 
           <div class="mt-4 text-xs text-gray-400">
             Delete rules:
-            <span class="text-gray-300">Normal delete fails if used in heists. Use Force Delete to remove from participants/winner first.</span>
+            <span class="text-gray-300">Normal delete fails if used in auctions. Use Force Delete to remove from participants/winner first.</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB: HEISTS -->
-    <section id="tab-heists" class="tab-panel hidden">
+    <!-- TAB: auctions -->
+    <section id="tab-auctions" class="tab-panel hidden">
       <div class="glass-effect rounded-2xl p-6 admin-card">
         <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-4">
           <div>
-            <h2 class="text-xl font-bold text-emerald-300">Heists (Admin)</h2>
-            <p class="text-xs text-gray-400">GET /api/admin/heists</p>
+            <h2 class="text-xl font-bold text-emerald-300">auctions (Admin)</h2>
+            <p class="text-xs text-gray-400">GET /api/admin/auctions</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 w-full lg:w-auto">
-            <input id="heistQ" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"
+            <input id="auctionQ" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"
                    placeholder="Search name/story"/>
-            <select id="heistStatus" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500">
+            <select id="auctionstatus" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500">
               <option value="">All Status</option>
               <option value="pending">pending</option>
               <option value="active">active</option>
@@ -228,46 +228,46 @@
               <option value="cancelled">cancelled</option>
               <option value="hold">hold</option>
             </select>
-            <select id="heistCategory" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500">
+            <select id="auctionCategory" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500">
               <option value="">All Category</option>
               <option value="cash">cash</option>
               <option value="product">product</option>
               <option value="coupon">coupon</option>
             </select>
-            <input id="heistFrom" type="date" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"/>
-            <input id="heistTo" type="date" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"/>
+            <input id="auctionFrom" type="date" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"/>
+            <input id="auctionTo" type="date" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"/>
             <div class="flex gap-2">
-              <button onclick="loadHeists(1)" class="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-4 py-3 font-semibold w-full">
+              <button onclick="loadauctions(1)" class="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-4 py-3 font-semibold w-full">
                 Apply
               </button>
-              <button onclick="resetHeistFilters()" class="bg-white/10 hover:bg-white/20 rounded-xl px-4 py-3 w-full">
+              <button onclick="resetauctionFilters()" class="bg-white/10 hover:bg-white/20 rounded-xl px-4 py-3 w-full">
                 Reset
               </button>
             </div>
           </div>
         </div>
 
-        <div id="heistsList" class="space-y-3">
-          <div class="text-center text-gray-400 py-10">Loading heists...</div>
+        <div id="auctionsList" class="space-y-3">
+          <div class="text-center text-gray-400 py-10">Loading auctions...</div>
         </div>
 
         <div class="flex items-center justify-between mt-4">
           <div class="text-sm text-gray-400">
-            <span id="heistsMeta">Page 1</span>
+            <span id="auctionsMeta">Page 1</span>
           </div>
-          <div id="heistsPagination" class="flex gap-2"></div>
+          <div id="auctionsPagination" class="flex gap-2"></div>
         </div>
       </div>
     </section>
 
-    <!-- TAB: ADD COP USERS TO HEIST -->
+    <!-- TAB: ADD COP USERS TO auction -->
     <section id="tab-add" class="tab-panel hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="glass-effect rounded-2xl p-6 admin-card">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-xl font-bold text-emerald-300">Add Cop Users to Heist</h2>
-              <p class="text-xs text-gray-400">POST /api/admin/heists/:id/add-cop-users</p>
+              <h2 class="text-xl font-bold text-emerald-300">Add Cop Users to auction</h2>
+              <p class="text-xs text-gray-400">POST /api/admin/auctions/:id/add-cop-users</p>
             </div>
             <span class="chip text-emerald-300">Range / Count / Custom</span>
           </div>
@@ -275,8 +275,8 @@
           <form onsubmit="addCopUsers(event)">
             <div class="space-y-4">
               <div>
-                <label class="text-sm text-gray-300">Heist ID *</label>
-                <input id="addHeistId" required type="number" min="1"
+                <label class="text-sm text-gray-300">auction ID *</label>
+                <input id="addauctionId" required type="number" min="1"
                        class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"
                        placeholder="e.g. 12"/>
               </div>
@@ -335,18 +335,18 @@
           <div id="addCopResult" class="mt-4 hidden bg-white/5 border border-white/10 rounded-xl p-4 text-sm"></div>
         </div>
 
-        <!-- Helper: Quick pick from heists -->
+        <!-- Helper: Quick pick from auctions -->
         <div class="glass-effect rounded-2xl p-6 admin-card">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-xl font-bold text-emerald-300">Quick Heist Picker</h2>
-              <p class="text-xs text-gray-400">Loads latest heists for quick ID copy</p>
+              <h2 class="text-xl font-bold text-emerald-300">Quick auction Picker</h2>
+              <p class="text-xs text-gray-400">Loads latest auctions for quick ID copy</p>
             </div>
-            <button onclick="loadHeistsQuick()" class="bg-white/10 hover:bg-white/20 rounded-xl px-4 py-2">Load</button>
+            <button onclick="loadauctionsQuick()" class="bg-white/10 hover:bg-white/20 rounded-xl px-4 py-2">Load</button>
           </div>
 
-          <div id="heistsQuick" class="space-y-3">
-            <div class="text-center text-gray-400 py-10">Click “Load” to fetch heists</div>
+          <div id="auctionsQuick" class="space-y-3">
+            <div class="text-center text-gray-400 py-10">Click “Load” to fetch auctions</div>
           </div>
         </div>
       </div>
@@ -358,8 +358,8 @@
         <div class="glass-effect rounded-2xl p-6 admin-card">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-xl font-bold text-emerald-300">Set Heist Winner</h2>
-              <p class="text-xs text-gray-400">POST /api/admin/heists/:id/set-winner</p>
+              <h2 class="text-xl font-bold text-emerald-300">Set auction Winner</h2>
+              <p class="text-xs text-gray-400">POST /api/admin/auctions/:id/set-winner</p>
             </div>
             <span class="chip text-emerald-300">winner_id: user id or cop_*</span>
           </div>
@@ -367,8 +367,8 @@
           <form onsubmit="setWinner(event)">
             <div class="space-y-4">
               <div>
-                <label class="text-sm text-gray-300">Heist ID *</label>
-                <input id="winHeistId" required type="number" min="1"
+                <label class="text-sm text-gray-300">auction ID *</label>
+                <input id="winauctionId" required type="number" min="1"
                        class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"
                        placeholder="e.g. 12"/>
               </div>
@@ -379,12 +379,12 @@
                        class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-emerald-500"
                        placeholder="e.g. cop_2 OR 15"/>
                 <p class="text-xs text-gray-500 mt-1">
-                  If winner is not already a participant, the API will auto-insert into <code>heist_participants</code>.
+                  If winner is not already a participant, the API will auto-insert into <code>auction_participants</code>.
                 </p>
               </div>
 
               <button id="setWinnerBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl px-4 py-3 font-semibold">
-                Set Winner & Complete Heist
+                Set Winner & Complete auction
               </button>
             </div>
           </form>
@@ -415,7 +415,7 @@
     let authToken = localStorage.getItem('authToken');
 
     let demoUsersCache = [];
-    let heistsState = { page: 1, limit: 20, total: 0 };
+    let auctionsState = { page: 1, limit: 20, total: 0 };
 
     let addMode = 'count';
     const debouncedFilterDemo = debounce(() => renderDemoUsers(), 250);
@@ -465,7 +465,7 @@
 
       // initial loads
       await loadDemoUsers(true);
-      await loadHeists(1);
+      await loadauctions(1);
     });
 
     async function loadAdminProfile() {
@@ -668,7 +668,7 @@
     async function deleteDemoUser(id, force) {
       const msg = force
         ? `Force delete ${id}? This removes from participants and clears as winner.`
-        : `Delete ${id}? This will fail if used in heists.`;
+        : `Delete ${id}? This will fail if used in auctions.`;
 
       if (!confirm(msg)) return;
 
@@ -708,26 +708,26 @@
       `).join('');
     }
 
-    // ---------------- HEISTS (Admin list) ----------------
-    function resetHeistFilters() {
-      document.getElementById('heistQ').value = '';
-      document.getElementById('heistStatus').value = '';
-      document.getElementById('heistCategory').value = '';
-      document.getElementById('heistFrom').value = '';
-      document.getElementById('heistTo').value = '';
-      loadHeists(1);
+    // ---------------- auctions (Admin list) ----------------
+    function resetauctionFilters() {
+      document.getElementById('auctionQ').value = '';
+      document.getElementById('auctionstatus').value = '';
+      document.getElementById('auctionCategory').value = '';
+      document.getElementById('auctionFrom').value = '';
+      document.getElementById('auctionTo').value = '';
+      loadauctions(1);
     }
 
-    function buildHeistQuery(page) {
-      const q = String(document.getElementById('heistQ').value || '').trim();
-      const status = String(document.getElementById('heistStatus').value || '').trim();
-      const category = String(document.getElementById('heistCategory').value || '').trim();
-      const from = String(document.getElementById('heistFrom').value || '').trim();
-      const to = String(document.getElementById('heistTo').value || '').trim();
+    function buildauctionQuery(page) {
+      const q = String(document.getElementById('auctionQ').value || '').trim();
+      const status = String(document.getElementById('auctionstatus').value || '').trim();
+      const category = String(document.getElementById('auctionCategory').value || '').trim();
+      const from = String(document.getElementById('auctionFrom').value || '').trim();
+      const to = String(document.getElementById('auctionTo').value || '').trim();
 
       const params = new URLSearchParams();
       params.set('page', String(page || 1));
-      params.set('limit', String(heistsState.limit || 20));
+      params.set('limit', String(auctionsState.limit || 20));
       if (q) params.set('q', q);
       if (status) params.set('status', status);
       if (category) params.set('category', category);
@@ -737,21 +737,21 @@
       return params.toString();
     }
 
-    async function loadHeists(page = 1) {
+    async function loadauctions(page = 1) {
       try {
-        const list = document.getElementById('heistsList');
-        list.innerHTML = `<div class="text-center text-gray-400 py-10">Loading heists...</div>`;
+        const list = document.getElementById('auctionsList');
+        list.innerHTML = `<div class="text-center text-gray-400 py-10">Loading auctions...</div>`;
 
-        const qs = buildHeistQuery(page);
-        const res = await axios.get(`${ADMIN_API_BASE}/heists?${qs}`);
+        const qs = buildauctionQuery(page);
+        const res = await axios.get(`${ADMIN_API_BASE}/auctions?${qs}`);
 
         const { data = [], total = 0, limit = 20, page: cur = 1 } = res.data || {};
-        heistsState = { page: cur, limit, total };
+        auctionsState = { page: cur, limit, total };
 
         if (!data.length) {
-          list.innerHTML = `<div class="text-center text-gray-400 py-10">No heists found</div>`;
-          document.getElementById('heistsPagination').innerHTML = '';
-          document.getElementById('heistsMeta').textContent = `Page ${cur} • 0 total`;
+          list.innerHTML = `<div class="text-center text-gray-400 py-10">No auctions found</div>`;
+          document.getElementById('auctionsPagination').innerHTML = '';
+          document.getElementById('auctionsMeta').textContent = `Page ${cur} • 0 total`;
           return;
         }
 
@@ -787,12 +787,12 @@
 
                 <div class="flex flex-col gap-2 min-w-[180px]">
                   <button class="bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 text-sm"
-                          onclick="quickFillHeistId(${h.id})">
+                          onclick="quickFillauctionId(${h.id})">
                     Use ID in Forms
                   </button>
                   <button class="bg-emerald-600 hover:bg-emerald-700 rounded-lg px-3 py-2 text-sm font-semibold"
-                          onclick="copyToClipboard('${h.id}', 'Copied heist id: ${h.id}')">
-                    Copy Heist ID
+                          onclick="copyToClipboard('${h.id}', 'Copied auction id: ${h.id}')">
+                    Copy auction ID
                   </button>
                 </div>
               </div>
@@ -801,18 +801,18 @@
         }).join('');
 
         const totalPages = Math.ceil(total / limit);
-        document.getElementById('heistsMeta').textContent = `Page ${cur} • ${total} total • ${limit}/page`;
-        renderHeistsPagination(cur, totalPages);
+        document.getElementById('auctionsMeta').textContent = `Page ${cur} • ${total} total • ${limit}/page`;
+        renderauctionsPagination(cur, totalPages);
       } catch (err) {
-        console.error('Load heists error:', err);
-        document.getElementById('heistsList').innerHTML =
-          `<div class="text-center text-red-400 py-10">Error loading heists</div>`;
+        console.error('Load auctions error:', err);
+        document.getElementById('auctionsList').innerHTML =
+          `<div class="text-center text-red-400 py-10">Error loading auctions</div>`;
         if (err.response?.status === 401) logout();
       }
     }
 
-    function renderHeistsPagination(current, totalPages) {
-      const el = document.getElementById('heistsPagination');
+    function renderauctionsPagination(current, totalPages) {
+      const el = document.getElementById('auctionsPagination');
       if (!el || totalPages <= 1) {
         el.innerHTML = '';
         return;
@@ -821,27 +821,27 @@
       let html = '';
 
       if (current > 1) {
-        html += `<button onclick="loadHeists(${current - 1})" class="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Prev</button>`;
+        html += `<button onclick="loadauctions(${current - 1})" class="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Prev</button>`;
       }
 
       const start = Math.max(1, current - 2);
       const end = Math.min(totalPages, current + 2);
       for (let i = start; i <= end; i++) {
-        html += `<button onclick="loadHeists(${i})"
+        html += `<button onclick="loadauctions(${i})"
                       class="px-3 py-1 rounded ${i === current ? 'bg-emerald-600' : 'bg-white/10 hover:bg-white/20'}">${i}</button>`;
       }
 
       if (current < totalPages) {
-        html += `<button onclick="loadHeists(${current + 1})" class="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Next</button>`;
+        html += `<button onclick="loadauctions(${current + 1})" class="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Next</button>`;
       }
 
       el.innerHTML = html;
     }
 
-    function quickFillHeistId(id) {
-      document.getElementById('addHeistId').value = id;
-      document.getElementById('winHeistId').value = id;
-      showAlert(`Heist #${id} filled into Add/Set Winner forms`, 'success');
+    function quickFillauctionId(id) {
+      document.getElementById('addauctionId').value = id;
+      document.getElementById('winauctionId').value = id;
+      showAlert(`auction #${id} filled into Add/Set Winner forms`, 'success');
     }
 
     // ---------------- ADD COP USERS ----------------
@@ -860,9 +860,9 @@
     async function addCopUsers(e) {
       e.preventDefault();
 
-      const heistId = Number(document.getElementById('addHeistId').value);
-      if (!Number.isInteger(heistId) || heistId <= 0) {
-        showAlert('Invalid heist id', 'error');
+      const auctionId = Number(document.getElementById('addauctionId').value);
+      if (!Number.isInteger(auctionId) || auctionId <= 0) {
+        showAlert('Invalid auction id', 'error');
         return;
       }
 
@@ -910,7 +910,7 @@
         const btn = document.getElementById('addCopBtn');
         btn.classList.add('loading');
 
-        const res = await axios.post(`${ADMIN_API_BASE}/heists/${heistId}/add-cop-users`, payload, {
+        const res = await axios.post(`${ADMIN_API_BASE}/auctions/${auctionId}/add-cop-users`, payload, {
           headers: { 'Content-Type': 'application/json' }
         });
 
@@ -934,7 +934,7 @@
             </div>
           </div>
           <div class="mt-3 text-xs text-gray-400">
-            Heist: <span class="text-gray-200">#${escapeHtml(String(out.heist_id || heistId))}</span>
+            auction: <span class="text-gray-200">#${escapeHtml(String(out.auction_id || auctionId))}</span>
             • Requested: <span class="text-gray-200">${Array.isArray(out.requested_numbers) ? out.requested_numbers.join(', ') : ''}</span>
           </div>
         `;
@@ -951,15 +951,15 @@
       }
     }
 
-    async function loadHeistsQuick() {
-      const box = document.getElementById('heistsQuick');
+    async function loadauctionsQuick() {
+      const box = document.getElementById('auctionsQuick');
       box.innerHTML = `<div class="text-center text-gray-400 py-10">Loading...</div>`;
       try {
         // fetch first page only, latest
-        const res = await axios.get(`${ADMIN_API_BASE}/heists?page=1&limit=10`);
+        const res = await axios.get(`${ADMIN_API_BASE}/auctions?page=1&limit=10`);
         const data = res.data?.data || [];
         if (!data.length) {
-          box.innerHTML = `<div class="text-center text-gray-400 py-10">No heists found</div>`;
+          box.innerHTML = `<div class="text-center text-gray-400 py-10">No auctions found</div>`;
           return;
         }
         box.innerHTML = data.map(h => `
@@ -977,16 +977,16 @@
               </div>
               <div class="flex flex-col gap-2 min-w-[140px]">
                 <button class="bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 text-sm"
-                        onclick="quickFillHeistId(${h.id})">Use ID</button>
+                        onclick="quickFillauctionId(${h.id})">Use ID</button>
                 <button class="bg-emerald-600 hover:bg-emerald-700 rounded-lg px-3 py-2 text-sm font-semibold"
-                        onclick="copyToClipboard('${h.id}', 'Copied heist id: ${h.id}')">Copy</button>
+                        onclick="copyToClipboard('${h.id}', 'Copied auction id: ${h.id}')">Copy</button>
               </div>
             </div>
           </div>
         `).join('');
       } catch (err) {
         console.error(err);
-        box.innerHTML = `<div class="text-center text-red-400 py-10">Error loading heists</div>`;
+        box.innerHTML = `<div class="text-center text-red-400 py-10">Error loading auctions</div>`;
       }
     }
 
@@ -994,11 +994,11 @@
     async function setWinner(e) {
       e.preventDefault();
 
-      const heistId = Number(document.getElementById('winHeistId').value);
+      const auctionId = Number(document.getElementById('winauctionId').value);
       const winner_id = String(document.getElementById('winnerId').value || '').trim();
 
-      if (!Number.isInteger(heistId) || heistId <= 0) {
-        showAlert('Invalid heist id', 'error');
+      if (!Number.isInteger(auctionId) || auctionId <= 0) {
+        showAlert('Invalid auction id', 'error');
         return;
       }
       if (!winner_id) {
@@ -1010,7 +1010,7 @@
         const btn = document.getElementById('setWinnerBtn');
         btn.classList.add('loading');
 
-        const res = await axios.post(`${ADMIN_API_BASE}/heists/${heistId}/set-winner`, { winner_id }, {
+        const res = await axios.post(`${ADMIN_API_BASE}/auctions/${auctionId}/set-winner`, { winner_id }, {
           headers: { 'Content-Type': 'application/json' }
         });
 
@@ -1020,7 +1020,7 @@
         box.innerHTML = `
           <div class="font-semibold text-emerald-300 mb-2">${escapeHtml(out.message || 'Winner set')}</div>
           <div class="text-sm text-gray-200">
-            Heist: <span class="text-gray-100 font-semibold">#${escapeHtml(String(out.heist_id || heistId))}</span><br/>
+            auction: <span class="text-gray-100 font-semibold">#${escapeHtml(String(out.auction_id || auctionId))}</span><br/>
             Winner ID: <span class="text-gray-100 font-semibold">${escapeHtml(String(out.winner_id || winner_id))}</span><br/>
             Winner Username: <span class="text-gray-100 font-semibold">${escapeHtml(out.winner?.username || '—')}</span>
             ${out.winner?.is_demo ? `<span class="chip ml-2 text-emerald-300">demo</span>` : `<span class="chip ml-2 text-blue-300">real</span>`}
@@ -1029,8 +1029,8 @@
 
         showAlert('Winner set successfully!', 'success');
 
-        // refresh heists tab (winner_id changes)
-        await loadHeists(heistsState.page || 1);
+        // refresh auctions tab (winner_id changes)
+        await loadauctions(auctionsState.page || 1);
       } catch (err) {
         console.error('Set winner error:', err);
         showAlert(err.response?.data?.message || 'Failed to set winner', 'error');

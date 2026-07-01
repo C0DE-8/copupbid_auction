@@ -85,8 +85,8 @@
                 <div class="text-gray-300 mt-2">Active Auctions</div>
             </div>
             <div class="glass-effect rounded-2xl p-6 text-center">
-                <div class="text-3xl font-bold text-purple-400" id="activeHeists">0</div>
-                <div class="text-gray-300 mt-2">Active Heists</div>
+                <div class="text-3xl font-bold text-purple-400" id="activeauctions">0</div>
+                <div class="text-gray-300 mt-2">Active auctions</div>
             </div>
             <div class="glass-effect rounded-2xl p-6 text-center">
                 <div class="text-3xl font-bold text-yellow-400" id="pendingPayouts">0</div>
@@ -128,8 +128,8 @@
                 <div class="text-blue-400 font-semibold">Manage Auctions →</div>
             </div>
 
-            <!-- Heist Management -->
-            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='heist-management.html'">
+            <!-- auction Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='auction-management.html'">
                 <div class="flex items-center mb-4">
                     <div class="bg-purple-500/20 rounded-full p-3 mr-4">
                         <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,11 +137,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold">Heist Management</h3>
-                        <p class="text-gray-400 text-sm">Create and manage heist games</p>
+                        <h3 class="text-xl font-bold">auction Management</h3>
+                        <p class="text-gray-400 text-sm">Create and manage auction games</p>
                     </div>
                 </div>
-                <div class="text-purple-400 font-semibold">Manage Heists →</div>
+                <div class="text-purple-400 font-semibold">Manage auctions →</div>
             </div>
 
             <!-- Affiliate Management -->
@@ -292,7 +292,7 @@
                 <div class="text-yellow-400 font-semibold">Manage Coins →</div>
             </div>
 
-            <!-- Demo & Heist Control -->
+            <!-- Demo & auction Control -->
             <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='admin-demo-management.html'">
             <div class="flex items-center mb-4">
                 <div class="bg-emerald-500/20 rounded-full p-3 mr-4">
@@ -302,7 +302,7 @@
                 </svg>
                 </div>
                 <div>
-                <h3 class="text-xl font-bold">Demo & Heist Control</h3>
+                <h3 class="text-xl font-bold">Demo & auction Control</h3>
                 <p class="text-gray-400 text-sm">Manage cop users, participants & winners</p>
                 </div>
             </div>
@@ -423,9 +423,9 @@
                 const auctionsResponse = await axios.get(`${ADMIN_API_BASE}/auctions?status=active&limit=1`);
                 document.getElementById('activeAuctions').textContent = auctionsResponse.data.total || 0;
 
-                // Load active heists count
-                const heistsResponse = await axios.get(`${ADMIN_API_BASE}/heists/availables`);
-                document.getElementById('activeHeists').textContent = heistsResponse.data.length || 0;
+                // Load active auctions count
+                const auctionsResponse = await axios.get(`${ADMIN_API_BASE}/auctions/availables`);
+                document.getElementById('activeauctions').textContent = auctionsResponse.data.length || 0;
 
                 // Load pending payouts count
                 const payoutsResponse = await axios.get(`${ADMIN_API_BASE}/payouts?status=pending`);
@@ -498,8 +498,8 @@
             window.location.href = 'auction-management.html';
         }
 
-        function openHeistManagement() {
-            window.location.href = 'heist-management.html';
+        function openauctionManagement() {
+            window.location.href = 'auction-management.html';
         }
 
         function openCoinRateManagement() {
@@ -633,42 +633,42 @@
             }
         }
 
-        async function loadHeists() {
+        async function loadauctions() {
             try {
-                const response = await axios.get(`${ADMIN_API_BASE}/heists/availables`);
-                const heists = response.data;
-                const heistsList = document.getElementById('heistsList');
+                const response = await axios.get(`${ADMIN_API_BASE}/auctions/availables`);
+                const auctions = response.data;
+                const auctionsList = document.getElementById('auctionsList');
                 
-                if (heists.length === 0) {
-                    heistsList.innerHTML = '<div class="text-center text-gray-400 py-8">No active heists found</div>';
+                if (auctions.length === 0) {
+                    auctionsList.innerHTML = '<div class="text-center text-gray-400 py-8">No active auctions found</div>';
                     return;
                 }
                 
-                heistsList.innerHTML = heists.map(heist => `
+                auctionsList.innerHTML = auctions.map(auction => `
                     <div class="bg-white/5 rounded-lg p-4 border border-white/10">
                         <div class="flex justify-between items-start">
                             <div class="flex gap-4 flex-1">
-                                ${heist.prize_image ? `<img src="${heist.prize_image}" alt="Heist Prize" class="w-16 h-16 rounded-lg object-cover">` : '<div class="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center text-gray-400 text-xs">No Image</div>'}
+                                ${auction.prize_image ? `<img src="${auction.prize_image}" alt="auction Prize" class="w-16 h-16 rounded-lg object-cover">` : '<div class="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center text-gray-400 text-xs">No Image</div>'}
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <h4 class="font-semibold">Heist #${heist.id}</h4>
-                                        <span class="px-2 py-1 text-xs rounded-full bg-${heist.status === 'started' ? 'green' : 'yellow'}-500/20 text-${heist.status === 'started' ? 'green' : 'yellow'}-400">${heist.status}</span>
+                                        <h4 class="font-semibold">auction #${auction.id}</h4>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-${auction.status === 'started' ? 'green' : 'yellow'}-500/20 text-${auction.status === 'started' ? 'green' : 'yellow'}-400">${auction.status}</span>
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        <p>Created: ${new Date(heist.created_at).toLocaleDateString()}</p>
+                                        <p>Created: ${new Date(auction.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-2">
-                                <button onclick="editHeist(${heist.id})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">Edit</button>
-                                <button onclick="deleteHeist(${heist.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
+                                <button onclick="editauction(${auction.id})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">Edit</button>
+                                <button onclick="deleteauction(${auction.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
                             </div>
                         </div>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error loading heists:', error);
-                document.getElementById('heistsList').innerHTML = '<div class="text-center text-red-400 py-8">Error loading heists</div>';
+                console.error('Error loading auctions:', error);
+                document.getElementById('auctionsList').innerHTML = '<div class="text-center text-red-400 py-8">Error loading auctions</div>';
             }
         }
 
@@ -850,8 +850,8 @@
         function toggleUserBlock(id, isBlocked) { showAlert('Block/unblock functionality coming soon', 'warning'); }
         function editAuction(id) { showAlert('Edit auction functionality coming soon', 'warning'); }
         function deleteAuction(id) { showAlert('Delete auction functionality coming soon', 'warning'); }
-        function editHeist(id) { showAlert('Edit heist functionality coming soon', 'warning'); }
-        function deleteHeist(id) { showAlert('Delete heist functionality coming soon', 'warning'); }
+        function editauction(id) { showAlert('Edit auction functionality coming soon', 'warning'); }
+        function deleteauction(id) { showAlert('Delete auction functionality coming soon', 'warning'); }
         function approvePayout(id) { showAlert('Approve payout functionality coming soon', 'warning'); }
         function rejectPayout(id) { showAlert('Reject payout functionality coming soon', 'warning'); }
         function viewPayout(id) { showAlert('View payout functionality coming soon', 'warning'); }

@@ -62,7 +62,7 @@
     <div class="mb-6 flex items-center gap-2">
       <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="">All</button>
       <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="auction">Auction</button>
-      <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="heist">Heist</button>
+      <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="auction">auction</button>
       <div class="ml-auto text-xs text-white/70">Auto-refresh: <span id="refreshEvery">15s</span></div>
     </div>
 
@@ -77,8 +77,8 @@
         <div id="totLockedAuction" class="text-xl font-semibold">—</div>
       </div>
       <div class="glass ring-glow rounded-xl p-4">
-        <div class="text-xs text-white/60">Heist Locked</div>
-        <div id="totLockedHeist" class="text-xl font-semibold">—</div>
+        <div class="text-xs text-white/60">auction Locked</div>
+        <div id="totLockedauction" class="text-xl font-semibold">—</div>
       </div>
     </div>
 
@@ -156,7 +156,7 @@
       const el = document.createElement('div');
       el.className = 'glass ring-glow rounded-2xl p-4';
       const dt = new Date(r.created_at).toLocaleString();
-      const modeEmoji = r.mode === 'auction' ? '🏁' : (r.mode === 'heist' ? '⚔️' : '•');
+      const modeEmoji = r.mode === 'auction' ? '🏁' : (r.mode === 'auction' ? '⚔️' : '•');
       el.innerHTML = `
         <div class="flex items-center justify-between gap-3">
           <div class="text-lg font-semibold line-clamp-1"><a href="./product.html?id=${r.product_id}" class="hover:underline">${r.product_name}</a></div>
@@ -185,10 +185,10 @@
     function summarize(rows){
       const tot = rows.reduce((s,r)=> s + Number(r.bid_locked||0), 0);
       const a = rows.filter(r=> r.mode==='auction').reduce((s,r)=> s + Number(r.bid_locked||0), 0);
-      const h = rows.filter(r=> r.mode==='heist').reduce((s,r)=> s + Number(r.bid_locked||0), 0);
+      const h = rows.filter(r=> r.mode==='auction').reduce((s,r)=> s + Number(r.bid_locked||0), 0);
       document.getElementById('totLocked').textContent = fmtN(tot) + ' CP';
       document.getElementById('totLockedAuction').textContent = fmtN(a) + ' CP';
-      document.getElementById('totLockedHeist').textContent = fmtN(h) + ' CP';
+      document.getElementById('totLockedauction').textContent = fmtN(h) + ' CP';
       document.getElementById('metaCount').textContent = `${rows.length} entr${rows.length===1?'y':'ies'}`;
     }
 

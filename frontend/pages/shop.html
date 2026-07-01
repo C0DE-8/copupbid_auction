@@ -58,7 +58,7 @@
     .product-image:hover img { transform: scale(1.08); }
     .badge-featured { position: absolute; top: 8px; right: 8px; background: linear-gradient(135deg, rgba(245,158,11,.95), rgba(16,185,129,.95)); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(245,158,11,.3); }
     .status-auction { background: rgba(59,130,246,.2); color: #93c5fd; border: 1px solid rgba(59,130,246,.3); }
-    .status-heist { background: rgba(168,85,247,.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,.3); }
+    .status-auction { background: rgba(168,85,247,.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,.3); }
     .status-cash { background: rgba(16,185,129,.2); color: #86efac; border: 1px solid rgba(16,185,129,.3); }
     .drawer-enter { transform: translateX(-100%); opacity:.6; }
     .drawer-open { transform: translateX(0); opacity:1; transition: transform .25s ease, opacity .25s ease; }
@@ -316,10 +316,10 @@
             </span>
           </div>
 
-          <div id="cmHeistRow" class="flex justify-between">
-            <span class="text-white/70">Heist Price:</span>
+          <div id="cmauctionRow" class="flex justify-between">
+            <span class="text-white/70">auction Price:</span>
             <span class="font-semibold">
-              <span id="cmHeistCoins">—</span> CopupCoins ≈ ₦<span id="cmHeistNGN">—</span>
+              <span id="cmauctionCoins">—</span> CopupCoins ≈ ₦<span id="cmauctionNGN">—</span>
             </span>
           </div>
         </div>
@@ -400,7 +400,7 @@
     function shareToWhatsApp(p) {
       if (!p || !p.id) return;
 
-      const bestPrice = p.cash_price || p.auction_price || p.heist_price || 0;
+      const bestPrice = p.cash_price || p.auction_price || p.auction_price || 0;
       const priceLabel = bestPrice
         ? fmtCoin(bestPrice) + ' CopupCoins'
         : 'CopupCoins';
@@ -438,18 +438,18 @@
         if (pricesOrNull && perCoinNGN) {
           const cash = Number(pricesOrNull.cash || 0);
           const auction = Number(pricesOrNull.auction || 0);
-          const heist = Number(pricesOrNull.heist || 0);
+          const auction = Number(pricesOrNull.auction || 0);
 
           const cmCashRow = document.getElementById('cmCashRow');
           const cmAuctionRow = document.getElementById('cmAuctionRow');
-          const cmHeistRow = document.getElementById('cmHeistRow');
+          const cmauctionRow = document.getElementById('cmauctionRow');
 
           const cmCashCoins = document.getElementById('cmCashCoins');
           const cmCashNGN = document.getElementById('cmCashNGN');
           const cmAuctionCoins = document.getElementById('cmAuctionCoins');
           const cmAuctionNGN = document.getElementById('cmAuctionNGN');
-          const cmHeistCoins = document.getElementById('cmHeistCoins');
-          const cmHeistNGN = document.getElementById('cmHeistNGN');
+          const cmauctionCoins = document.getElementById('cmauctionCoins');
+          const cmauctionNGN = document.getElementById('cmauctionNGN');
 
           // Cash
           if (cash > 0 && cmCashRow) {
@@ -469,13 +469,13 @@
             cmAuctionRow.classList.add('hidden');
           }
 
-          // Heist
-          if (heist > 0 && cmHeistRow) {
-            cmHeistRow.classList.remove('hidden');
-            if (cmHeistCoins) cmHeistCoins.textContent = fmtCoin(heist);
-            if (cmHeistNGN) cmHeistNGN.textContent = fmtN((heist * perCoinNGN).toFixed(2));
-          } else if (cmHeistRow) {
-            cmHeistRow.classList.add('hidden');
+          // auction
+          if (auction > 0 && cmauctionRow) {
+            cmauctionRow.classList.remove('hidden');
+            if (cmauctionCoins) cmauctionCoins.textContent = fmtCoin(auction);
+            if (cmauctionNGN) cmauctionNGN.textContent = fmtN((auction * perCoinNGN).toFixed(2));
+          } else if (cmauctionRow) {
+            cmauctionRow.classList.add('hidden');
           }
 
           itemBlock.classList.remove('hidden');
@@ -582,15 +582,15 @@
                   class="ml-2 inline-flex items-center justify-center text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 hover:bg-cop-cyan/20 item-coin-info"
                   data-cash="${p.cash_price || 0}"
                   data-auction="${p.auction_price || 0}"
-                  data-heist="${p.heist_price || 0}">
+                  data-auction="${p.auction_price || 0}">
                   ?
                 </button>
               </span>
               <span class="chip px-3 py-1.5 rounded-lg text-sm status-auction font-medium">
                 🏁 ${fmtCoin(p.auction_price)} CopupCoins
               </span>
-              <span class="chip px-3 py-1.5 rounded-lg text-sm status-heist font-medium">
-                ⚔️ ${fmtCoin(p.heist_price)} CopupCoins
+              <span class="chip px-3 py-1.5 rounded-lg text-sm status-auction font-medium">
+                ⚔️ ${fmtCoin(p.auction_price)} CopupCoins
               </span>
             </div>
           </div>
@@ -598,7 +598,7 @@
           <div class="mt-5 grid grid-cols-3 gap-2">
             <button class="px-3 py-2.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-bold text-sm hover:shadow-lg hover:shadow-cop-cyan/40 transition-all duration-300 hover:scale-105 active:scale-95" data-action="buy">Buy</button>
             <button class="px-3 py-2.5 rounded-lg border border-white/30 hover:bg-white/10 font-medium text-sm transition-all duration-300 hover:border-cop-cyan" data-action="auction">Auction</button>
-            <button class="px-3 py-2.5 rounded-lg border border-white/30 hover:bg-white/10 font-medium text-sm transition-all duration-300 hover:border-cop-cyan" data-action="heist">Heist</button>
+            <button class="px-3 py-2.5 rounded-lg border border-white/30 hover:bg-white/10 font-medium text-sm transition-all duration-300 hover:border-cop-cyan" data-action="auction">auction</button>
           </div>
 
           <button
@@ -614,15 +614,15 @@
 
       const btnBuy = el.querySelector('[data-action="buy"]');
       const btnAuction = el.querySelector('[data-action="auction"]');
-      const btnHeist = el.querySelector('[data-action="heist"]');
+      const btnauction = el.querySelector('[data-action="auction"]');
 
       if (p.allow_cash === 0) { btnBuy.disabled = true; btnBuy.classList.add('opacity-50','cursor-not-allowed'); }
       if (p.allow_auction === 0) { btnAuction.disabled = true; btnAuction.classList.add('opacity-50','cursor-not-allowed'); }
-      if (p.allow_heist === 0) { btnHeist.disabled = true; btnHeist.classList.add('opacity-50','cursor-not-allowed'); }
+      if (p.allow_auction === 0) { btnauction.disabled = true; btnauction.classList.add('opacity-50','cursor-not-allowed'); }
 
       btnBuy.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'cash', { btn: btnBuy, qty: 1 }); });
       btnAuction.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'auction', { btn: btnAuction }); });
-      btnHeist.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'heist', { btn: btnHeist }); });
+      btnauction.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'auction', { btn: btnauction }); });
 
       // Attach item "?" click → show item-specific values
       const infoBtn = el.querySelector('.item-coin-info');
@@ -636,7 +636,7 @@
           showCoinModal({
             cash: infoBtn.dataset.cash,
             auction: infoBtn.dataset.auction,
-            heist: infoBtn.dataset.heist
+            auction: infoBtn.dataset.auction
           });
         });
       }
@@ -671,7 +671,7 @@
                 class="ml-2 inline-flex items-center justify-center text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 hover:bg-cop-cyan/20 item-coin-info"
                 data-cash="${p.cash_price || 0}"
                 data-auction="${p.auction_price || 0}"
-                data-heist="${p.heist_price || 0}">
+                data-auction="${p.auction_price || 0}">
                 ?
               </button>
             </span>
@@ -733,7 +733,7 @@
           showCoinModal({
             cash: infoBtn.dataset.cash,
             auction: infoBtn.dataset.auction,
-            heist: infoBtn.dataset.heist
+            auction: infoBtn.dataset.auction
           });
         });
       }

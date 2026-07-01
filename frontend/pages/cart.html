@@ -44,11 +44,11 @@
       border-color: rgba(168, 85, 247, 0.6);
       box-shadow: 0 20px 40px rgba(168, 85, 247, 0.2);
     }
-    .heist-theme {
+    .auction-theme {
       background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(6, 78, 59, 0.1));
       border-color: rgba(16, 185, 129, 0.3);
     }
-    .heist-theme:hover {
+    .auction-theme:hover {
       border-color: rgba(16, 185, 129, 0.6);
       box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
     }
@@ -88,7 +88,7 @@
         Select Your Adventure
       </h2>
       <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-        Two paths await, brave adventurer. Choose wisely between the thrill of the auction house or the mystery of ancient heists.
+        Two paths await, brave adventurer. Choose wisely between the thrill of the auction house or the mystery of ancient auctions.
       </p>
     </div>
 
@@ -115,12 +115,12 @@
         </div>
       </div>
 
-      <!-- Heist Cart -->
-      <div class="cart-card heist-theme rounded-2xl p-8 text-center relative overflow-hidden">
+      <!-- auction Cart -->
+      <div class="cart-card auction-theme rounded-2xl p-8 text-center relative overflow-hidden">
         <div class="absolute inset-0 opacity-10"><div class="text-8xl">⚔️</div></div>
         <div class="relative z-10">
           <div class="text-6xl mb-6">🗝️</div>
-          <h3 class="text-3xl font-['Cinzel'] font-bold mb-4 text-emerald-300">Heist Vault</h3>
+          <h3 class="text-3xl font-['Cinzel'] font-bold mb-4 text-emerald-300">auction Vault</h3>
           <p class="text-gray-300 mb-6 leading-relaxed">
             Embark on daring quests to unlock ancient vaults and solve mysterious riddles.
             Join fellow adventurers in collaborative treasure hunts.
@@ -130,8 +130,8 @@
             <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">👥</span><span>Team Adventures</span></div>
             <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">💰</span><span>Hidden Treasures</span></div>
           </div>
-          <button onclick="goToHeistCart()" class="w-full medieval-button text-white font-semibold py-4 px-6 rounded-xl hover:scale-105 transition-all duration-300">
-            Enter Heist Vault →
+          <button onclick="goToauctionCart()" class="w-full medieval-button text-white font-semibold py-4 px-6 rounded-xl hover:scale-105 transition-all duration-300">
+            Enter auction Vault →
           </button>
         </div>
       </div>
@@ -171,7 +171,7 @@
   <script>
     function goBack() { window.history.back(); }
     function goToAuctionCart() { window.location.href = 'auction-cart.html'; }
-    function goToHeistCart() { window.location.href = 'heist-cart.html'; }
+    function goToauctionCart() { window.location.href = 'auction-cart.html'; }
     function goToShoppingCart() { window.location.href = 'shopping-cart.html'; } // NEW
 
     document.addEventListener('DOMContentLoaded', function() {

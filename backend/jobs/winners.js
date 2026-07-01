@@ -77,37 +77,6 @@ async function scanAndFulfillWinners() {
       });
     }
 
-    // -------- Heists with a winner_id --------
-    const [heists] = await conn.query(
-      `SELECT id, product_id, winner_id
-         FROM heist
-        WHERE winner_id IS NOT NULL`
-    );
-
-    for (const h of heists) {
-      const heistId   = Number(h.id);
-      const productId = Number(h.product_id);
-      const winnerId  = Number(h.winner_id);
-
-      if (!Number.isFinite(heistId) || !Number.isFinite(productId) || !Number.isFinite(winnerId)) continue;
-
-      // Fetch participant user_ids for this heist
-      const [parts] = await conn.query(
-        `SELECT DISTINCT user_id
-           FROM heist_participants
-          WHERE heist_id = ?`,
-        [heistId]
-      );
-      const participantIds = parts.map(r => Number(r.user_id)).filter(Number.isFinite);
-
-      await applyOutcomeForEvent(conn, {
-        productId,
-        mode: 'heist',
-        winnerId,
-        participantIds
-      });
-    }
-
     await conn.commit();
   } catch (err) {
     await conn.rollback();

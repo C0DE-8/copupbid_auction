@@ -1,4 +1,10 @@
-.footer{border-top:1px solid rgba(255,255,255,.10); padding:28px 24px 18px;}
+.footer{
+  border-top:1px solid rgba(6,48,44,.12);
+  padding:28px 24px 18px;
+  margin-top: 28px;
+  background: #061715;
+  color: #f8fffd;
+}
 .inner{
   max-width:1120px; margin:0 auto;
   display:flex; justify-content:space-between; align-items:center;
@@ -7,11 +13,11 @@
 .brand{display:flex; align-items:center; gap:12px;}
 .logo{width:40px; height:40px; border-radius:999px;}
 .title{font-weight:900;}
-.sub{font-size:12px; color:rgba(255,255,255,.55); margin-top:2px;}
+.sub{font-size:12px; color:rgba(248,255,253,.68); margin-top:2px;}
 .links{display:flex; gap:18px;}
-.links a{color:rgba(255,255,255,.55); text-decoration:none; font-weight:700; font-size:14px;}
-.links a:hover{color:rgba(16,185,129,1);}
+.links a{color:rgba(248,255,253,.7); text-decoration:none; font-weight:700; font-size:14px;}
+.links a:hover{color:#13c8ba;}
 .copy{
   max-width:1120px; margin:16px auto 0;
-  text-align:center; font-size:12px; color:rgba(255,255,255,.45);
+  text-align:center; font-size:12px; color:rgba(248,255,253,.58);
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hall of Champions - Heist Winners</title>
+  <title>Hall of Champions - auction Winners</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -166,7 +166,7 @@
     let isLoading = false;
 
     function goBack() {
-      window.location.href = "heist.html";
+      window.location.href = "auction.html";
     }
 
     function validateAuth() {
@@ -270,7 +270,7 @@
         const authToken = validateAuth();
         if (!authToken) return;
 
-        const url = new URL("https://api.copup.copupbid.com/api/users/heist/winners");
+        const url = new URL("https://api.copup.copupbid.com/api/users/auction/winners");
         url.searchParams.set("page", String(page));
         url.searchParams.set("limit", "12");
 
@@ -345,7 +345,7 @@
     function createWinnerCard(w) {
       const card = document.createElement("div");
       card.className = "champion-card rounded-xl p-6 cursor-pointer";
-      card.onclick = () => viewWinnerDetails(w.heistId, w.winner, w.completedAt);
+      card.onclick = () => viewWinnerDetails(w.auctionId, w.winner, w.completedAt);
 
       const completedDate = formatDate(w.completedAt);
       const username = safeText(w?.winner?.username, "Unknown");
@@ -400,12 +400,12 @@
       return card;
     }
 
-    async function viewWinnerDetails(heistId, winnerFromList, completedAtFromList) {
+    async function viewWinnerDetails(auctionId, winnerFromList, completedAtFromList) {
       try {
         const authToken = validateAuth();
         if (!authToken) return;
 
-        const response = await fetch(`https://api.copup.copupbid.com/api/users/heist/winner/${heistId}`, {
+        const response = await fetch(`https://api.copup.copupbid.com/api/users/auction/winner/${auctionId}`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
@@ -435,7 +435,7 @@
       const modalContent = document.getElementById("modalContent");
 
       const w = data?.winner || data?.__winnerFromList || {};
-      const h = data?.heist || {};
+      const h = data?.auction || {};
 
       const username = safeText(w.username, "Unknown");
       const fullName = safeText(w.full_name || w.fullName || "", "");

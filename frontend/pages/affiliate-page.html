@@ -102,9 +102,9 @@
         <!-- Tab Navigation -->
         <div class="flex justify-center mb-10">
             <div class="medieval-card rounded-xl p-3 flex shadow-xl border border-emerald-400/20">
-                <button id="heists-tab" class="tab-button px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 active flex items-center space-x-2">
+                <button id="auctions-tab" class="tab-button px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 active flex items-center space-x-2">
                     <span>🏴‍☠️</span>
-                    <span>Heist Alliances</span>
+                    <span>auction Alliances</span>
                 </button>
                 <button id="auctions-tab" class="tab-button px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 ml-3 flex items-center space-x-2">
                     <span>🏛️</span>
@@ -113,26 +113,26 @@
             </div>
         </div>
 
-        <!-- Heists Tab Content -->
-        <div id="heists-content" class="tab-content active">
-            <!-- Available Heists -->
+        <!-- auctions Tab Content -->
+        <div id="auctions-content" class="tab-content active">
+            <!-- Available auctions -->
             <div class="medieval-card rounded-lg p-6 mb-8">
                 <h2 class="text-2xl font-bold mb-6 flex items-center">
                     <span class="mr-3">🏴‍☠️</span>
-                    Available Heists
+                    Available auctions
                 </h2>
-                <div id="heists-list" class="space-y-4 max-h-96 overflow-y-auto scroll-container">
-                    <!-- Heists will be loaded here -->
+                <div id="auctions-list" class="space-y-4 max-h-96 overflow-y-auto scroll-container">
+                    <!-- auctions will be loaded here -->
                 </div>
             </div>
 
-            <!-- Active Heist Campaigns -->
+            <!-- Active auction Campaigns -->
             <div class="medieval-card rounded-lg p-6">
                 <h2 class="text-2xl font-bold mb-6 flex items-center">
                     <span class="mr-3">📊</span>
-                    Your Heist Campaigns
+                    Your auction Campaigns
                 </h2>
-                <div id="heist-campaigns" class="space-y-4">
+                <div id="auction-campaigns" class="space-y-4">
                     <!-- Campaigns will be loaded here -->
                 </div>
             </div>
@@ -245,12 +245,12 @@
 
         const API_BASE_URL = 'https://api.copup.copupbid.com/api/users';
         
-        let currentTab = 'heists';
-        let heistData = [];
+        let currentTab = 'auctions';
+        let auctionData = [];
         let auctionData = [];
 
         // Tab switching
-        document.getElementById('heists-tab').addEventListener('click', () => switchTab('heists'));
+        document.getElementById('auctions-tab').addEventListener('click', () => switchTab('auctions'));
         document.getElementById('auctions-tab').addEventListener('click', () => switchTab('auctions'));
 
         function switchTab(tab) {
@@ -265,18 +265,18 @@
             document.getElementById(`${tab}-content`).classList.add('active');
             
             // Load data for the active tab
-            if (tab === 'heists') {
-                loadHeists();
+            if (tab === 'auctions') {
+                loadauctions();
             } else {
                 loadAuctions();
                 loadAuctionCampaigns();
             }
         }
 
-        async function loadHeists() {
+        async function loadauctions() {
             try {
-                console.log('[v0] Loading heists from:', `${API_BASE_URL}/heist/affiliate/list`);
-                const response = await fetch(`${API_BASE_URL}/heist/affiliate/list`, {
+                console.log('[v0] Loading auctions from:', `${API_BASE_URL}/auction/affiliate/list`);
+                const response = await fetch(`${API_BASE_URL}/auction/affiliate/list`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
@@ -294,28 +294,28 @@
                 }
                 
                 const data = await response.json();
-                heistData = Array.isArray(data) ? data : [];
-                displayHeists();
-                loadHeistStats();
-                await loadHeistCampaigns();
+                auctionData = Array.isArray(data) ? data : [];
+                displayauctions();
+                loadauctionstats();
+                await loadauctionCampaigns();
             } catch (error) {
-                console.error('Error loading heists:', error);
-                document.getElementById('heists-list').innerHTML = `
+                console.error('Error loading auctions:', error);
+                document.getElementById('auctions-list').innerHTML = `
                     <div class="text-center py-8">
-                        <p class="text-red-400 mb-2">⚠️ Failed to load heists</p>
+                        <p class="text-red-400 mb-2">⚠️ Failed to load auctions</p>
                         <p class="text-slate-400 text-sm">${error.message}</p>
                         <p class="text-slate-500 text-xs mt-2">Make sure the server is running on localhost:4000</p>
                     </div>
                 `;
                 // Set default stats
-                updateHeistStats({});
-                await loadHeistCampaigns();
+                updateauctionstats({});
+                await loadauctionCampaigns();
             }
         }
 
-        async function loadHeistStats() {
+        async function loadauctionstats() {
             // Stats endpoint doesn't exist, use defaults
-            updateHeistStats({});
+            updateauctionstats({});
         }
 
         async function loadAuctions() {
@@ -328,24 +328,24 @@
             updateAuctionStats({});
         }
 
-        // Display heists
-        function displayHeists() {
-            const container = document.getElementById('heists-list');
-            if (heistData.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-center py-8">No heists available for affiliate program</p>';
+        // Display auctions
+        function displayauctions() {
+            const container = document.getElementById('auctions-list');
+            if (auctionData.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No auctions available for affiliate program</p>';
                 return;
             }
 
-            container.innerHTML = heistData.map(heist => `
+            container.innerHTML = auctionData.map(auction => `
                 <div class="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
                     <div class="flex-1">
-                        <h3 class="font-semibold text-lg">${heist.name}</h3>
+                        <h3 class="font-semibold text-lg">${auction.name}</h3>
                         <div class="flex items-center space-x-4 text-sm">
-                            <span class="text-blue-400">🎯 ${heist.target_users} referrals needed</span>
-                            <span class="text-emerald-400">💎 ${heist.reward_bid_points} CP reward</span>
+                            <span class="text-blue-400">🎯 ${auction.target_users} referrals needed</span>
+                            <span class="text-emerald-400">💎 ${auction.reward_bid_points} CP reward</span>
                         </div>
                     </div>
-                    <button onclick="generateHeistLink('${heist.id}')" class="gold-gradient px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity">
+                    <button onclick="generateauctionLink('${auction.id}')" class="gold-gradient px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity">
                         Generate Link
                     </button>
                 </div>
@@ -378,9 +378,9 @@
             `).join('');
         }
 
-        async function loadHeistCampaigns() {
+        async function loadauctionCampaigns() {
             try {
-                document.getElementById('heist-campaigns').innerHTML = `
+                document.getElementById('auction-campaigns').innerHTML = `
                     <div class="text-center py-8">
                         <p class="text-slate-400">⏳ Loading your campaigns...</p>
                     </div>
@@ -388,9 +388,9 @@
                 
                 const campaigns = [];
                 
-                for (const heist of heistData) {
+                for (const auction of auctionData) {
                     try {
-                        const response = await fetch(`${API_BASE_URL}/heist/affiliate/progress/${heist.id}`, {
+                        const response = await fetch(`${API_BASE_URL}/auction/affiliate/progress/${auction.id}`, {
                             headers: {
                                 'Authorization': `Bearer ${authToken}`,
                                 'Content-Type': 'application/json'
@@ -402,52 +402,52 @@
                             if (contentType && contentType.includes('application/json')) {
                                 const progress = await response.json();
                                 campaigns.push({
-                                    id: heist.id,
-                                    heist_title: heist.name,
+                                    id: auction.id,
+                                    auction_title: auction.name,
                                     referrals: progress.referredUsers || 0,
-                                    target: progress.targetUsers || heist.target_users,
-                                    reward: heist.reward_bid_points,
-                                    progressDisplay: progress.progressDisplay || `${progress.referredUsers || 0}/${progress.targetUsers || heist.target_users}`,
-                                    remainingReferrals: progress.remainingReferrals || Math.max(0, (progress.targetUsers || heist.target_users) - (progress.referredUsers || 0)),
-                                    canClaim: (progress.referredUsers || 0) >= (progress.targetUsers || heist.target_users),
+                                    target: progress.targetUsers || auction.target_users,
+                                    reward: auction.reward_bid_points,
+                                    progressDisplay: progress.progressDisplay || `${progress.referredUsers || 0}/${progress.targetUsers || auction.target_users}`,
+                                    remainingReferrals: progress.remainingReferrals || Math.max(0, (progress.targetUsers || auction.target_users) - (progress.referredUsers || 0)),
+                                    canClaim: (progress.referredUsers || 0) >= (progress.targetUsers || auction.target_users),
                                     claimed: false
                                 });
                             }
                         } else if (response.status === 404) {
-                            // No progress yet for this heist, show as 0 progress
+                            // No progress yet for this auction, show as 0 progress
                             campaigns.push({
-                                id: heist.id,
-                                heist_title: heist.name,
+                                id: auction.id,
+                                auction_title: auction.name,
                                 referrals: 0,
-                                target: heist.target_users,
-                                reward: heist.reward_bid_points,
-                                progressDisplay: `0/${heist.target_users}`,
-                                remainingReferrals: heist.target_users,
+                                target: auction.target_users,
+                                reward: auction.reward_bid_points,
+                                progressDisplay: `0/${auction.target_users}`,
+                                remainingReferrals: auction.target_users,
                                 canClaim: false,
                                 claimed: false
                             });
                         }
                     } catch (error) {
-                        console.log(`[v0] Error loading progress for heist ${heist.id}:`, error);
-                        // Add heist with 0 progress if API fails
+                        console.log(`[v0] Error loading progress for auction ${auction.id}:`, error);
+                        // Add auction with 0 progress if API fails
                         campaigns.push({
-                            id: heist.id,
-                            heist_title: heist.name,
+                            id: auction.id,
+                            auction_title: auction.name,
                             referrals: 0,
-                            target: heist.target_users,
-                            reward: heist.reward_bid_points,
-                            progressDisplay: `0/${heist.target_users}`,
-                            remainingReferrals: heist.target_users,
+                            target: auction.target_users,
+                            reward: auction.reward_bid_points,
+                            progressDisplay: `0/${auction.target_users}`,
+                            remainingReferrals: auction.target_users,
                             canClaim: false,
                             claimed: false
                         });
                     }
                 }
                 
-                displayHeistCampaigns(campaigns);
+                displayauctionCampaigns(campaigns);
             } catch (error) {
-                console.error('Error loading heist campaigns:', error);
-                document.getElementById('heist-campaigns').innerHTML = `
+                console.error('Error loading auction campaigns:', error);
+                document.getElementById('auction-campaigns').innerHTML = `
                     <div class="text-center py-8">
                         <p class="text-red-400 mb-2">⚠️ Failed to load campaigns</p>
                         <p class="text-slate-400 text-sm">${error.message}</p>
@@ -464,9 +464,9 @@
             `;
         }
 
-        // Display heist campaigns
-        function displayHeistCampaigns(campaigns) {
-            const container = document.getElementById('heist-campaigns');
+        // Display auction campaigns
+        function displayauctionCampaigns(campaigns) {
+            const container = document.getElementById('auction-campaigns');
             if (campaigns.length === 0) {
                 container.innerHTML = '<p class="text-slate-400 text-center py-8">No active campaigns</p>';
                 return;
@@ -479,7 +479,7 @@
                     <div class="bg-slate-700 rounded-lg p-4 border-l-4 ${campaign.canClaim ? 'border-green-400' : 'border-yellow-400'}">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex-1">
-                                <h3 class="font-semibold text-lg">${campaign.heist_title}</h3>
+                                <h3 class="font-semibold text-lg">${campaign.auction_title}</h3>
                                 <p class="text-slate-400 text-sm">${campaign.progressDisplay}</p>
                                 ${campaign.remainingReferrals > 0 ? 
                                     `<p class="text-blue-400 text-xs mt-1">🎯 ${campaign.remainingReferrals} more referrals needed</p>` : 
@@ -507,7 +507,7 @@
                                 }
                             </div>
                             ${campaign.canClaim ? 
-                                `<button onclick="claimHeistReward('${campaign.id}')" 
+                                `<button onclick="claimauctionReward('${campaign.id}')" 
                                          class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg">
                                     💰 Claim ${campaign.reward} CP
                                  </button>` :
@@ -558,7 +558,7 @@
         }
 
         // Update stats
-        function updateHeistStats(stats) {
+        function updateauctionstats(stats) {
             // Removed stats cards section
         }
 
@@ -566,9 +566,9 @@
             // Removed stats cards section
         }
 
-        async function generateHeistLink(heistId) {
+        async function generateauctionLink(auctionId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/heist/affiliate/link/${heistId}`, {
+                const response = await fetch(`${API_BASE_URL}/auction/affiliate/link/${auctionId}`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
@@ -587,12 +587,12 @@
                 const data = await response.json();
                 
                 if (data.affiliateLink) {
-                    showLinkModal('Heist Affiliate Link', data.affiliateLink);
+                    showLinkModal('auction Affiliate Link', data.affiliateLink);
                 } else {
                     alert('Failed to generate link: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
-                console.error('Error generating heist link:', error);
+                console.error('Error generating auction link:', error);
                 alert(`Failed to generate link: ${error.message}`);
             }
         }
@@ -602,14 +602,14 @@
         }
 
         // Claim rewards
-        async function claimHeistReward(heistId) {
+        async function claimauctionReward(auctionId) {
             try {
                 const button = event.target;
                 const originalText = button.innerHTML;
                 button.innerHTML = '⏳ Claiming...';
                 button.disabled = true;
                 
-                const response = await fetch(`${API_BASE_URL}/heist/affiliate/claim/${heistId}`, {
+                const response = await fetch(`${API_BASE_URL}/auction/affiliate/claim/${auctionId}`, {
                     method: 'POST',
                     headers: { 
                         'Authorization': `Bearer ${authToken}`,
@@ -638,8 +638,8 @@
                     
                     // Reload campaigns and stats after a short delay
                     setTimeout(() => {
-                        loadHeistCampaigns();
-                        loadHeistStats();
+                        loadauctionCampaigns();
+                        loadauctionstats();
                     }, 2000);
                     
                 } else if (data.message && data.message.includes('Target not met')) {
@@ -656,7 +656,7 @@
                 }
                 
             } catch (error) {
-                console.error('Error claiming heist reward:', error);
+                console.error('Error claiming auction reward:', error);
                 const button = event.target;
                 button.innerHTML = '❌ Failed';
                 button.disabled = false;
@@ -702,7 +702,7 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            loadHeists();
+            loadauctions();
             loadRate();
         });
 

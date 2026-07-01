@@ -198,7 +198,7 @@
             <span id="pProductId" class="text-slate-400 text-sm ml-2"></span>
           </h3>
           <p class="text-xs text-slate-400 mt-1">
-            Upload an optional image and set prices for cash, auction and heist modes.
+            Upload an optional image and set prices for cash, auction and auction modes.
           </p>
         </div>
         <button id="pClose" class="rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 hover:bg-white/10">✕</button>
@@ -223,8 +223,8 @@
                      class="w-full rounded-xl bg-white/5 border border-white/10 px-2 py-2 text-xs outline-none" />
             </div>
             <div>
-              <label class="block text-xs text-slate-300 mb-1.5" for="pHeist">Heist</label>
-              <input id="pHeist" type="number" min="0" step="0.01"
+              <label class="block text-xs text-slate-300 mb-1.5" for="pauction">auction</label>
+              <input id="pauction" type="number" min="0" step="0.01"
                      class="w-full rounded-xl bg-white/5 border border-white/10 px-2 py-2 text-xs outline-none" />
             </div>
           </div>
@@ -547,7 +547,7 @@
           <div class="space-y-0.5">
             <div class="text-xs text-slate-300">Cash: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.cash_price)}</span></div>
             <div class="text-xs text-slate-300">Auction: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.auction_price)}</span></div>
-            <div class="text-xs text-slate-300">Heist: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.heist_price)}</span></div>
+            <div class="text-xs text-slate-300">auction: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.auction_price)}</span></div>
           </div>
         `;
         const img = p.image_url || p.image_path || "";
@@ -691,7 +691,7 @@
         $("pName").value = data.name || "";
         $("pCash").value = data.cash_price != null ? data.cash_price : "";
         $("pAuction").value = data.auction_price != null ? data.auction_price : "";
-        $("pHeist").value = data.heist_price != null ? data.heist_price : "";
+        $("pauction").value = data.auction_price != null ? data.auction_price : "";
 
         const selectedIds = (data.categories || []).map(c => c.id);
         renderModalCategories(selectedIds);
@@ -727,7 +727,7 @@
       const name = $("pName").value.trim();
       const cash = $("pCash").value.trim();
       const auction = $("pAuction").value.trim();
-      const heist = $("pHeist").value.trim();
+      const auction = $("pauction").value.trim();
       const catIds = getModalCategoryIds();
 
       if (!name) {
@@ -742,7 +742,7 @@
 
         if (cash) fd.append("cash_price", cash);
         if (auction) fd.append("auction_price", auction);
-        if (heist) fd.append("heist_price", heist);
+        if (auction) fd.append("auction_price", auction);
         if (catIds.length) fd.append("categoryIds", catIds.join(","));
 
         const imgFile = $("pImage").files[0];
