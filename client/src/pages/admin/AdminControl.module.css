@@ -1,0 +1,328 @@
+/* src/pages/admin/AdminControl.module.css */
+
+.page {
+  min-height: 100vh;
+  padding: 22px 0 60px;
+  background: radial-gradient(1200px 700px at 20% 10%, rgba(160, 120, 255, 0.18), transparent 60%),
+    radial-gradient(1000px 600px at 80% 10%, rgba(0, 255, 200, 0.10), transparent 55%),
+    linear-gradient(180deg, #06070b 0%, #070915 45%, #050611 100%);
+  color: #e9e9ff;
+}
+
+.container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+}
+
+.backBtn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(233, 233, 255, 0.88);
+  padding: 9px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+}
+
+.sub {
+  margin: 4px 0 0;
+  color: rgba(233, 233, 255, 0.7);
+  font-size: 13px;
+}
+
+.card {
+  margin-top: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+}
+
+.cardHead {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.cardHeadRow {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid2 {
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field,
+.fieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-size: 12px;
+  color: rgba(233, 233, 255, 0.72);
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e9e9ff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 13px;
+}
+
+.hint {
+  font-size: 12px;
+  color: rgba(233, 233, 255, 0.6);
+}
+
+.actions {
+  padding: 0 14px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.primary,
+.soft,
+.ghost,
+.danger,
+.dangerOutline {
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: 160ms ease;
+}
+
+.primary {
+  background: linear-gradient(135deg, rgba(255, 0, 200, 0.18), rgba(160, 120, 255, 0.22));
+  border-color: rgba(160, 120, 255, 0.35);
+  color: #fff;
+}
+
+.soft {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(233, 233, 255, 0.95);
+}
+
+.ghost {
+  background: transparent;
+  color: rgba(233, 233, 255, 0.85);
+}
+
+.danger {
+  background: rgba(255, 66, 92, 0.15);
+  border-color: rgba(255, 66, 92, 0.35);
+  color: #fff;
+}
+
+.dangerOutline {
+  background: transparent;
+  border-color: rgba(255, 66, 92, 0.35);
+  color: rgba(255, 210, 216, 0.95);
+}
+
+.pre {
+  margin: 0;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  overflow: auto;
+  font-size: 12px;
+}
+
+.form {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.formTitle {
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.tableWrap {
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.table th {
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 900;
+  color: rgba(233, 233, 255, 0.82);
+}
+
+.rowActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.empty {
+  padding: 16px;
+  text-align: center;
+  color: rgba(233, 233, 255, 0.7);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+}
+
+@media (max-width: 760px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+/* Available heists UI */
+.availGrid {
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.availCard {
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  padding: 12px;
+}
+
+.availTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.availTitle {
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.availMeta {
+  margin-top: 6px;
+  color: rgba(233, 233, 255, 0.72);
+  font-size: 12px;
+}
+
+.availActions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.primarySmall {
+  border-radius: 12px;
+  padding: 9px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: 160ms ease;
+  background: rgba(160, 120, 255, 0.18);
+  border-color: rgba(160, 120, 255, 0.45);
+  color: #fff;
+}
+
+.primarySmall:hover {
+  filter: brightness(1.08);
+}
+
+.availImgWrap {
+  margin-top: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.availImg {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  display: block;
+}
+
+.availNoImg {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(233, 233, 255, 0.7);
+  font-size: 12px;
+}
+
+.errorBox {
+  margin: 12px 14px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 66, 92, 0.12);
+  border: 1px solid rgba(255, 66, 92, 0.35);
+  color: rgba(255, 220, 226, 0.95);
+  font-size: 13px;
+}
+
+.emptyBox {
+  padding: 14px;
+  color: rgba(233, 233, 255, 0.72);
+}
+
+@media (max-width: 900px) {
+  .availGrid {
+    grid-template-columns: 1fr;
+  }
+}

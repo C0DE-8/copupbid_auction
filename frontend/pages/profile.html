@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - CopUpBid</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .loading { opacity: 0.6; pointer-events: none; }
+    .custom-alert {
+      position: fixed; top: 20px; right: 20px; z-index: 1000;
+      padding: 16px 20px; border-radius: 12px; color: white; font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,.3);
+      backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.2);
+      transform: translateX(400px); transition: transform 0.3s ease-in-out;
+    }
+    .custom-alert.show { transform: translateX(0); }
+    .custom-alert.success { background: rgba(16, 185, 129, 0.9); }
+    .custom-alert.error { background: rgba(239, 68, 68, 0.9); }
+    .custom-alert.warning { background: rgba(245, 158, 11, 0.9); }
+
+    .modal-overlay {
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 min-h-screen text-white">
+  <!-- Header -->
+  <header class="p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <button onclick="window.history.back()" class="glass-effect rounded-full p-2 hover:bg-emerald-500/20 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <h1 class="text-2xl font-bold">Profile</h1>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="glass-effect rounded-full px-4 py-2 flex items-center space-x-2">
+      <img src="../assets/icons/coin-sign.png" alt="Coin" class="w-6 h-6">
+      <span id="currentBalance" class="font-bold">***</span>
+    </div>
+  </header>
+
+  <div class="container mx-auto px-4 py-6 max-w-4xl">
+    <!-- Top Profile Summary -->
+    <div class="glass-effect rounded-2xl p-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-5">
+      <div class="relative">
+        <img id="profileAvatar"
+             src=""
+             alt="Profile"
+             class="w-24 h-24 rounded-full object-cover border border-white/20 bg-white/5"
+             onerror="this.src='https://ui-avatars.com/api/?name=User&background=111827&color=ffffff&size=128';" />
+        <div class="absolute -bottom-1 -right-1 glass-effect rounded-full px-2 py-1 text-xs">
+          <span class="text-emerald-300">Active</span>
+        </div>
+      </div>
+
+      <div class="flex-1 w-full">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div id="displayName" class="text-xl font-bold">Loading...</div>
+            <div id="displayUsername" class="text-emerald-300 font-semibold">@...</div>
+          </div>
+
+          <button id="editBtn"
+                  onclick="openEditModal()"
+                  class="glass-effect rounded-full px-4 py-2 hover:bg-emerald-500/20 transition-colors flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Edit Profile
+          </button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="bg-white/5 rounded-lg p-3 border border-white/10">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">CopUp Coin</div>
+            <div class="text-lg font-bold text-emerald-400" id="bidPointsMini">***</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 border border-white/10">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Task Coins</div>
+            <div class="text-lg font-bold text-blue-400" id="taskCoinsMini">***</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 border border-white/10">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Member Since</div>
+            <div class="text-lg font-bold text-white" id="memberSinceMini">***</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Information Card -->
+    <div class="glass-effect rounded-2xl p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+        Personal Information
+      </h2>
+
+      <div id="profileInfo" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="text-center text-gray-400 py-8 col-span-full">
+          Loading profile information...
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Balance Card -->
+    <div class="glass-effect rounded-2xl p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+        </svg>
+        Account Balance
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
+          <div class="text-sm text-gray-400 mb-1">Copup coin</div>
+          <div class="text-2xl font-bold text-emerald-400" id="bidPoints">***</div>
+        </div>
+        <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+          <div class="text-sm text-gray-400 mb-1">Task Coins</div>
+          <div class="text-2xl font-bold text-blue-400" id="taskCoins">***</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Information Card -->
+    <div class="glass-effect rounded-2xl p-6">
+      <h2 class="text-xl font-bold mb-4 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+        Security & Settings
+      </h2>
+
+      <div id="securityInfo" class="space-y-4">
+        <div class="text-center text-gray-400 py-8">
+          Loading security information...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editModal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+    <div class="glass-effect rounded-2xl w-full max-w-xl p-6 border border-white/10">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">Edit Profile</h3>
+        <button onclick="closeEditModal()" class="text-gray-300 hover:text-white text-2xl leading-none">×</button>
+      </div>
+
+      <form id="editForm" class="space-y-4" onsubmit="event.preventDefault(); submitProfileUpdate();">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Full Name</label>
+            <input id="editFullName" type="text"
+                   class="mt-2 w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 outline-none focus:border-emerald-400"
+                   placeholder="Your full name" />
+            <p class="text-xs text-gray-400 mt-1">Min 2 characters</p>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Username</label>
+            <input id="editUsername" type="text"
+                   class="mt-2 w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 outline-none focus:border-emerald-400"
+                   placeholder="username" />
+            <p class="text-xs text-gray-400 mt-1">Min 3 chars. Only letters/numbers/_.-</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-wide">Profile Image</label>
+          <div class="mt-2 flex items-center gap-4">
+            <img id="editAvatarPreview" src="" alt="Preview"
+                 class="w-14 h-14 rounded-full object-cover border border-white/20 bg-white/5"
+                 onerror="this.src='https://ui-avatars.com/api/?name=User&background=111827&color=ffffff&size=128';" />
+            <div class="flex-1">
+              <input id="editProfileFile" type="file" accept="image/*"
+                     class="block w-full text-sm text-gray-300
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-emerald-500/20 file:text-emerald-200
+                            hover:file:bg-emerald-500/30"/>
+              <p class="text-xs text-gray-400 mt-2">Optional. JPG/PNG recommended.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" onclick="closeEditModal()"
+                  class="glass-effect rounded-full px-5 py-2 hover:bg-white/10 transition">
+            Cancel
+          </button>
+          <button id="saveBtn" type="submit"
+                  class="rounded-full px-6 py-2 bg-emerald-500/80 hover:bg-emerald-500 transition font-semibold">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://api.copup.copupbid.com/api/users";
+    // used only for resolving relative files if GET /profile returns "uploads/.."
+    const API_ORIGIN = "https://api.copup.copupbid.com";
+
+    let cachedUser = null;
+
+    function showAlert(message, type = "success") {
+      document.querySelectorAll(".custom-alert").forEach(a => a.remove());
+      const alert = document.createElement("div");
+      alert.className = `custom-alert ${type}`;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      setTimeout(() => alert.classList.add("show"), 100);
+      setTimeout(() => {
+        alert.classList.remove("show");
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    function resolveUrl(maybePath) {
+      const p = String(maybePath || "").trim();
+      if (!p) return "";
+      if (p.startsWith("http://") || p.startsWith("https://")) return p;
+      if (p.startsWith("/")) return API_ORIGIN + p;
+      return API_ORIGIN + "/" + p;
+    }
+
+    function requireAuthOrRedirect() {
+      const authToken = localStorage.getItem("authToken");
+      if (!authToken) {
+        window.location.href = "../auth/login.html";
+        return null;
+      }
+      return authToken;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const token = requireAuthOrRedirect();
+      if (!token) return;
+
+      // ✅ Set Authorization only (do NOT force JSON globally; breaks FormData uploads)
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Preview when selecting a new file
+      document.getElementById("editProfileFile").addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        document.getElementById("editAvatarPreview").src = url;
+      });
+
+      // close modal on outside click
+      document.getElementById("editModal").addEventListener("click", (e) => {
+        if (e.target.id === "editModal") closeEditModal();
+      });
+
+      loadUserProfile();
+    });
+
+    async function loadUserProfile() {
+      try {
+        const response = await axios.get(`${API_BASE}/profile`);
+        const userData = response.data || {};
+        cachedUser = userData;
+
+        // balances
+        const bid = userData.bid_points || 0;
+        const task = userData.task_coin || 0;
+
+        document.getElementById("currentBalance").textContent = bid;
+        document.getElementById("bidPoints").textContent = bid;
+        document.getElementById("taskCoins").textContent = task;
+        document.getElementById("bidPointsMini").textContent = bid;
+        document.getElementById("taskCoinsMini").textContent = task;
+
+        const since = userData.created_at ? new Date(userData.created_at).toLocaleDateString() : "—";
+        document.getElementById("memberSinceMini").textContent = since;
+
+        // top summary
+        const fullName = userData.full_name || "Not provided";
+        const username = userData.username || "Not provided";
+        document.getElementById("displayName").textContent = fullName;
+        document.getElementById("displayUsername").textContent = userData.username ? `@${userData.username}` : "@—";
+
+        // avatar
+        const avatarUrl = resolveUrl(userData.profile) ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=111827&color=ffffff&size=128`;
+        document.getElementById("profileAvatar").src = avatarUrl;
+
+        // profile info grid
+        document.getElementById("profileInfo").innerHTML = `
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Full Name</label>
+            <div class="font-semibold text-white">${fullName}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Username</label>
+            <div class="font-semibold text-emerald-400">${username}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Email</label>
+            <div class="font-semibold text-white">${userData.email || "Not provided"}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">User ID</label>
+            <div class="font-semibold text-gray-300">#${userData.id ?? "—"}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Wallet Address</label>
+            <div class="font-semibold text-white text-sm break-all">${userData.wallet_address || "Not provided"}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Referral Code</label>
+            <div class="font-semibold text-emerald-400">${userData.referral_code || "Not provided"}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Game ID</label>
+            <div class="font-semibold text-white">${userData.game_id || "Not provided"}</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-4">
+            <label class="text-xs text-gray-400 uppercase tracking-wide">Member Since</label>
+            <div class="font-semibold text-white">${since}</div>
+          </div>
+        `;
+
+        // security info
+        const hasPin = Number(userData.has_pin) === 1;
+
+        document.getElementById("securityInfo").innerHTML = `
+          <div class="flex items-center justify-between bg-white/5 rounded-lg p-4">
+            <div class="flex items-center space-x-3">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              <div>
+                <div class="font-semibold">Security PIN</div>
+                <div class="text-sm text-gray-400">Protect your account with a PIN</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              ${hasPin
+                ? '<span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm">Enabled</span>'
+                : '<span class="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-sm">Not Set</span>'}
+            </div>
+          </div>
+
+          <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+            <div class="flex items-start space-x-3">
+              <svg class="w-5 h-5 text-yellow-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+              <div>
+                <div class="font-semibold text-yellow-300">Security Reminder</div>
+                <div class="text-sm text-yellow-200 mt-1">
+                  ${hasPin
+                    ? "Your account is secured with a PIN. Keep it safe and don't share it with anyone."
+                    : "Consider setting up a security PIN to protect your account and transactions."}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          window.location.href = "../auth/login.html";
+        } else {
+          showAlert("Error loading profile information", "error");
+        }
+      }
+    }
+
+    function openEditModal() {
+      if (!cachedUser) return;
+
+      document.getElementById("editFullName").value = cachedUser.full_name || "";
+      document.getElementById("editUsername").value = cachedUser.username || "";
+
+      const avatarUrl = resolveUrl(cachedUser.profile) ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(cachedUser.username || "User")}&background=111827&color=ffffff&size=128`;
+
+      document.getElementById("editAvatarPreview").src = avatarUrl;
+      document.getElementById("editProfileFile").value = "";
+
+      document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editModal").classList.add("hidden");
+    }
+
+    async function submitProfileUpdate() {
+      const saveBtn = document.getElementById("saveBtn");
+      const editForm = document.getElementById("editForm");
+
+      try {
+        const token = requireAuthOrRedirect();
+        if (!token) return;
+
+        saveBtn.disabled = true;
+        saveBtn.classList.add("loading");
+        editForm.classList.add("loading");
+
+        const full_name = document.getElementById("editFullName").value.trim();
+        const username = document.getElementById("editUsername").value.trim();
+        const file = document.getElementById("editProfileFile").files?.[0];
+
+        // Build FormData only with provided fields (matches your backend validation)
+        const fd = new FormData();
+        if (full_name) fd.append("full_name", full_name);
+        if (username) fd.append("username", username);
+        if (file) fd.append("profile", file);
+
+        if ([...fd.keys()].length === 0) {
+          showAlert("Provide full name, username, or a profile image to update.", "warning");
+          return;
+        }
+
+        // ✅ multipart/form-data auto set by browser when using FormData
+        const res = await axios.put(`${API_BASE}/profile`, fd, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        showAlert(res.data?.message || "Profile updated successfully.", "success");
+
+        // Refresh profile
+        closeEditModal();
+        await loadUserProfile();
+
+      } catch (error) {
+        console.error("Profile update error:", error);
+
+        if (error.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          window.location.href = "../auth/login.html";
+          return;
+        }
+
+        const msg =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to update profile. Please try again.";
+        showAlert(msg, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.classList.remove("loading");
+        editForm.classList.remove("loading");
+      }
+    }
+  </script>
+</body>
+</html>

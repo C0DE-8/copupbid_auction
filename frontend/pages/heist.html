@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heists - Coin Vault Bid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        .medieval-font { font-family: 'Cinzel', serif; }
+        .story-font { font-family: 'Crimson Text', serif; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .vault-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .vault-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1);
+        }
+        
+        .medieval-button {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border: 2px solid #10b981;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .medieval-button:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .epic-modal {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .ancient-scroll {
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(180, 83, 9, 0.05) 100%);
+            border: 2px solid rgba(217, 119, 6, 0.3);
+        }
+        
+        .scrollable-story {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(217, 119, 6, 0.5) rgba(217, 119, 6, 0.1);
+        }
+        
+        .scrollable-story::-webkit-scrollbar { width: 8px; }
+        .scrollable-story::-webkit-scrollbar-track {
+            background: rgba(217, 119, 6, 0.1);
+            border-radius: 4px;
+        }
+        .scrollable-story::-webkit-scrollbar-thumb {
+            background: rgba(217, 119, 6, 0.5);
+            border-radius: 4px;
+        }
+        .scrollable-story::-webkit-scrollbar-thumb:hover { background: rgba(217, 119, 6, 0.7); }
+        
+        .parchment-text {
+            color: #f3e8d0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .medieval-border {
+            border: 2px solid rgba(217, 119, 6, 0.4);
+            border-radius: 8px;
+        }
+        
+        .filter-btn {
+            background: rgba(75, 85, 99, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            color: #9ca3af;
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .filter-btn:hover:not(.active) {
+            background: rgba(75, 85, 99, 0.5);
+            color: #d1d5db;
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(135deg, rgba(75, 85, 99, 0.1) 0%, rgba(55, 65, 81, 0.1) 100%);
+            border: 1px solid rgba(75, 85, 99, 0.2);
+        }
+        
+        .skeleton-text {
+            background: linear-gradient(90deg, rgba(75, 85, 99, 0.2) 25%, rgba(107, 114, 128, 0.3) 50%, rgba(75, 85, 99, 0.2) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        .skeleton-image {
+            background: linear-gradient(135deg, rgba(75, 85, 99, 0.1) 0%, rgba(55, 65, 81, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .status-pending { color: #fbbf24; }
+        .status-hold { color: #f87171; }
+        .status-started { color: #34d399; }
+        
+        @media (max-width: 640px) {
+            .xs\:hidden { display: none; }
+            .xs\:inline { display: inline; }
+            
+            .epic-modal {
+                margin: 1rem;
+                max-height: calc(100vh - 2rem);
+                overflow-y: auto;
+            }
+            
+            .modal-content-mobile {
+                max-height: calc(100vh - 8rem);
+                overflow-y: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .epic-modal {
+                margin: 0.5rem;
+                max-height: calc(100vh - 1rem);
+                border-radius: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Alert Container -->
+  <div id="alertContainer" class="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none"></div>
+
+
+    <!-- Header -->
+    <header class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-900/20 to-teal-900/20"></div>
+        <div class="relative z-10 max-w-6xl mx-auto px-4 py-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center space-x-4 min-w-0 flex-1">
+                    <button onclick="window.location.href='dashboard.html'" class="text-emerald-400 hover:text-emerald-300 transition-colors p-2 rounded-full hover:bg-emerald-400/10 flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </button>
+                    <div class="min-w-0 flex-1">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 tracking-wide medieval-font">⚔️ HEISTS ⚔️</h1>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-1 story-font">Crack the ancient codes, claim the legendary treasures</p>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                    <button onclick="window.location.href='winners.html'" 
+                            class="medieval-button text-white font-bold py-2 px-4 rounded-lg medieval-font transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 text-sm sm:text-base">
+                        <span>👑</span>
+                        <span class="hidden xs:inline">HALL OF CHAMPIONS</span>
+                        <span class="xs:hidden">CHAMPIONS</span>
+                    </button>
+                    
+                    <div class="glass rounded-full px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-center space-x-3 border-2 border-emerald-400/30">
+                        <img src="../assets/icons/coin-sign.png" alt="Coin" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">
+                        <span id="userBalance" class="font-bold text-base sm:text-lg medieval-font">***</span>
+                        <span class="text-xs sm:text-sm text-emerald-300 medieval-font">CP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="mb-8 text-center">
+            <h2 class="text-3xl font-bold mb-3 text-emerald-400 medieval-font">🏛️ HEIST CHALLENGES 🏛️</h2>
+            <div class="w-32 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent mx-auto mt-4"></div>
+        </div>
+        
+        <div class="mb-8">
+            <div class="flex justify-center flex-wrap gap-2 sm:gap-4 px-4">
+                <button onclick="filterHeists('all')" id="filter-all" class="filter-btn active px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold medieval-font transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm">
+                    <span class="hidden sm:inline">⚔️ ALL QUESTS</span>
+                    <span class="sm:hidden">⚔️ ALL</span>
+                </button>
+                <button onclick="filterHeists('pending')" id="filter-pending" class="filter-btn px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold medieval-font transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm">
+                    <span class="hidden sm:inline">⏳ PENDING</span>
+                    <span class="sm:hidden">⏳</span>
+                </button>
+                <button onclick="filterHeists('hold')" id="filter-hold" class="filter-btn px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold medieval-font transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm">
+                    <span class="hidden sm:inline">🔒 ON HOLD</span>
+                    <span class="sm:hidden">🔒</span>
+                </button>
+                <button onclick="filterHeists('started')" id="filter-started" class="filter-btn px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold medieval-font transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm">
+                    <span class="hidden sm:inline">🔥 ACTIVE</span>
+                    <span class="sm:hidden">🔥</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-8">
+            <div id="heistsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Heists will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="heistModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+            <div class="epic-modal rounded-2xl sm:rounded-3xl p-4 sm:p-8 max-w-2xl w-full max-h-[95vh] sm:max-h-none overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center mb-4 sm:mb-6 flex-shrink-0">
+                    <h3 id="modalTitle" class="text-xl sm:text-3xl font-bold text-emerald-400 medieval-font pr-4"></h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors flex-shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="modalContent" class="flex-1 overflow-y-auto">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api/users';
+        const API_ORIGIN = 'https://api.copup.copupbid.com'; // for relative images
+
+        let currentUser = null;
+        let availableHeists = [];
+        let currentFilter = 'all';
+
+        // ✅ Global crash catcher (prevents blank page)
+        window.addEventListener('error', (e) => {
+            console.error('Global JS Error:', e.error || e.message);
+            try { showAlert(`⚠️ Page error: ${(e.error && e.error.message) ? e.error.message : e.message}`, 'error'); } catch(_) {}
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled Promise:', e.reason);
+            try { showAlert(`⚠️ Request error: ${e.reason?.message || e.reason || 'Unknown error'}`, 'error'); } catch(_) {}
+        });
+
+        // ✅ Safe image URL
+        function safeImageUrl(url) {
+            if (!url) return null;
+            const u = String(url);
+            if (u.startsWith('http://') || u.startsWith('https://')) return u;
+            if (u.startsWith('/')) return API_ORIGIN + u;
+            return u;
+        }
+
+        // Custom Alert System
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            if (!alertContainer) return;
+
+            const alertId = 'alert-' + Date.now();
+            
+            const alertColors = {
+                success: 'bg-emerald-900/90 border-emerald-400 text-emerald-100',
+                error: 'bg-red-900/90 border-red-400 text-red-100',
+                warning: 'bg-amber-900/90 border-amber-400 text-amber-100',
+                info: 'bg-blue-900/90 border-blue-400 text-blue-100'
+            };
+
+            const alertHtml = `
+                <div id="${alertId}" class="alert-item ${alertColors[type] || alertColors.info} border-l-4 p-4 rounded-lg shadow-lg backdrop-blur-sm max-w-sm transform translate-x-full transition-transform duration-300">
+                    <div class="flex items-center justify-between">
+                        <p class="font-medium story-font">${message}</p>
+                        <button onclick="removeAlert('${alertId}')" class="ml-4 text-current opacity-70 hover:opacity-100">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            alertContainer.insertAdjacentHTML('beforeend', alertHtml);
+            
+            setTimeout(() => {
+                const el = document.getElementById(alertId);
+                if (el) el.classList.remove('translate-x-full');
+            }, 50);
+
+            setTimeout(() => removeAlert(alertId), 5000);
+        }
+
+        function removeAlert(alertId) {
+            const alert = document.getElementById(alertId);
+            if (alert) {
+                alert.classList.add('translate-x-full');
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+
+        function closeModal() {
+            const m = document.getElementById('heistModal');
+            if (m) m.classList.add('hidden');
+        }
+
+        // ✅ Ensure user is loaded (prevents currentUser.id crashes)
+        async function ensureUserLoaded() {
+            if (currentUser && currentUser.id) return true;
+            await loadUserProfile();
+            return !!(currentUser && currentUser.id);
+        }
+
+        // Authentication Check
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+
+                if (typeof axios === 'undefined') {
+                    showAlert('Axios failed to load. Check internet/CDN.', 'error');
+                    return;
+                }
+
+                await loadUserProfile();
+                await loadAvailableHeists();
+            } catch (e) {
+                console.error(e);
+                showAlert('Failed to initialize page', 'error');
+            }
+        });
+
+        // Load User Profile
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axios.get(`${API_BASE}/profile`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                currentUser = response.data;
+
+                const balEl = document.getElementById('userBalance');
+                if (balEl) balEl.textContent = currentUser?.bid_points ?? 0;
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                showAlert('Error loading user profile', 'error');
+            }
+        }
+
+        // Load Available Heists
+        async function loadAvailableHeists() {
+            showLoadingSkeleton();
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axios.get(`${API_BASE}/heists/available`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                availableHeists = Array.isArray(response.data) ? response.data : [];
+                displayHeists(currentFilter);
+            } catch (error) {
+                console.error('Error loading heists:', error);
+                showAlert('Error loading challenges', 'error');
+                showErrorState();
+            }
+        }
+
+        function showLoadingSkeleton() {
+            const heistsList = document.getElementById('heistsList');
+            if (!heistsList) return;
+
+            const skeletonCards = Array(6).fill(0).map(() => `
+                <div class="loading-skeleton rounded-2xl p-6">
+                    <div class="relative mb-6">
+                        <div class="skeleton-image w-full h-48 rounded-xl">
+                            <div class="text-4xl text-emerald-400/30">⚔️</div>
+                        </div>
+                        <div class="absolute top-3 right-3 skeleton-text w-16 h-6 rounded-full"></div>
+                        <div class="absolute bottom-3 left-3 skeleton-text w-20 h-6 rounded-lg"></div>
+                    </div>
+                    <div class="skeleton-text h-6 w-3/4 mb-4"></div>
+                    <div class="mb-4 p-3 glass rounded-lg border border-emerald-400/10">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="skeleton-text h-4 w-32"></div>
+                            <div class="skeleton-text h-4 w-12"></div>
+                        </div>
+                        <div class="w-full bg-gray-700/50 rounded-full h-2">
+                            <div class="skeleton-text h-2 rounded-full w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 glass rounded-lg border border-emerald-400/10">
+                            <div class="skeleton-text h-4 w-16"></div>
+                            <div class="skeleton-text h-4 w-20"></div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 glass rounded-lg border border-gray-600/20">
+                            <div class="skeleton-text h-4 w-12"></div>
+                            <div class="skeleton-text h-4 w-16"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            heistsList.innerHTML = skeletonCards;
+        }
+
+        function showErrorState() {
+            const heistsList = document.getElementById('heistsList');
+            if (!heistsList) return;
+
+            heistsList.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <div class="vault-card rounded-2xl p-8">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <p class="text-red-400 text-lg medieval-font mb-2">Failed to Load Quests</p>
+                        <p class="text-gray-500 text-sm story-font mb-4">The ancient servers seem to be resting</p>
+                        <button onclick="loadAvailableHeists()" 
+                                class="medieval-button text-white font-bold py-2 px-6 rounded-lg medieval-font">
+                            🔄 RETRY QUEST
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayHeists(filter = 'all') {
+            const heistsList = document.getElementById('heistsList');
+            if (!heistsList) return;
+
+            let filteredHeists = availableHeists;
+            if (filter !== 'all') {
+                filteredHeists = availableHeists.filter(heist => String(heist.status || '').toLowerCase() === filter);
+            }
+            
+            if (!filteredHeists.length) {
+                const emptyMessage = filter === 'all' ? '🏴‍☠️ No treasures await... yet' : `🏛️ No ${filter} quests available`;
+                heistsList.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="vault-card rounded-2xl p-8">
+                            <div class="text-6xl mb-4">🏛️</div>
+                            <p class="text-gray-400 text-lg medieval-font mb-2">${emptyMessage}</p>
+                            <p class="text-gray-500 text-sm story-font">Check back soon for new adventures</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            heistsList.innerHTML = filteredHeists.map(heist => {
+                const status = String(heist.status || 'pending').toLowerCase();
+
+                const statusColors = { pending: 'text-yellow-400', hold: 'text-red-400', started: 'text-green-400' };
+                const statusIcons  = { pending: '⏳', hold: '🔒', started: '🔥' };
+
+                const participantsJoined = heist.participantsJoined || 0;
+                const minUsers = heist.minUsers || heist.min_users || 1;
+                const participantsPercent = heist.participantsPercent || 0;
+
+                const imgUrl = heist.prize_image ? safeImageUrl(heist.prize_image) : null;
+
+                return `
+                    <div class="vault-card rounded-2xl p-6 cursor-pointer" onclick="openHeistModal(${heist.id})">
+                        <div class="relative mb-6">
+                            ${imgUrl ? 
+                                `<img src="${imgUrl}" 
+                                     alt="${heist.prize_name || heist.name}" 
+                                     class="w-full h-48 object-cover rounded-xl border border-emerald-400/20"
+                                     crossorigin="anonymous"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="w-full h-48 bg-gradient-to-br from-emerald-900/30 to-teal-900/30 rounded-xl flex items-center justify-center border border-emerald-400/20" style="display: none;">
+                                     <div class="text-6xl">⚔️</div>
+                                 </div>` :
+                                `<div class="w-full h-48 bg-gradient-to-br from-emerald-900/30 to-teal-900/30 rounded-xl flex items-center justify-center border border-emerald-400/20">
+                                    <div class="text-6xl">⚔️</div>
+                                </div>`
+                            }
+                            <div class="absolute top-3 right-3 px-3 py-1 glass rounded-full border border-emerald-400/30">
+                                <span class="${statusColors[status] || 'text-gray-300'} text-xs font-bold medieval-font">
+                                    ${statusIcons[status] || '⚔️'} ${status.toUpperCase()}
+                                </span>
+                            </div>
+                            <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/50 rounded-lg">
+                                <span class="text-emerald-400 text-sm font-bold medieval-font">ID: ${heist.id}</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold text-emerald-400 mb-4 medieval-font">${heist.name}</h3>
+                        
+                        <div class="mb-4 p-3 glass rounded-lg border border-emerald-400/10">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-400 text-sm story-font">⚔️ Fellowship Progress</span>
+                                <span class="text-emerald-400 font-bold text-sm medieval-font">${participantsJoined}/${minUsers}</span>
+                            </div>
+                            <div class="w-full bg-gray-700/50 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-500" 
+                                     style="width: ${Math.min(participantsPercent, 100)}%"></div>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-xs text-gray-500 story-font">Heroes Joined</span>
+                                <span class="text-xs text-emerald-300 medieval-font">${participantsPercent}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 glass rounded-lg border border-emerald-400/10">
+                                <span class="text-gray-400 text-sm story-font">💰 Prize:</span>
+                                <div class="flex items-center space-x-2">
+                                    <img src="../assets/icons/coin-sign.png" alt="Prize" class="w-4 h-4">
+                                    <span class="text-emerald-400 font-bold medieval-font">${heist.prize} CP</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-3 glass rounded-lg border border-gray-600/20">
+                                <span class="text-gray-400 text-sm story-font">🎫 Entry:</span>
+                                <div class="flex items-center space-x-2">
+                                    <img src="../assets/icons/coin-sign.png" alt="Entry" class="w-4 h-4">
+                                    <span class="text-gray-300 font-bold medieval-font">${heist.ticket_price} CP</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterHeists(status) {
+            currentFilter = status;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`filter-${status}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            displayHeists(status);
+        }
+
+        async function payEntry(heistId) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axios.post(`${API_BASE}/heists/pay-entry/${heistId}`, {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                showAlert(response.data?.message || '✅ Entry tribute paid successfully! You have joined the quest.', 'success');
+                closeModal();
+                await loadUserProfile();
+                await loadAvailableHeists();
+                return true;
+            } catch (error) {
+                const msg = error.response?.data?.message || 'Error paying entry tribute';
+                if (/already/i.test(msg)) showAlert('✅ You have already joined this quest!', 'info');
+                else if (/insufficient|balance|points|fund/i.test(msg)) showAlert('❌ Insufficient CP to join this quest.', 'error');
+                else showAlert(msg, 'error');
+                return false;
+            }
+        }
+
+        async function payEntryWithLoading(heistId) {
+            const btn = document.getElementById(`joinBtn-${heistId}`);
+            if (!btn) return;
+
+            const originalText = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = `
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>JOINING...</span>
+                </div>
+            `;
+
+            const ok = await payEntry(heistId);
+
+            if (!ok) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                showAlert('⚠️ Could not join. If you already joined, you will see the joined message.', 'info');
+            }
+        }
+
+        async function openHeistModal(heistId) {
+            const modal = document.getElementById('heistModal');
+            const titleEl = document.getElementById('modalTitle');
+            const contentEl = document.getElementById('modalContent');
+
+            if (!modal || !titleEl || !contentEl) {
+                showAlert('Modal elements missing in DOM', 'error');
+                return;
+            }
+
+            titleEl.textContent = 'Loading...';
+            contentEl.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+                    <p class="text-gray-400 story-font">Loading quest details...</p>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+
+            try {
+                // ✅ Ensure profile is available before using currentUser.id
+                const ready = await ensureUserLoaded();
+                if (!ready) {
+                    showAlert('Failed to load user profile. Please login again.', 'error');
+                    return;
+                }
+
+                const token = localStorage.getItem('authToken');
+                const heist = availableHeists.find(h => Number(h.id) === Number(heistId));
+                if (!heist) throw new Error('Heist not found');
+
+                const participationResponse = await axios.get(`${API_BASE}/heists/${heistId}/participants`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).catch(() => ({ data: [] }));
+                
+                const userHasJoined = Array.isArray(participationResponse.data)
+                    ? participationResponse.data.some(p => Number(p.user_id) === Number(currentUser.id))
+                    : false;
+
+                titleEl.textContent = heist.name;
+
+                const status = String(heist.status || 'pending').toLowerCase();
+                const imgUrl = heist.prize_image ? safeImageUrl(heist.prize_image) : null;
+
+                let modalContent = '';
+
+                if (status === 'pending' || status === 'hold') {
+                    const statusInfo = {
+                        pending: { icon: '⏳', title: 'Quest Awaiting Heroes', desc: 'This legendary challenge awaits brave adventurers to join the fellowship.' },
+                        hold: { icon: '🔒', title: 'Quest On Hold', desc: 'The quest is temporarily paused, but brave heroes can still join the fellowship.' }
+                    };
+                    const info = statusInfo[status];
+
+                    modalContent = `
+                        <div class="text-center mb-6">
+                            <div class="text-6xl mb-4">${info.icon}</div>
+                            <h4 class="text-xl font-bold text-amber-300 mb-3 medieval-font">${info.title}</h4>
+                            <p class="text-gray-400 story-font">${info.desc}</p>
+                        </div>
+
+                        ${imgUrl ? 
+                            `<div class="mb-6 text-center">
+                                <img src="${imgUrl}" alt="${heist.prize_name || 'Quest Prize'}"
+                                     class="w-32 h-32 object-cover rounded-xl mx-auto border-2 border-emerald-400/30"
+                                     crossorigin="anonymous"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-32 h-32 bg-gradient-to-br from-emerald-900/30 to-teal-900/30 rounded-xl mx-auto border-2 border-emerald-400/30 flex items-center justify-center" style="display:none;">
+                                    <div class="text-4xl">⚔️</div>
+                                </div>
+                                <p class="text-emerald-300 text-sm mt-2 medieval-font">${heist.prize_name || 'Legendary Treasure'}</p>
+                            </div>` : ''
+                        }
+
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between items-center p-4 glass rounded-lg border border-emerald-400/20">
+                                <span class="text-gray-400 story-font">💰 Treasure Prize:</span>
+                                <div class="flex items-center space-x-2">
+                                    <img src="../assets/icons/coin-sign.png" alt="Prize" class="w-5 h-5">
+                                    <span class="text-emerald-400 font-bold text-lg medieval-font">${heist.prize} CP</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-4 glass rounded-lg border border-gray-600/30">
+                                <span class="text-gray-400 story-font">🎫 Entry Tribute:</span>
+                                <div class="flex items-center space-x-2">
+                                    <img src="../assets/icons/coin-sign.png" alt="Entry" class="w-5 h-5">
+                                    <span class="text-gray-300 font-bold text-lg medieval-font">${heist.ticket_price} CP</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-4 glass rounded-lg border border-blue-400/20">
+                                <span class="text-gray-400 story-font">⚔️ Fellowship:</span>
+                                <span class="text-blue-400 font-bold text-lg medieval-font">${heist.participantsJoined || 0}/${heist.minUsers || heist.min_users} Heroes</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            ${userHasJoined ? 
+                                `<div class="p-4 bg-emerald-900/30 border border-emerald-400/50 rounded-lg mb-4">
+                                    <p class="text-emerald-300 font-bold medieval-font">✅ You have already joined this quest!</p>
+                                    <p class="text-gray-400 text-sm story-font mt-1">Wait until it becomes ACTIVE to start.</p>
+                                </div>` :
+                                `<button onclick="payEntryWithLoading(${heist.id})" id="joinBtn-${heist.id}"
+                                        class="w-full medieval-button text-white font-bold py-4 px-8 rounded-lg medieval-font text-lg">
+                                    ⚔️ JOIN QUEST (${heist.ticket_price} CP)
+                                </button>`
+                            }
+                        </div>
+                    `;
+                } else if (status === 'started') {
+                    modalContent = `
+                        <div class="text-center mb-6">
+                            <div class="text-6xl mb-4">🔥</div>
+                            <h4 class="text-xl font-bold text-green-300 mb-3 medieval-font">Quest Active!</h4>
+                            <p class="text-gray-400 story-font">The adventure has begun!</p>
+                        </div>
+
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between items-center p-4 glass rounded-lg border border-emerald-400/20">
+                                <span class="text-gray-400 story-font">💰 Treasure Prize:</span>
+                                <div class="flex items-center space-x-2">
+                                    <img src="../assets/icons/coin-sign.png" alt="Prize" class="w-5 h-5">
+                                    <span class="text-emerald-400 font-bold text-lg medieval-font">${heist.prize} CP</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-4 glass rounded-lg border border-gray-600/30">
+                                <span class="text-gray-400 story-font">🎫 Entry Tribute:</span>
+                                <div class="flex items-center space-x-2">
+                                    <img src="../assets/icons/coin-sign.png" alt="Entry" class="w-5 h-5">
+                                    <span class="text-gray-300 font-bold text-lg medieval-font">${heist.ticket_price} CP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            ${userHasJoined ? 
+                                `<div class="p-3 bg-emerald-900/25 border border-emerald-400/40 rounded-lg">
+                                    <p class="text-emerald-300 font-bold medieval-font">✅ You have joined this quest!</p>
+                                </div>` :
+                                `<button onclick="payEntryWithLoading(${heist.id})" id="joinBtn-${heist.id}"
+                                        class="w-full medieval-button text-white font-bold py-3 px-6 rounded-lg medieval-font">
+                                    ⚔️ JOIN QUEST (${heist.ticket_price} CP)
+                                </button>`
+                            }
+                            <button onclick="startHeistWithLoading(${heist.id})" id="startBtn-${heist.id}"
+                                    class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg medieval-font transition-colors">
+                                🎯 START QUEST
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    modalContent = `
+                        <div class="text-center py-8">
+                            <div class="text-6xl mb-4">⚠️</div>
+                            <p class="text-amber-300 text-lg medieval-font mb-2">Unknown Quest Status</p>
+                            <p class="text-gray-500 text-sm story-font mb-4">Status: ${status}</p>
+                            <button onclick="closeModal()" 
+                                    class="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold medieval-font transition-colors">
+                                RETREAT
+                            </button>
+                        </div>
+                    `;
+                }
+
+                contentEl.innerHTML = modalContent;
+            } catch (error) {
+                console.error('Error loading heist details:', error);
+                showAlert('Failed to load quest details', 'error');
+                contentEl.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <p class="text-red-400 text-lg medieval-font mb-2">Failed to Load Quest</p>
+                        <p class="text-gray-500 text-sm story-font mb-4">${error.message || 'The ancient servers seem to be resting'}</p>
+                        <button onclick="closeModal()" class="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold medieval-font transition-colors">
+                            RETREAT
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function showQuestStory(heistId) {
+            const heist = availableHeists.find(h => Number(h.id) === Number(heistId));
+            if (!heist) {
+                showAlert('Quest not found', 'error');
+                return;
+            }
+
+            const titleEl = document.getElementById('modalTitle');
+            const contentEl = document.getElementById('modalContent');
+            if (!titleEl || !contentEl) return;
+
+            titleEl.textContent = `${heist.name} - Quest Chronicle`;
+            contentEl.innerHTML = `
+                <div class="ancient-scroll p-4 sm:p-6 mb-4 sm:mb-6">
+                    <div class="flex items-center mb-4">
+                        <span class="text-xl sm:text-2xl mr-3">📜</span>
+                        <h4 class="text-lg sm:text-xl font-bold text-amber-300 medieval-font">Ancient Chronicle</h4>
+                    </div>
+                    <div class="scrollable-story">
+                        <div class="parchment-text story-font text-base sm:text-lg leading-relaxed mb-4 sm:mb-6 pr-2">
+                            ${heist.story || 'In the depths of an ancient vault, legends speak of a treasure beyond imagination...'}
+                        </div>
+                    </div>
+                    <div class="medieval-border p-3 sm:p-4 bg-amber-900/20">
+                        <h5 class="text-base sm:text-lg font-semibold text-amber-200 mb-2 sm:mb-3 medieval-font">🔍 The Ancient Riddle:</h5>
+                        <p class="parchment-text story-font text-sm sm:text-base leading-relaxed">${heist.question || 'What grows stronger the more it is shared, yet disappears when spoken aloud?'}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2 story-font">Your Answer to the Ancient Riddle:</label>
+                    <input type="text" id="answerInput" 
+                           class="w-full p-3 sm:p-4 bg-gray-800/50 border border-emerald-400/30 rounded-lg text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none story-font text-sm sm:text-base"
+                           placeholder="Enter your answer to unlock the treasure...">
+                </div>
+                
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                    <button onclick="submitAnswerWithLoading(${heist.id})" id="submitBtn-${heist.id}"
+                            class="flex-1 medieval-button text-white font-bold py-3 px-4 sm:px-6 rounded-lg medieval-font text-sm sm:text-base">
+                        🗡️ SUBMIT ANSWER
+                    </button>
+                    <button onclick="openHeistModal(${heist.id})" 
+                            class="px-4 sm:px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold medieval-font transition-colors text-sm sm:text-base">
+                        ← BACK
+                    </button>
+                </div>
+            `;
+        }
+
+        async function submitAnswerWithLoading(heistId) {
+            const input = document.getElementById('answerInput');
+            const answer = input ? input.value.trim() : '';
+            if (!answer) {
+                showAlert('The ancient spirits require an answer, brave one', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById(`submitBtn-${heistId}`);
+            const originalText = btn ? btn.innerHTML : '';
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>SUBMITTING...</span>
+                    </div>
+                `;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axios.post(`${API_BASE}/submitAnswer/${heistId}`,
+                    { answer },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                showAlert(response.data?.message || '✅ Answer submitted!', 'success');
+                closeModal();
+                await loadUserProfile();
+                await loadAvailableHeists();
+            } catch (error) {
+                const msg = error.response?.data?.message || 'The ancient riddle remains unsolved';
+                if (/not started|pending|hold/i.test(msg)) showAlert('⏳ This quest has not started yet. Wait for ACTIVE.', 'warning');
+                else if (/join|not joined|must join/i.test(msg)) showAlert('⚔️ You must JOIN the quest before you can answer.', 'warning');
+                else showAlert(msg, 'error');
+
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
+        }
+
+        async function startHeistWithLoading(heistId) {
+            const heist = availableHeists.find(h => Number(h.id) === Number(heistId));
+            if (!heist) {
+                showAlert('Quest not found', 'error');
+                return;
+            }
+
+            if (String(heist.status || '').toLowerCase() !== 'started') {
+                showAlert('⏳ This quest has not started yet. Please wait for ACTIVE.', 'warning');
+                return;
+            }
+
+            // Just open the story UI
+            showQuestStory(heistId);
+        }
+    </script>
+</body>
+</html>

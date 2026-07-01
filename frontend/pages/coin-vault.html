@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Vault - CopUpBid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-alert.show {
+            transform: translateX(0);
+        }
+        .custom-alert.success {
+            background: rgba(16, 185, 129, 0.9);
+        }
+        .custom-alert.error {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .custom-alert.warning {
+            background: rgba(245, 158, 11, 0.9);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+    <!-- Header -->
+    <header class="p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <button onclick="window.history.back()" class="glass-effect rounded-full p-2 hover:bg-emerald-500/20 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h1 class="text-2xl font-bold">Coin Vault</h1>
+        </div>
+        
+        <!-- Current Balance -->
+        <div class="glass-effect rounded-full px-4 py-2 flex items-center space-x-2">
+            <img src="../assets/icons/coin-sign.png" alt="Coin" class="w-6 h-6">
+            <span id="currentBalance" class="font-bold">***</span>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- Current Rate Card -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                    <h2 class="text-xl font-bold">Current Rate</h2>
+                </div>
+                <!-- Toggle base / NGN view -->
+                <button id="toggleCurrencyBtn"
+                        class="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-200 hover:bg-emerald-500/20 transition-colors">
+                    Loading...
+                </button>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold mb-2 text-emerald-400">
+                    <span id="unitPrice">Loading...</span> <span id="currency">-</span>
+                </div>
+                <p class="text-gray-300">per coin</p>
+                <p class="text-sm text-gray-400 mt-2">
+                    Rate: <span data-rate-text>Loading rate...</span>
+                </p>
+                <p class="text-sm text-gray-400 mt-2">Last updated: <span id="lastUpdated">-</span></p>
+            </div>
+        </div>
+
+        <!-- Purchase Form -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
+                </svg>
+                Buy Coins
+            </h2>
+
+            <!-- Payment Account Info -->
+            <div id="paymentAccount" class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-emerald-400 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                    Payment Details
+                </h3>
+                <div id="accountDetails" class="space-y-2 text-sm">
+                    <div class="text-center text-gray-400">Loading payment details...</div>
+                </div>
+            </div>
+            
+            <form id="purchaseForm" class="space-y-4">
+                <!-- Coins Input + Estimate -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Number of Coins</label>
+                    <input type="number" id="coinsInput" min="1" step="1" 
+                           class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                           placeholder="Enter number of coins">
+                    <p class="text-xs text-gray-400 mt-1">
+                        Current rate: <span data-rate-text>Loading rate...</span>
+                    </p>
+
+                    <!-- BUY ESTIMATE BOX -->
+                    <div id="buyQuickPreview" class="mt-3 bg-white/5 rounded-lg p-3 text-xs text-gray-200 hidden">
+                        <div class="flex justify-between">
+                            <span>CopupCoins:</span>
+                            <span id="buyPreviewCoins">0</span>
+                        </div>
+                        <div class="flex justify-between mt-1">
+                            <span>Estimated amount:</span>
+                            <span>
+                                <span id="buyPreviewTotal">0</span>
+                                <span id="buyPreviewCurrency">NGN</span>
+                            </span>
+                        </div>
+                        <p class="mt-2 text-[10px] text-gray-400">
+                            Estimate only. Please send exactly this amount from your bank or wallet.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Detailed Price Preview -->
+                <div id="pricePreview" class="bg-white/5 rounded-lg p-4 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span>Coins:</span>
+                        <span id="previewCoins">0</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span>Unit Price:</span>
+                        <span><span id="previewUnitPrice">0</span> <span id="previewCurrency">NGN</span></span>
+                    </div>
+                    <div class="flex justify-between items-center font-bold text-lg border-t border-white/20 pt-2 text-emerald-400">
+                        <span>Total:</span>
+                        <span><span id="previewTotal">0</span> <span id="previewTotalCurrency">NGN</span></span>
+                    </div>
+                </div>
+
+                <!-- Payment Proof -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Payment Proof</label>
+                    <input type="file" id="proofFile" accept="image/*" 
+                           class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700">
+                    <p class="text-xs text-gray-400 mt-1">Upload a clear screenshot of your payment</p>
+                </div>
+
+                <!-- User Note -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Note (Optional)</label>
+                    <textarea id="userNote" rows="3" 
+                              class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              placeholder="Add any additional information..."></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" 
+                        class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    Submit Purchase Request
+                </button>
+            </form>
+        </div>
+
+        <!-- Purchase History -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Purchase History
+            </h2>
+            
+            <div id="purchaseHistory" class="space-y-3">
+                <div class="text-center text-gray-400 py-8">
+                    <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Loading purchase history...
+                </div>
+            </div>
+        </div>
+
+        <!-- Payout Form -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                Withdraw CopupCoins
+            </h2>
+
+            <form id="payoutForm" class="space-y-4">
+                <!-- CopupCoins Input + Estimate -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Number of CopupCoins to Withdraw</label>
+                    <input type="number" id="bidPointsInput" min="1" step="1" 
+                           class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                           placeholder="Enter number of copupcoins">
+                    <p class="text-xs text-gray-400 mt-1">Minimum withdrawal: 1 copupcoin</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        Current rate: <span data-rate-text>Loading rate...</span>
+                    </p>
+
+                    <!-- WITHDRAW ESTIMATE BOX -->
+                    <div id="payoutPreview" class="mt-3 bg-white/5 rounded-lg p-3 text-xs text-gray-200 hidden">
+                        <div class="flex justify-between">
+                            <span>CopupCoins:</span>
+                            <span id="payoutPreviewCoins">0</span>
+                        </div>
+                        <div class="flex justify-between mt-1">
+                            <span>Estimated amount:</span>
+                            <span>
+                                <span id="payoutPreviewTotal">0</span>
+                                <span id="payoutPreviewCurrency">NGN</span>
+                            </span>
+                        </div>
+                        <p class="mt-2 text-[10px] text-gray-400">
+                            Estimate only. Final value may differ slightly at processing time.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Bank Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Account Name</label>
+                        <input type="text" id="accountName" required
+                               class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                               placeholder="Full account name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Account Number</label>
+                        <input type="text" id="accountNumber" required
+                               class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                               placeholder="Account number">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Bank Name</label>
+                    <input type="text" id="bankName" required
+                           class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                           placeholder="Bank name">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="payoutSubmitBtn" 
+                        class="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    Submit Withdrawal Request
+                </button>
+            </form>
+        </div>
+
+        <!-- Payout History -->
+        <div class="glass-effect rounded-2xl p-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Withdrawal History
+            </h2>
+            
+            <div id="payoutHistory" class="space-y-3">
+                <div class="text-center text-gray-400 py-8">
+                    <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    Loading withdrawal history...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL FOR PURCHASE -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
+        <div class="glass-effect bg-gray-900/90 max-w-md w-full mx-4 rounded-2xl p-6 border border-emerald-500/40">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Confirm Purchase
+                </h3>
+                <button id="confirmCloseBtn" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+                Please confirm that you have sent the correct payment amount before submitting this purchase request.
+            </p>
+
+            <div class="bg-white/5 rounded-lg p-3 text-sm mb-4">
+                <div class="flex justify-between mb-1">
+                    <span>CopupCoins:</span>
+                    <span id="confirmCoins">0</span>
+                </div>
+                <div class="flex justify-between mb-1">
+                    <span>Amount to send:</span>
+                    <span>
+                        <span id="confirmAmount">0</span>
+                        <span id="confirmCurrency">NGN</span>
+                    </span>
+                </div>
+                <p class="text-xs text-yellow-300 mt-2">
+                    Make sure the amount you sent from your bank/wallet matches this value exactly.
+                </p>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button id="confirmCancelBtn"
+                        class="px-4 py-2 rounded-lg bg-white/5 text-sm text-gray-200 hover:bg-white/10">
+                    No, let me check
+                </button>
+                <button id="confirmYesBtn"
+                        class="px-4 py-2 rounded-lg bg-emerald-600 text-sm font-semibold hover:bg-emerald-700">
+                    Yes, I sent this amount
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api/users';
+
+        let currentRate = null;  // { unit, price, currency, updated_at }
+        let baseCurrency = 'USD';
+        let targetCurrency = null;
+        let pendingPurchase = null;
+
+        // FX table – simple (update to real values if you want)
+        const FX_TABLE = {
+            USD: { USD: 1, NGN: 1500 },
+            NGN: { NGN: 1, USD: 1 / 1500 }
+        };
+
+        function showAlert(message, type = 'success') {
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alert = document.createElement('div');
+            alert.className = `custom-alert ${type}`;
+            alert.textContent = message;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => alert.classList.add('show'), 100);
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
+        }
+
+        function openConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function convertPrice(price, from, to) {
+            from = (from || '').toUpperCase();
+            to = (to || '').toUpperCase();
+            if (!FX_TABLE[from] || !FX_TABLE[from][to]) {
+                return { price, currency: from };
+            }
+            return {
+                price: price * FX_TABLE[from][to],
+                currency: to
+            };
+        }
+
+        function getPerCoin(target) {
+            if (!currentRate || !currentRate.unit || currentRate.unit <= 0) return null;
+            const { price, currency } = convertPrice(currentRate.price, baseCurrency, target);
+            return {
+                perCoin: price / currentRate.unit,
+                currency
+            };
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+            
+            loadUserProfile();
+            loadPaymentAccount().finally(() => {
+                loadCurrentRate();
+            });
+            loadPurchaseHistory();
+            loadPayoutHistory();
+
+            const toggleBtn = document.getElementById('toggleCurrencyBtn');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    if (!currentRate) return;
+                    if (targetCurrency === baseCurrency) {
+                        targetCurrency = 'NGN';
+                    } else {
+                        targetCurrency = baseCurrency;
+                    }
+                    renderRate();
+                    updatePayoutPreview();
+                    updateBuyPreview();
+                });
+            }
+
+            const payoutInput = document.getElementById('bidPointsInput');
+            if (payoutInput) {
+                payoutInput.addEventListener('input', updatePayoutPreview);
+            }
+
+            const coinsInput = document.getElementById('coinsInput');
+            if (coinsInput) {
+                coinsInput.addEventListener('input', updateBuyPreview);
+            }
+
+            document.getElementById('confirmCloseBtn').addEventListener('click', () => {
+                pendingPurchase = null;
+                closeConfirmModal();
+            });
+            document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+                pendingPurchase = null;
+                closeConfirmModal();
+            });
+            document.getElementById('confirmYesBtn').addEventListener('click', submitConfirmedPurchase);
+        });
+
+        async function loadUserProfile() {
+            try {
+                const response = await axios.get(`${API_BASE}/profile`);
+                const userData = response.data;
+                document.getElementById('currentBalance').textContent = userData.bid_points || 0;
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../auth/login.html';
+                }
+            }
+        }
+
+        async function loadCurrentRate() {
+            try {
+                const response = await axios.get(`${API_BASE}/coin-rate`);
+                const raw = response.data || {};
+
+                const unit = Number(raw.unit || 0);
+                const price = Number(raw.price || 0);
+                baseCurrency = (raw.currency || 'USD').toUpperCase();
+                const updatedAt = raw.updated_at || null;
+
+                currentRate = {
+                    unit,
+                    price,
+                    currency: baseCurrency,
+                    updated_at: updatedAt
+                };
+
+                if (!targetCurrency) {
+                    targetCurrency = baseCurrency;
+                }
+
+                renderRate();
+                updatePayoutPreview();
+                updateBuyPreview();
+            } catch (error) {
+                console.error('Error loading rate:', error);
+                document.getElementById('unitPrice').textContent = 'Error';
+                document.getElementById('currency').textContent = '-';
+                document.getElementById('toggleCurrencyBtn').textContent = 'Error';
+
+                document.querySelectorAll('[data-rate-text]').forEach(el => {
+                    el.textContent = 'Rate unavailable';
+                });
+            }
+        }
+
+        function renderRate() {
+            if (!currentRate) return;
+
+            const unit = currentRate.unit;
+            const basePrice = currentRate.price;
+            const updatedAt = currentRate.updated_at;
+
+            const { price: displayPrice, currency: displayCurrency } =
+                convertPrice(basePrice, baseCurrency, targetCurrency || baseCurrency);
+
+            const perCoin = unit > 0 ? displayPrice / unit : 0;
+
+            document.getElementById('unitPrice').textContent = perCoin.toFixed(2);
+            document.getElementById('currency').textContent = displayCurrency;
+            document.getElementById('lastUpdated').textContent = updatedAt
+                ? new Date(updatedAt).toLocaleString()
+                : '-';
+
+            const coinLabel = unit === 1 ? 'copupcoin' : 'copupcoins';
+            const nicePrice = Number(displayPrice).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            const rateText = `${unit} ${coinLabel} = ${nicePrice} ${displayCurrency}`;
+
+            document.querySelectorAll('[data-rate-text]').forEach(el => {
+                el.textContent = rateText;
+            });
+
+            const toggleBtn = document.getElementById('toggleCurrencyBtn');
+            if (toggleBtn) {
+                if (targetCurrency === baseCurrency) {
+                    toggleBtn.textContent = 'Show in NGN';
+                } else {
+                    toggleBtn.textContent = `Show in ${baseCurrency}`;
+                }
+            }
+        }
+
+        // BUY ESTIMATE + BIG PREVIEW (pure frontend)
+        function updateBuyPreview() {
+            const coinsInput = document.getElementById('coinsInput');
+            const quickBox = document.getElementById('buyQuickPreview');
+            const priceBox = document.getElementById('pricePreview');
+
+            if (!coinsInput) return;
+            const coins = Number(coinsInput.value);
+            if (!coins || coins <= 0 || !currentRate) {
+                quickBox.classList.add('hidden');
+                priceBox.classList.add('hidden');
+                return;
+            }
+
+            const target = targetCurrency || baseCurrency;
+            const info = getPerCoin(target);
+            if (!info) {
+                quickBox.classList.add('hidden');
+                priceBox.classList.add('hidden');
+                return;
+            }
+
+            const perCoin = info.perCoin;
+            const total = coins * perCoin;
+
+            // mini estimate box
+            document.getElementById('buyPreviewCoins').textContent = coins.toString();
+            document.getElementById('buyPreviewTotal').textContent = total.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('buyPreviewCurrency').textContent = info.currency;
+            quickBox.classList.remove('hidden');
+
+            // big preview box
+            document.getElementById('previewCoins').textContent = coins.toString();
+            document.getElementById('previewUnitPrice').textContent = perCoin.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 4
+            });
+            document.getElementById('previewCurrency').textContent = info.currency;
+            document.getElementById('previewTotal').textContent = total.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('previewTotalCurrency').textContent = info.currency;
+            priceBox.classList.remove('hidden');
+        }
+
+        // WITHDRAW estimate
+        function updatePayoutPreview() {
+            const input = document.getElementById('bidPointsInput');
+            const box = document.getElementById('payoutPreview');
+            if (!input || !box) return;
+
+            const coins = Number(input.value);
+            if (!coins || coins <= 0 || !currentRate) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            const target = targetCurrency || baseCurrency;
+            const info = getPerCoin(target);
+            if (!info) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            const total = coins * info.perCoin;
+
+            document.getElementById('payoutPreviewCoins').textContent = coins.toString();
+            document.getElementById('payoutPreviewTotal').textContent = total.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('payoutPreviewCurrency').textContent = info.currency;
+
+            box.classList.remove('hidden');
+        }
+
+        // PURCHASE FORM – open modal first
+        document.getElementById('purchaseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const coins = parseInt(document.getElementById('coinsInput').value);
+            const proofFile = document.getElementById('proofFile').files[0];
+            const userNote = document.getElementById('userNote').value;
+            
+            if (!coins || coins <= 0) {
+                showAlert('Please enter a valid number of coins', 'warning');
+                return;
+            }
+            
+            if (!proofFile) {
+                showAlert('Please upload payment proof', 'warning');
+                return;
+            }
+
+            if (!currentRate) {
+                showAlert('Rate not loaded yet. Please wait a moment.', 'warning');
+                return;
+            }
+
+            const target = targetCurrency || baseCurrency;
+            const info = getPerCoin(target);
+            if (!info) {
+                showAlert('Unable to calculate amount. Try again.', 'error');
+                return;
+            }
+
+            const total = coins * info.perCoin;
+
+            document.getElementById('confirmCoins').textContent = coins.toString();
+            document.getElementById('confirmAmount').textContent = total.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('confirmCurrency').textContent = info.currency;
+
+            pendingPurchase = {
+                coins,
+                proofFile,
+                userNote
+            };
+
+            openConfirmModal();
+        });
+
+        // FINAL SUBMIT after user confirms in modal
+        async function submitConfirmedPurchase() {
+            if (!pendingPurchase) {
+                closeConfirmModal();
+                return;
+            }
+
+            const { coins, proofFile, userNote } = pendingPurchase;
+            const submitBtn = document.getElementById('submitBtn');
+
+            closeConfirmModal();
+
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('coins', coins);
+                formData.append('proof', proofFile);
+                if (userNote) formData.append('user_note', userNote);
+                
+                await axios.post(`${API_BASE}/purchases`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                
+                showAlert('Purchase request submitted successfully! Please wait for admin approval.', 'success');
+                
+                document.getElementById('purchaseForm').reset();
+                document.getElementById('pricePreview').classList.add('hidden');
+                document.getElementById('buyQuickPreview').classList.add('hidden');
+                pendingPurchase = null;
+                
+                loadPurchaseHistory();
+            } catch (error) {
+                console.error('Error submitting purchase:', error);
+                showAlert(error.response?.data?.message || 'Error submitting purchase request', 'error');
+            } finally {
+                submitBtn.textContent = 'Submit Purchase Request';
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function loadPurchaseHistory() {
+            try {
+                const response = await axios.get(`${API_BASE}/purchases`);
+                const purchases = response.data;
+                const historyDiv = document.getElementById('purchaseHistory');
+                
+                if (!purchases || purchases.length === 0) {
+                    historyDiv.innerHTML = `
+                        <div class="text-center text-gray-400 py-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            No purchases yet
+                        </div>
+                    `;
+                    return;
+                }
+                
+                historyDiv.innerHTML = purchases.map(purchase => {
+                    const statusColor = {
+                        'pending': 'bg-yellow-500/20 text-yellow-300',
+                        'approved': 'bg-green-500/20 text-green-300',
+                        'rejected': 'bg-red-500/20 text-red-300'
+                    }[purchase.status] || 'bg-gray-500/20 text-gray-300';
+                    
+                    return `
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="font-bold">${purchase.coins} coins</span>
+                                    <span class="text-gray-400 ml-2">${purchase.total_price} ${purchase.currency || 'NGN'}</span>
+                                </div>
+                                <span class="px-2 py-1 rounded-full text-xs ${statusColor}">${purchase.status}</span>
+                            </div>
+                            <div class="text-sm text-gray-400">
+                                <p>Submitted: ${new Date(purchase.created_at).toLocaleString()}</p>
+                                ${purchase.admin_note ? `<p class="mt-1 text-yellow-300">Admin: ${purchase.admin_note}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading purchase history:', error);
+                document.getElementById('purchaseHistory').innerHTML = `
+                    <div class="text-center text-red-400 py-8">
+                        Error loading purchase history
+                    </div>
+                `;
+            }
+        }
+
+        async function loadPaymentAccount() {
+            try {
+                const response = await axios.get(`${API_BASE}/pay-account`);
+                const account = response.data || {};
+                
+                document.getElementById('accountDetails').innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <label class="text-xs text-gray-400 uppercase tracking-wide">Bank Name</label>
+                            <div class="font-semibold text-white">${account.bank_name || '-'}</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <label class="text-xs text-gray-400 uppercase tracking-wide">Account Name</label>
+                            <div class="font-semibold text-white">${account.account_name || '-'}</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <label class="text-xs text-gray-400 uppercase tracking-wide">Account Number</label>
+                            <div class="font-semibold text-emerald-400 text-lg">${account.account_number || '-'}</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <label class="text-xs text-gray-400 uppercase tracking-wide">Currency</label>
+                            <div class="font-semibold text-white">${(account.currency || 'NGN').toUpperCase()}</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                        <p class="text-xs text-yellow-300">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            Please make payment to the above account and upload proof of payment below.
+                        </p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading payment account:', error);
+                document.getElementById('accountDetails').innerHTML = `
+                    <div class="text-center text-red-400 py-4">
+                        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Payment account not available
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('payoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bidPoints = parseInt(document.getElementById('bidPointsInput').value);
+            const accountName = document.getElementById('accountName').value.trim();
+            const accountNumber = document.getElementById('accountNumber').value.trim();
+            const bankName = document.getElementById('bankName').value.trim();
+            const submitBtn = document.getElementById('payoutSubmitBtn');
+            
+            if (!bidPoints || bidPoints <= 0) {
+                showAlert('Please enter a valid number of copupcoins', 'warning');
+                return;
+            }
+            
+            if (!accountName || !accountNumber || !bankName) {
+                showAlert('Please fill in all bank details', 'warning');
+                return;
+            }
+            
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            
+            try {
+                await axios.post(`${API_BASE}/payout`, {
+                    bid_points: bidPoints,
+                    account_name: accountName,
+                    account_number: accountNumber,
+                    bank_name: bankName
+                });
+                
+                showAlert('Withdrawal request submitted successfully! Your copupcoins have been deducted.', 'success');
+                
+                document.getElementById('payoutForm').reset();
+                document.getElementById('payoutPreview').classList.add('hidden');
+                
+                loadUserProfile();
+                loadPayoutHistory();
+                
+            } catch (error) {
+                console.error('Error submitting payout:', error);
+                showAlert(error.response?.data?.message || 'Error submitting withdrawal request', 'error');
+            } finally {
+                submitBtn.textContent = 'Submit Withdrawal Request';
+                submitBtn.disabled = false;
+            }
+        });
+
+        async function loadPayoutHistory() {
+            try {
+                const response = await axios.get(`${API_BASE}/payouts`);
+                const payouts = response.data;
+                const historyDiv = document.getElementById('payoutHistory');
+                
+                if (!payouts || payouts.length === 0) {
+                    historyDiv.innerHTML = `
+                        <div class="text-center text-gray-400 py-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                            No withdrawals yet
+                        </div>
+                    `;
+                    return;
+                }
+                
+                historyDiv.innerHTML = payouts.map(payout => {
+                    const statusColor = {
+                        'pending': 'bg-yellow-500/20 text-yellow-300',
+                        'approved': 'bg-green-500/20 text-green-300',
+                        'rejected': 'bg-red-500/20 text-red-300'
+                    }[payout.status] || 'bg-gray-500/20 text-gray-300';
+                    
+                    return `
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="font-bold">${payout.bid_points} copupcoins</span>
+                                    <span class="text-gray-400 ml-2">${payout.bank_name}</span>
+                                </div>
+                                <span class="px-2 py-1 rounded-full text-xs ${statusColor}">${payout.status}</span>
+                            </div>
+                            <div class="text-sm text-gray-400">
+                                <p>Account: ${payout.account_name} - ${payout.account_number}</p>
+                                <p>Submitted: ${new Date(payout.created_at).toLocaleString()}</p>
+                                ${payout.admin_note ? `<p class="mt-1 text-yellow-300">Admin: ${payout.admin_note}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading withdrawal history:', error);
+                document.getElementById('payoutHistory').innerHTML = `
+                    <div class="text-center text-red-400 py-8">
+                        Error loading withdrawal history
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

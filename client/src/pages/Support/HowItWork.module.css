@@ -1,0 +1,387 @@
+/* ✅ kill white edges globally for this page */
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+  background: #070b14;
+  overflow-x: hidden;
+}
+
+.page {
+  min-height: 100vh;
+  color: #fff;
+  background: #070b14;
+  position: relative;
+  overflow-x: hidden;
+  padding-top: 90px;
+}
+
+.container {
+  width: min(1100px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* background glow */
+.bgGlow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.bgSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.pulse1,
+.pulse2,
+.pulse3 {
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.pulse2 {
+  animation-delay: 1s;
+}
+.pulse3 {
+  animation-delay: 2s;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* hero */
+.hero {
+  position: relative;
+  z-index: 2;
+  padding: 10px 0 12px;
+}
+.heroCard {
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 18px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+}
+
+.heroTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.heroIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.heroMain {
+  flex: 1;
+  min-width: 0;
+}
+.heroTitle {
+  font-weight: 1000;
+  font-size: 18px;
+}
+.heroSub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.35;
+}
+
+.pills {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pill,
+.pillAlt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 950;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.82);
+}
+.pillAlt {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.heroActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* tabs */
+.tabsWrap {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tab,
+.tabActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+  font-weight: 950;
+  font-size: 12px;
+}
+.tab:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+.tab:active,
+.tabActive:active {
+  transform: scale(0.99);
+}
+
+.tabActive {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.18),
+    rgba(59, 130, 246, 0.14)
+  );
+}
+
+.tabIcon {
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+.tabLabel {
+  white-space: nowrap;
+}
+
+/* selector row */
+.selectorRow {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.selectorMid {
+  flex: 1;
+  min-width: 0;
+}
+.selectorTitle {
+  font-weight: 1000;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.selectorSub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* body */
+.body {
+  position: relative;
+  z-index: 2;
+  padding: 10px 0 80px;
+}
+
+/* cards */
+.card {
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 18px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+}
+
+.cardHeader {
+  margin-bottom: 12px;
+}
+.cardTitle {
+  font-weight: 1000;
+  font-size: 16px;
+}
+.cardSub {
+  margin-top: 2px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* badge */
+.badgeSoft {
+  font-size: 12px;
+  font-weight: 950;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* steps */
+.steps {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.step {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.22);
+}
+.stepNo {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.stepMain {
+  min-width: 0;
+}
+.stepTitle {
+  font-weight: 1000;
+  font-size: 14px;
+}
+.stepText {
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+}
+.miniList {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.5;
+}
+
+/* highlight row */
+.highlightRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.22);
+}
+.highlight {
+  display: grid;
+  gap: 4px;
+}
+.highlightLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.58);
+  font-weight: 900;
+}
+.highlightValue {
+  font-weight: 1000;
+  font-size: 14px;
+}
+
+/* bullets */
+.bullets {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.bullet {
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 900;
+}
+
+/* buttons */
+.btnPrimary {
+  border-radius: 16px;
+  border: 0;
+  padding: 12px 14px;
+  color: #0a0f1c;
+  font-weight: 950;
+  cursor: pointer;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 1), rgba(59, 130, 246, 1));
+  white-space: nowrap;
+}
+.btnPrimary:hover {
+  filter: brightness(1.05);
+}
+.btnPrimary:active {
+  transform: scale(0.98);
+}
+
+.btnGhost {
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+  white-space: nowrap;
+}
+.btnGhost:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+.btnGhost:active {
+  transform: scale(0.98);
+}
+
+.softNote {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}

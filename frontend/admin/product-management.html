@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Admin • Product Management</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' },
+            accent:{ 500: '#3b82f6' }
+          },
+          boxShadow: {
+            glow: '0 0 80px 0 rgba(16,185,129,0.15)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Axios (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 1rem;
+      backdrop-filter: blur(6px);
+    }
+    .badge {
+      display:inline-flex; align-items:center; gap:.35rem;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:.5rem; padding:.15rem .5rem; font-size:.72rem;
+      background:rgba(255,255,255,.05)
+    }
+    .table-wrap { overflow-x:auto; }
+    .modal-backdrop {
+      backdrop-filter: blur(2px);
+      background: rgba(2,6,23,.55);
+    }
+  </style>
+</head>
+<body class="min-h-dvh bg-slate-900 text-slate-100">
+  <!-- BG -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(90%_70%_at_10%_-10%,rgba(34,211,238,.10),rgba(59,130,246,.10),rgba(0,0,0,0))]"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-10 bg-slate-900/70 backdrop-blur border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a id="backBtn"
+           class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-200 hover:bg-white/10 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Dashboard
+        </a>
+        <h1 class="text-lg font-semibold tracking-tight">
+          Admin <span class="text-brand-500">Product</span> Management
+        </h1>
+      </div>
+      <a id="logoutBtn" class="text-sm text-slate-300 hover:text-white cursor-pointer">Log out</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-8">
+    <!-- Stats -->
+    <section class="glass p-5 md:p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <div class="text-2xl font-bold text-brand-400" id="statTotalProducts">—</div>
+          <div class="text-sm text-slate-400">Total Products</div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <div class="text-2xl font-bold text-emerald-300" id="statTotalCategories">—</div>
+          <div class="text-sm text-slate-400">Total Categories</div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <div class="text-2xl font-bold text-accent-300" id="statFeatured">—</div>
+          <div class="text-sm text-slate-400">Featured Products</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters + Actions -->
+    <section class="glass p-5 md:p-6">
+      <form id="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="filterQ">Search</label>
+          <input id="filterQ" type="text" placeholder="name / category"
+                 class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/30" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="filterCategory">Category</label>
+          <select id="filterCategory"
+                  class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="filterFeatured">Featured</label>
+          <select id="filterFeatured"
+                  class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+            <option value="">All</option>
+            <option value="1">Featured only</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 justify-between md:justify-end">
+          <div class="flex items-center gap-3">
+            <button class="rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950"
+                    type="submit">Apply</button>
+            <button id="clearBtn" type="button"
+                    class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-slate-100 hover:bg-white/10">Clear</button>
+          </div>
+          <button id="newProductBtn" type="button"
+                  class="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-400/20">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            New Product
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Products Table -->
+    <section class="glass p-5 md:p-6">
+      <div class="table-wrap">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-300">
+            <tr class="border-b border-white/10">
+              <th class="py-2 px-2 text-left">Image</th>
+              <th class="py-2 px-2 text-left">Name</th>
+              <th class="py-2 px-2 text-left">Prices</th>
+              <th class="py-2 px-2 text-left">Categories</th>
+              <th class="py-2 px-2 text-left">Featured</th>
+              <th class="py-2 px-2 text-left">Created</th>
+              <th class="py-2 px-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productTbody" class="divide-y divide-white/10"></tbody>
+        </table>
+      </div>
+      <div id="resultInfo" class="mt-3 text-sm text-slate-400">—</div>
+
+      <!-- Messages -->
+      <div id="errBox" class="hidden mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+      <div id="okBox"  class="hidden mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200"></div>
+    </section>
+
+    <!-- Categories Management -->
+    <section class="glass p-5 md:p-6">
+      <div class="flex flex-col md:flex-row md:items-start gap-6">
+        <div class="flex-1 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-base font-semibold">Categories</h2>
+          </div>
+          <ul id="categoryList" class="space-y-2 text-sm"></ul>
+        </div>
+        <div class="w-full md:w-80 border border-white/10 rounded-xl bg-white/5 p-4 space-y-3">
+          <h3 class="text-sm font-semibold text-slate-100">Create Category</h3>
+          <form id="catForm" class="space-y-3">
+            <div>
+              <label for="catName" class="block text-xs text-slate-300 mb-1.5">Name</label>
+              <input id="catName" type="text" placeholder="e.g. Electronics"
+                     class="w-full rounded-xl bg-slate-900/40 border border-white/15 px-3 py-2 text-sm outline-none focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/30" />
+            </div>
+            <button type="submit"
+                    class="w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-400/20">
+              Add Category
+            </button>
+          </form>
+          <div id="catErr" class="hidden mt-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-100"></div>
+          <div id="catOk"  class="hidden mt-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Product Modal (Create / Edit) -->
+  <div id="pModal" class="fixed inset-0 hidden place-items-center modal-backdrop">
+    <div class="w-full max-w-2xl glass p-6 md:p-7">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">
+            <span id="pModalTitle">New Product</span>
+            <span id="pProductId" class="text-slate-400 text-sm ml-2"></span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Upload an optional image and set prices for cash, auction and heist modes.
+          </p>
+        </div>
+        <button id="pClose" class="rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 hover:bg-white/10">✕</button>
+      </div>
+
+      <form id="pForm" class="mt-5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="pName">Product name</label>
+            <input id="pName" type="text"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-slate-300 mb-1.5" for="pCash">Cash</label>
+              <input id="pCash" type="number" min="0" step="0.01"
+                     class="w-full rounded-xl bg-white/5 border border-white/10 px-2 py-2 text-xs outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1.5" for="pAuction">Auction</label>
+              <input id="pAuction" type="number" min="0" step="0.01"
+                     class="w-full rounded-xl bg-white/5 border border-white/10 px-2 py-2 text-xs outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1.5" for="pHeist">Heist</label>
+              <input id="pHeist" type="number" min="0" step="0.01"
+                     class="w-full rounded-xl bg-white/5 border border-white/10 px-2 py-2 text-xs outline-none" />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-[1.2fr,1fr] gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5">Categories</label>
+            <div id="pCategoryList" class="grid grid-cols-2 gap-2 max-h-40 overflow-auto border border-white/10 rounded-xl p-2 bg-slate-900/30 text-xs">
+              <!-- filled by JS -->
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm text-slate-300 mb-1.5" for="pImage">Image (optional)</label>
+            <input id="pImage" type="file" accept="image/*"
+                   class="block w-full text-xs text-slate-300 file:mr-2 file:rounded-md file:border-0 file:bg-brand-500/90 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-950 hover:file:bg-brand-600" />
+            <div class="mt-2 flex items-center gap-3">
+              <div class="h-16 w-16 rounded-lg border border-white/10 bg-slate-900/40 overflow-hidden flex items-center justify-center">
+                <img id="pImagePreview" alt="Preview" class="h-full w-full object-cover hidden" />
+                <span id="pImagePlaceholder" class="text-[10px] text-slate-500 text-center px-1">No image</span>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-snug">
+                If you leave the image empty while editing, the existing one will be kept.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button id="pSave" type="submit"
+                  class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg id="pSpinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="4"></circle>
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="4"></path>
+            </svg>
+            <span>Save</span>
+          </button>
+          <button id="pCancel" type="button"
+                  class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-slate-100 hover:bg-white/10">Cancel</button>
+        </div>
+
+        <div id="pErr" class="hidden mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200 text-sm"></div>
+        <div id="pOk"  class="hidden mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200 text-sm"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category Edit Modal -->
+  <div id="catModal" class="fixed inset-0 hidden place-items-center modal-backdrop">
+    <div class="w-full max-w-sm glass p-5 md:p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-base font-semibold text-slate-100">Edit Category</h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Update the category name. This will reflect everywhere it is used.
+          </p>
+        </div>
+        <button id="catModalClose"
+                class="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10">✕</button>
+      </div>
+
+      <form id="catEditForm" class="mt-4 space-y-4">
+        <div>
+          <label for="catEditName" class="block text-xs text-slate-300 mb-1.5">Category name</label>
+          <input id="catEditName" type="text"
+                 class="w-full rounded-xl bg-slate-900/40 border border-white/15 px-3 py-2 text-sm outline-none focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/30" />
+        </div>
+
+        <div id="catModalErr"
+             class="hidden rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-100"></div>
+        <div id="catModalOk"
+             class="hidden rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100"></div>
+
+        <div class="flex items-center justify-end gap-2 pt-1">
+          <button id="catModalCancel" type="button"
+                  class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-slate-100 hover:bg-white/10">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="inline-flex items-center gap-2 rounded-xl border border-brand-500/50 bg-brand-500/90 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-brand-600">
+            Save changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const API_BASE = "https://api.copup.copupbid.com/api/admin";
+    const LOGIN_URL = "../auth/login.html";
+    const DASHBOARD_URL = "./admin-dashboard.html";
+
+    // ===== STATE =====
+    let products = [];
+    let categories = [];
+    let featuredIds = new Set();
+
+    let filter = { q: "", categoryId: "", featured: "" };
+
+    // Product modal state
+    let pModalMode = "create"; // "create" | "edit"
+    let pEditingId = null;
+
+    // Category edit modal state
+    let editingCategoryId = null;
+    let editingCategoryOriginalName = "";
+
+    // ===== UTILS =====
+    const $ = (id) => document.getElementById(id);
+    const show = (el) => el.classList.remove("hidden");
+    const hide = (el) => el.classList.add("hidden");
+
+    const setErr = (msg) => { $("errBox").textContent = msg; show($("errBox")); };
+    const setOk  = (msg) => { $("okBox").textContent  = msg; show($("okBox")); };
+    const clearMsgs = () => { hide($("okBox")); hide($("errBox")); };
+
+    const setCatErr = (msg) => { $("catErr").textContent = msg; show($("catErr")); };
+    const setCatOk  = (msg) => { $("catOk").textContent  = msg; show($("catOk")); };
+    const clearCatMsgs = () => { hide($("catErr")); hide($("catOk")); };
+
+    const setModalErr = (msg) => { $("pErr").textContent = msg; show($("pErr")); };
+    const setModalOk  = (msg) => { $("pOk").textContent  = msg; show($("pOk")); };
+    const clearModalMsgs = () => { hide($("pErr")); hide($("pOk")); };
+
+    const setCatModalErr = (msg) => { $("catModalErr").textContent = msg; show($("catModalErr")); hide($("catModalOk")); };
+    const setCatModalOk  = (msg) => { $("catModalOk").textContent  = msg; show($("catModalOk")); hide($("catModalErr")); };
+    const clearCatModalMsgs = () => { hide($("catModalErr")); hide($("catModalOk")); };
+
+    function fmtNum(n) {
+      if (n == null || isNaN(Number(n))) return "0";
+      return Number(n).toLocaleString();
+    }
+    function fmtPriceLabel(p) {
+      if (p == null || p === "") return "—";
+      const n = Number(p);
+      if (isNaN(n)) return String(p);
+      return n.toLocaleString();
+    }
+
+    function ensureAuth() {
+      const raw = localStorage.getItem("authToken");
+      if (!raw) {
+        window.location.href = LOGIN_URL;
+        return null;
+      }
+      const token = raw.replace(/^"(.+)"$/, "$1");
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+      return token;
+    }
+
+    axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem("authToken");
+          window.location.href = LOGIN_URL;
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    // ===== DATA LOADING =====
+    async function loadCategories() {
+      try {
+        const { data } = await axios.get("/categories", { params: { ts: Date.now() } });
+        categories = Array.isArray(data) ? data : [];
+        renderCategoryFilter();
+        renderCategoryList();
+        $("statTotalCategories").textContent = fmtNum(categories.length);
+      } catch (err) {
+        console.error("loadCategories error:", err);
+        categories = [];
+        renderCategoryFilter();
+        renderCategoryList();
+        $("statTotalCategories").textContent = "—";
+      }
+    }
+
+    async function loadFeatured(categoryId) {
+      try {
+        const params = {};
+        if (categoryId) params.categoryId = categoryId;
+        const { data } = await axios.get("/featured/products", { params });
+        featuredIds = new Set((data || []).map(p => p.id));
+        $("statFeatured").textContent = fmtNum(featuredIds.size);
+      } catch (err) {
+        console.error("loadFeatured error:", err);
+        featuredIds = new Set();
+        $("statFeatured").textContent = "0";
+      }
+    }
+
+    async function loadProducts(categoryId) {
+      clearMsgs();
+      try {
+        const params = {};
+        if (categoryId) params.categoryId = categoryId;
+        const { data } = await axios.get("/products", { params });
+        products = Array.isArray(data) ? data : [];
+
+        // refresh featured info for same category filter
+        await loadFeatured(categoryId);
+
+        renderProducts();
+        $("statTotalProducts").textContent = fmtNum(products.length);
+      } catch (err) {
+        console.error("loadProducts error:", err);
+        products = [];
+        renderProducts();
+        setErr(err?.response?.data?.message || "Error fetching products");
+      }
+    }
+
+    // ===== RENDERING =====
+    function renderCategoryFilter() {
+      const sel = $("filterCategory");
+      if (!sel) return;
+      const current = sel.value;
+      sel.innerHTML = '<option value="">All categories</option>' +
+        categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+      if (current && categories.some(c => String(c.id) === current)) {
+        sel.value = current;
+      } else {
+        sel.value = "";
+      }
+    }
+
+    function renderCategoryList() {
+      const ul = $("categoryList");
+      if (!categories.length) {
+        ul.innerHTML = `<li class="text-slate-400 text-xs">No categories yet. Create one on the right.</li>`;
+        return;
+      }
+      ul.innerHTML = categories.map(c => `
+        <li class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-slate-900/40 px-3 py-2">
+          <div>
+            <div class="font-medium text-sm text-slate-100">${c.name}</div>
+            <div class="text-[11px] text-slate-500">ID: ${c.id}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-cat-filter="${c.id}"
+                    class="rounded-lg border border-brand-500/40 bg-brand-500/10 px-2.5 py-1 text-[11px] text-brand-200 hover:bg-brand-500/20">
+              View
+            </button>
+            <button data-cat-edit="${c.id}" data-cat-name="${c.name}"
+                    class="rounded-lg border border-accent-500/40 bg-accent-500/10 px-2.5 py-1 text-[11px] text-sky-100 hover:bg-accent-500/20">
+              Edit
+            </button>
+            <button data-cat-delete="${c.id}"
+                    class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-[11px] text-red-200 hover:bg-red-500/20">
+              Delete
+            </button>
+          </div>
+        </li>
+      `).join("");
+
+      // bind buttons
+      ul.querySelectorAll("[data-cat-delete]").forEach(btn => {
+        btn.addEventListener("click", () => onDeleteCategory(Number(btn.dataset.catDelete)));
+      });
+      ul.querySelectorAll("[data-cat-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = String(btn.dataset.catFilter);
+          $("filterCategory").value = id;
+          filter.categoryId = id;
+          filter.q = $("filterQ").value.trim().toLowerCase();
+          filter.featured = $("filterFeatured").value;
+          loadProducts(id);
+        });
+      });
+      ul.querySelectorAll("[data-cat-edit]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = Number(btn.dataset.catEdit);
+          const currentName = btn.dataset.catName || '';
+          onEditCategory(id, currentName);
+        });
+      });
+    }
+
+    function renderProducts() {
+      const tbody = $("productTbody");
+      if (!tbody) return;
+
+      let rows = products.slice();
+
+      // apply in-memory filters
+      const q = (filter.q || "").toLowerCase();
+      if (q) {
+        rows = rows.filter(p => {
+          const name = (p.name || "").toLowerCase();
+          const cats = (p.categories || "").toLowerCase();
+          return name.includes(q) || cats.includes(q);
+        });
+      }
+      if (filter.featured === "1") {
+        rows = rows.filter(p => featuredIds.has(p.id));
+      }
+
+      if (!rows.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-2 py-4 text-center text-slate-400">
+              No products found for the current filters.
+            </td>
+          </tr>
+        `;
+        $("resultInfo").textContent = `${fmtNum(products.length)} product(s) in total • 0 visible after filters`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(p => {
+        const isFeatured = featuredIds.has(p.id);
+        const catLabel = p.categories || "—";
+        const created = p.created_at ? String(p.created_at) : "";
+        const prices = `
+          <div class="space-y-0.5">
+            <div class="text-xs text-slate-300">Cash: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.cash_price)}</span></div>
+            <div class="text-xs text-slate-300">Auction: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.auction_price)}</span></div>
+            <div class="text-xs text-slate-300">Heist: <span class="font-semibold text-slate-100">${fmtPriceLabel(p.heist_price)}</span></div>
+          </div>
+        `;
+        const img = p.image_url || p.image_path || "";
+
+        return `
+          <tr>
+            <td class="py-2 px-2">
+              <div class="h-12 w-12 rounded-lg border border-white/10 bg-slate-900/50 overflow-hidden flex items-center justify-center">
+                ${
+                  img
+                    ? `<img src="${img}" alt="${p.name || "Product"}" class="h-full w-full object-cover" />`
+                    : `<span class="text-[10px] text-slate-500 px-1 text-center">No image</span>`
+                }
+              </div>
+            </td>
+            <td class="py-2 px-2">
+              <div class="font-medium text-slate-100">${p.name || ""}</div>
+              <div class="text-[11px] text-slate-500">ID: ${p.id}</div>
+            </td>
+            <td class="py-2 px-2 align-top">
+              ${prices}
+            </td>
+            <td class="py-2 px-2">
+              <span class="text-xs text-slate-200">${catLabel}</span>
+            </td>
+            <td class="py-2 px-2">
+              <button data-feature-id="${p.id}"
+                      class="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs ${
+                        isFeatured ? "bg-amber-400/20 text-amber-200" : "bg-white/5 text-slate-200"
+                      } hover:bg-white/10">
+                <span>${isFeatured ? "★" : "☆"}</span>
+                <span>${isFeatured ? "Featured" : "Make featured"}</span>
+              </button>
+            </td>
+            <td class="py-2 px-2 text-xs text-slate-300">
+              ${created}
+            </td>
+            <td class="py-2 px-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <button data-edit-id="${p.id}"
+                        class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-slate-100 hover:bg-white/10">
+                  Edit
+                </button>
+                <button data-delete-id="${p.id}"
+                        class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-200 hover:bg-red-500/20">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      $("resultInfo").textContent =
+        `${fmtNum(products.length)} product(s) total • ${fmtNum(rows.length)} visible with filters`;
+
+      // bind row actions
+      tbody.querySelectorAll("[data-edit-id]").forEach(btn => {
+        btn.addEventListener("click", () => openProductEdit(Number(btn.dataset.editId)));
+      });
+      tbody.querySelectorAll("[data-delete-id]").forEach(btn => {
+        btn.addEventListener("click", () => onDeleteProduct(Number(btn.dataset.deleteId)));
+      });
+      tbody.querySelectorAll("[data-feature-id]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = Number(btn.dataset.featureId);
+          const current = featuredIds.has(id);
+          toggleFeatured(id, current);
+        });
+      });
+    }
+
+    function renderModalCategories(selectedIds = []) {
+      const wrapper = $("pCategoryList");
+      if (!categories.length) {
+        wrapper.innerHTML = `<p class="text-xs text-slate-400">No categories yet. Create some on the right.</p>`;
+        return;
+      }
+      const set = new Set(selectedIds.map(Number));
+      wrapper.innerHTML = categories.map(cat => `
+        <label class="flex items-center gap-2 rounded-lg bg-slate-900/40 px-2 py-1.5 cursor-pointer border border-white/5 hover:border-brand-500/50">
+          <input type="checkbox" class="h-3 w-3 rounded border-slate-500 bg-slate-900"
+                 name="modalCat" value="${cat.id}" ${set.has(cat.id) ? "checked" : ""} />
+          <span class="text-[11px] text-slate-100">${cat.name}</span>
+        </label>
+      `).join("");
+    }
+
+    function openModal() { $("pModal").classList.remove("hidden"); }
+    function closeModal() { $("pModal").classList.add("hidden"); }
+
+    function resetProductModal() {
+      $("pForm").reset();
+      $("pModalTitle").textContent = "New Product";
+      $("pProductId").textContent = "";
+      clearModalMsgs();
+      renderModalCategories([]);
+      const imgEl = $("pImagePreview");
+      const phEl = $("pImagePlaceholder");
+      if (imgEl) { imgEl.src = ""; imgEl.classList.add("hidden"); }
+      if (phEl) show(phEl);
+    }
+
+    function startModalSaving() { $("pSave").disabled = true; $("pSpinner").classList.remove("hidden"); }
+    function stopModalSaving() { $("pSave").disabled = false; $("pSpinner").classList.add("hidden"); }
+
+    function handleImagePreview() {
+      const fileInput = $("pImage");
+      const imgEl = $("pImagePreview");
+      const phEl = $("pImagePlaceholder");
+      const file = fileInput.files[0];
+      if (file && imgEl) {
+        const url = URL.createObjectURL(file);
+        imgEl.src = url;
+        imgEl.classList.remove("hidden");
+        if (phEl) hide(phEl);
+      } else {
+        if (imgEl) { imgEl.src = ""; imgEl.classList.add("hidden"); }
+        if (phEl) show(phEl);
+      }
+    }
+
+    function openProductCreate() {
+      pModalMode = "create";
+      pEditingId = null;
+      resetProductModal();
+      $("pModalTitle").textContent = "New Product";
+      openModal();
+    }
+
+    async function openProductEdit(id) {
+      pModalMode = "edit";
+      pEditingId = id;
+      clearModalMsgs();
+      try {
+        const { data } = await axios.get(`/products/${id}`, { params: { ts: Date.now() } });
+        resetProductModal();
+        $("pModalTitle").textContent = "Edit Product";
+        $("pProductId").textContent = `#${id}`;
+
+        $("pName").value = data.name || "";
+        $("pCash").value = data.cash_price != null ? data.cash_price : "";
+        $("pAuction").value = data.auction_price != null ? data.auction_price : "";
+        $("pHeist").value = data.heist_price != null ? data.heist_price : "";
+
+        const selectedIds = (data.categories || []).map(c => c.id);
+        renderModalCategories(selectedIds);
+
+        const imgEl = $("pImagePreview");
+        const phEl = $("pImagePlaceholder");
+        if (data.image_url && imgEl) {
+          imgEl.src = data.image_url;
+          imgEl.classList.remove("hidden");
+          if (phEl) hide(phEl);
+        } else {
+          if (imgEl) { imgEl.src = ""; imgEl.classList.add("hidden"); }
+          if (phEl) show(phEl);
+        }
+
+        openModal();
+      } catch (err) {
+        console.error("openProductEdit error:", err);
+        setErr(err?.response?.data?.message || "Error loading product");
+      }
+    }
+
+    function getModalCategoryIds() {
+      return Array.from(document.querySelectorAll('input[name="modalCat"]:checked'))
+        .map(el => Number(el.value))
+        .filter(Number.isFinite);
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      clearModalMsgs();
+
+      const name = $("pName").value.trim();
+      const cash = $("pCash").value.trim();
+      const auction = $("pAuction").value.trim();
+      const heist = $("pHeist").value.trim();
+      const catIds = getModalCategoryIds();
+
+      if (!name) {
+        setModalErr("Product name is required.");
+        return;
+      }
+
+      try {
+        startModalSaving();
+        const fd = new FormData();
+        fd.append("name", name);
+
+        if (cash) fd.append("cash_price", cash);
+        if (auction) fd.append("auction_price", auction);
+        if (heist) fd.append("heist_price", heist);
+        if (catIds.length) fd.append("categoryIds", catIds.join(","));
+
+        const imgFile = $("pImage").files[0];
+        if (imgFile) {
+          fd.append("image", imgFile);
+        }
+
+        if (pModalMode === "create") {
+          const { data } = await axios.post("/products", fd, {
+            headers: { "Content-Type": "multipart/form-data" }
+          });
+          setModalOk(data?.message || "Product created.");
+        } else {
+          const { data } = await axios.put(`/products/${pEditingId}`, fd, {
+            headers: { "Content-Type": "multipart/form-data" }
+          });
+          setModalOk(data?.message || "Product updated.");
+        }
+
+        await loadProducts(filter.categoryId || null);
+        await loadCategories();
+
+        setTimeout(() => {
+          closeModal();
+        }, 600);
+      } catch (err) {
+        console.error("saveProduct error:", err);
+        setModalErr(err?.response?.data?.message || "Error saving product");
+      } finally {
+        stopModalSaving();
+      }
+    }
+
+    async function toggleFeatured(id, currentlyFeatured) {
+      try {
+        const body = { is_featured: currentlyFeatured ? 0 : 1 };
+        await axios.patch(`/products/${id}/featured`, body);
+        if (currentlyFeatured) {
+          featuredIds.delete(id);
+        } else {
+          featuredIds.add(id);
+        }
+        $("statFeatured").textContent = fmtNum(featuredIds.size);
+        renderProducts();
+      } catch (err) {
+        console.error("toggleFeatured error:", err);
+        setErr(err?.response?.data?.message || "Failed to update featured flag");
+      }
+    }
+
+    async function onDeleteProduct(id) {
+      if (!confirm("Delete this product permanently?")) return;
+      clearMsgs();
+      try {
+        await axios.delete(`/products/${id}`);
+        products = products.filter(p => p.id !== id);
+        featuredIds.delete(id);
+        $("statFeatured").textContent = fmtNum(featuredIds.size);
+        $("statTotalProducts").textContent = fmtNum(products.length);
+        renderProducts();
+        setOk("Product deleted.");
+      } catch (err) {
+        console.error("onDeleteProduct error:", err);
+        setErr(err?.response?.data?.message || "Failed to delete product");
+      }
+    }
+
+    // ===== CATEGORY EDIT MODAL LOGIC =====
+    function openCatModal(id, currentName) {
+      editingCategoryId = id;
+      editingCategoryOriginalName = currentName || "";
+      $("catEditName").value = editingCategoryOriginalName;
+      clearCatModalMsgs();
+      show($("catModal"));
+      $("catEditName").focus();
+    }
+
+    function closeCatModal() {
+      editingCategoryId = null;
+      editingCategoryOriginalName = "";
+      clearCatModalMsgs();
+      hide($("catModal"));
+    }
+
+    async function onEditCategory(id, currentName) {
+      clearCatMsgs();
+      openCatModal(id, currentName);
+    }
+
+    async function handleCatEditSubmit(e) {
+      e.preventDefault();
+      clearCatModalMsgs();
+      if (!editingCategoryId) {
+        setCatModalErr("No category selected.");
+        return;
+      }
+      const newName = $("catEditName").value.trim();
+      if (!newName) {
+        setCatModalErr("Category name cannot be empty.");
+        return;
+      }
+      if (newName === editingCategoryOriginalName) {
+        setCatModalOk("No changes made.");
+        setTimeout(() => closeCatModal(), 600);
+        return;
+      }
+
+      try {
+        await axios.put(`/categories/${editingCategoryId}`, { name: newName });
+
+        await loadCategories();
+        if (filter.categoryId === String(editingCategoryId)) {
+          await loadProducts(filter.categoryId || null);
+        }
+
+        setCatModalOk("Category updated.");
+        setTimeout(() => {
+          closeCatModal();
+        }, 600);
+      } catch (err) {
+        console.error("onEditCategory error:", err);
+        const msg = err?.response?.data?.message || "Failed to update category";
+        setCatModalErr(msg);
+      }
+    }
+
+    async function onDeleteCategory(id) {
+      if (!confirm("Delete this category? Linked products will simply lose this tag.")) return;
+      clearCatMsgs();
+      try {
+        await axios.delete(`/categories/${id}`);
+        categories = categories.filter(c => c.id !== id);
+        renderCategoryFilter();
+        renderCategoryList();
+        $("statTotalCategories").textContent = fmtNum(categories.length);
+
+        if (filter.categoryId === String(id)) {
+          filter.categoryId = "";
+          $("filterCategory").value = "";
+          await loadProducts(null);
+        } else {
+          await loadProducts(filter.categoryId || null);
+        }
+
+        setCatOk("Category deleted.");
+      } catch (err) {
+        console.error("onDeleteCategory error:", err);
+        setCatErr(err?.response?.data?.message || "Failed to delete category");
+      }
+    }
+
+    async function onCreateCategory(e) {
+      e.preventDefault();
+      clearCatMsgs();
+      const name = $("catName").value.trim();
+      if (!name) {
+        setCatErr("Category name is required.");
+        return;
+      }
+      try {
+        const { data } = await axios.post("/categories", { name });
+        categories.push(data);
+        $("catName").value = "";
+        renderCategoryFilter();
+        renderCategoryList();
+        $("statTotalCategories").textContent = fmtNum(categories.length);
+        setCatOk("Category created.");
+      } catch (err) {
+        console.error("onCreateCategory error:", err);
+        const msg = err?.response?.data?.message || "Failed to create category";
+        setCatErr(msg);
+      }
+    }
+
+    // ===== FILTER HANDLERS =====
+    function onApplyFilters(e) {
+      e.preventDefault();
+      filter.q = $("filterQ").value.trim().toLowerCase();
+      filter.categoryId = $("filterCategory").value;
+      filter.featured = $("filterFeatured").value;
+      loadProducts(filter.categoryId || null);
+    }
+
+    function onClearFilters() {
+      $("filterQ").value = "";
+      $("filterCategory").value = "";
+      $("filterFeatured").value = "";
+      filter = { q: "", categoryId: "", featured: "" };
+      loadProducts(null);
+    }
+
+    function logout() {
+      localStorage.removeItem("authToken");
+      window.location.href = LOGIN_URL;
+    }
+
+    function goDashboard() {
+      window.location.href = DASHBOARD_URL;
+    }
+
+    // ===== INIT =====
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!ensureAuth()) return;
+
+      // Bind header
+      $("logoutBtn").addEventListener("click", logout);
+      $("backBtn").addEventListener("click", goDashboard);
+
+      // Filters
+      $("filterForm").addEventListener("submit", onApplyFilters);
+      $("clearBtn").addEventListener("click", onClearFilters);
+
+      // Categories
+      $("catForm").addEventListener("submit", onCreateCategory);
+
+      // Category modal events
+      $("catEditForm").addEventListener("submit", handleCatEditSubmit);
+      $("catModalCancel").addEventListener("click", closeCatModal);
+      $("catModalClose").addEventListener("click", closeCatModal);
+      $("catModal").addEventListener("click", (e) => {
+        if (e.target.id === "catModal") closeCatModal();
+      });
+
+      // Product modal
+      $("newProductBtn").addEventListener("click", openProductCreate);
+      $("pCancel").addEventListener("click", closeModal);
+      $("pClose").addEventListener("click", closeModal);
+      $("pForm").addEventListener("submit", saveProduct);
+      $("pImage").addEventListener("change", handleImagePreview);
+      $("pModal").addEventListener("click", (e) => {
+        if (e.target.id === "pModal") closeModal();
+      });
+
+      // First load
+      await loadCategories();
+      await loadProducts(null);
+    });
+  </script>
+</body>
+</html>

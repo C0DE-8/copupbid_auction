@@ -1,0 +1,160 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 200;
+
+  background: rgba(248, 247, 251, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-bottom: 1px solid rgba(36, 28, 54, 0.08);
+}
+
+.inner {
+  width: min(1100px, calc(100% - 24px));
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px 0;
+}
+
+/* brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  text-decoration: none;
+  color: #241d33;
+
+  min-width: 0; /* allows ellipsis */
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.18);
+}
+
+.brandText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: 12px;
+  color: #756d82;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.loginBtn,
+.joinBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.loginBtn {
+  background: #241d33;
+  color: #fff;
+}
+
+.loginBtn:hover {
+  transform: translateY(-1px);
+}
+
+.joinBtn {
+  border: 1px solid rgba(113, 84, 232, 0.25);
+  color: #7154e8;
+  background: rgba(113, 84, 232, 0.08);
+}
+
+.joinBtn:hover {
+  background: rgba(113, 84, 232, 0.15);
+  border-color: rgba(113, 84, 232, 0.35);
+  color: #4f35b8;
+  transform: translateY(-1px);
+}
+
+/* mobile fixes: prevent overflow + cleaner look */
+@media (max-width: 520px) {
+  .inner {
+    width: calc(100% - 20px);
+    padding: 12px 0;
+    gap: 10px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  /* hide subtitle on small screens so header never overflows */
+  .sub {
+    display: none;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .loginBtn,
+  .joinBtn {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+
+/* ultra small: keep buttons tight */
+@media (max-width: 380px) {
+  .loginBtn,
+  .joinBtn {
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}

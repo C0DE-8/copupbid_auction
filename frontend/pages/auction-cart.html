@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Cart - Medieval Auction House</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .medieval-button {
+            background: linear-gradient(135deg, rgb(52 211 153 / var(--tw-text-opacity, 1)) 0%, rgb(16 185 129 / var(--tw-text-opacity, 1)) 100%);
+            border: 2px solid rgb(52 211 153 / var(--tw-text-opacity, 1));
+            color: #1a1a1a;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .medieval-button:hover {
+            background: linear-gradient(135deg, rgb(74 222 128 / var(--tw-text-opacity, 1)) 0%, rgb(52 211 153 / var(--tw-text-opacity, 1)) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
+        }
+        
+        .treasure-card {
+            background: linear-gradient(135deg, rgba(16, 16, 16, 0.9) 0%, rgba(32, 32, 32, 0.8) 100%);
+            border: 2px solid rgba(52, 211, 153, 0.3);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .treasure-card:hover {
+            border-color: rgba(52, 211, 153, 0.6);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(52, 211, 153, 0.2);
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-processing { background: #fbbf24; color: #92400e; }
+        .status-shipped { background: #3b82f6; color: #1e40af; }
+        .status-in_transit { background: #8b5cf6; color: #5b21b6; }
+        .status-delivered { background: #10b981; color: #047857; }
+        .status-cancelled { background: #ef4444; color: #dc2626; }
+        
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            color: #e5e5e5;
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Cinzel', serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="glass-dark border-b border-emerald-400/30 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="goBack()" class="medieval-button px-4 py-2 rounded-lg text-sm">
+                        ← Back
+                    </button>
+                    <div class="text-center sm:text-left">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400">🏺 Auction Cart</h1>
+                        <p class="text-sm text-gray-400">Manage your won auction prizes</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="glass rounded-full px-4 py-2 flex items-center gap-2">
+                        <span class="text-emerald-400">💰</span>
+                        <span id="coinBadge" class="font-semibold cursor-pointer" onclick="toggleBalance()">***</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap gap-2 mb-8">
+            <button onclick="showTab('cart')" id="cartTab" class="medieval-button px-6 py-3 rounded-lg">
+                🏺 Cart Items
+            </button>
+            <button onclick="showTab('orders')" id="ordersTab" class="glass border border-emerald-400/30 px-6 py-3 rounded-lg text-emerald-400 hover:bg-emerald-400/10">
+                📦 Order History
+            </button>
+        </div>
+
+        <!-- Cart Tab -->
+        <div id="cartContent" class="tab-content">
+            <div id="cartItems" class="space-y-6">
+                <!-- Cart items will be loaded here -->
+            </div>
+            
+            <!-- Checkout Section -->
+            <div id="checkoutSection" class="mt-8 treasure-card p-6" style="display: none;">
+                <h3 class="text-xl font-bold text-emerald-400 mb-4">🏺 Complete Your Auction Order</h3>
+                <form id="checkoutForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-emerald-400 mb-2">Delivery Address</label>
+                        <textarea id="address" required class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-emerald-400 focus:outline-none" rows="3" placeholder="Enter your full delivery address..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-emerald-400 mb-2">Phone Number</label>
+                        <input type="tel" id="phone" required class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-emerald-400 focus:outline-none" placeholder="+234 xxx xxx xxxx">
+                    </div>
+                    <button type="submit" class="medieval-button w-full py-3 rounded-lg text-lg">
+                        🚀 Place Order
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="ordersContent" class="tab-content" style="display: none;">
+            <div id="ordersList" class="space-y-6">
+                <!-- Orders will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading States -->
+    <div id="loadingState" class="space-y-6" style="display: none;">
+        <div class="treasure-card p-6 shimmer">
+            <div class="flex gap-4">
+                <div class="w-24 h-24 bg-gray-700 rounded-lg"></div>
+                <div class="flex-1 space-y-3">
+                    <div class="h-4 bg-gray-700 rounded w-3/4"></div>
+                    <div class="h-3 bg-gray-700 rounded w-1/2"></div>
+                    <div class="h-3 bg-gray-700 rounded w-1/4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api/users';
+        let authToken = localStorage.getItem('authToken');
+        let actualBalance = '***';
+        let currentTab = 'cart';
+
+        // Authentication check
+        if (!authToken) {
+            window.location.href = 'login.html';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserProfile();
+            showTab('cart');
+        });
+
+        function goBack() {
+            history.back();
+        }
+
+        function toggleBalance() {
+            const badge = document.getElementById('coinBadge');
+            badge.textContent = badge.textContent === '***' ? actualBalance : '***';
+        }
+
+        async function loadUserProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    actualBalance = userData.bid_points || '0';
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.getElementById('cartTab').className = tab === 'cart' 
+                ? 'medieval-button px-6 py-3 rounded-lg'
+                : 'glass border border-emerald-400/30 px-6 py-3 rounded-lg text-emerald-400 hover:bg-emerald-400/10';
+            
+            document.getElementById('ordersTab').className = tab === 'orders'
+                ? 'medieval-button px-6 py-3 rounded-lg'
+                : 'glass border border-emerald-400/30 px-6 py-3 rounded-lg text-emerald-400 hover:bg-emerald-400/10';
+
+            // Show/hide content
+            document.getElementById('cartContent').style.display = tab === 'cart' ? 'block' : 'none';
+            document.getElementById('ordersContent').style.display = tab === 'orders' ? 'block' : 'none';
+
+            // Load appropriate data
+            if (tab === 'cart') {
+                loadCartItems();
+            } else {
+                loadOrders();
+            }
+        }
+
+        async function loadCartItems() {
+            const container = document.getElementById('cartItems');
+            container.innerHTML = document.getElementById('loadingState').innerHTML;
+
+            try {
+                const response = await fetch(`${API_BASE}/cart`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const items = await response.json();
+                    displayCartItems(items);
+                } else {
+                    throw new Error('Failed to load cart items');
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="treasure-card p-8 text-center">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <h3 class="text-xl font-bold text-red-400 mb-2">Cart Loading Failed</h3>
+                        <p class="text-gray-400 mb-4">Unable to load your auction cart</p>
+                        <button onclick="loadCartItems()" class="medieval-button px-6 py-2 rounded-lg">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayCartItems(items) {
+            const container = document.getElementById('cartItems');
+            const checkoutSection = document.getElementById('checkoutSection');
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="treasure-card p-8 text-center">
+                        <div class="text-6xl mb-4">🏺</div>
+                        <h3 class="text-xl font-bold text-emerald-400 mb-2">Empty Auction Cart</h3>
+                        <p class="text-gray-400 mb-4">No auction prizes in your cart yet</p>
+                        <button onclick="goBack()" class="medieval-button px-6 py-2 rounded-lg">Browse Auctions</button>
+                    </div>
+                `;
+                checkoutSection.style.display = 'none';
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="treasure-card p-6">
+                    <div class="flex gap-4">
+                        <div class="relative">
+                            <img src="${item.image ? (item.image.startsWith('http') ? item.image : 'https://api.copup.copupbid.com/' + item.image) : ''}" 
+                                 alt="${item.name}" 
+                                 class="w-24 h-24 object-cover rounded-lg border-2 border-emerald-400/30"
+                                 crossorigin="anonymous"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="w-24 h-24 rounded-lg border-2 border-emerald-400/30 bg-gradient-to-br from-yellow-600 to-yellow-800 flex-col items-center justify-center text-center p-2" style="display: none;">
+                                <div class="text-yellow-200 text-lg">🏺</div>
+                                <div class="text-xs text-yellow-200 font-bold">AUCTION</div>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-emerald-400 mb-2">${item.name}</h3>
+                            <p class="text-gray-400 text-sm mb-2 line-clamp-2">${item.description || 'Auction item'}</p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-yellow-400 font-semibold">💰 ${item.finalPrice || item.currentBidAmount || 'N/A'} points</div>
+                                <span class="status-badge bg-emerald-600 text-emerald-100">${item.category}</span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-400">
+                                Points Spent: <span class="text-emerald-400">${item.pointsSpent || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            checkoutSection.style.display = 'block';
+        }
+
+        async function loadOrders() {
+            const container = document.getElementById('ordersList');
+            container.innerHTML = document.getElementById('loadingState').innerHTML;
+
+            try {
+                const response = await fetch(`${API_BASE}/auction-orders`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const orders = await response.json();
+                    displayOrders(orders);
+                } else {
+                    throw new Error('Failed to load orders');
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="treasure-card p-8 text-center">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <h3 class="text-xl font-bold text-red-400 mb-2">Orders Loading Failed</h3>
+                        <p class="text-gray-400 mb-4">Unable to load your order history</p>
+                        <button onclick="loadOrders()" class="medieval-button px-6 py-2 rounded-lg">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayOrders(orders) {
+            const container = document.getElementById('ordersList');
+
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="treasure-card p-8 text-center">
+                        <div class="text-6xl mb-4">📦</div>
+                        <h3 class="text-xl font-bold text-emerald-400 mb-2">No Orders Yet</h3>
+                        <p class="text-gray-400 mb-4">You haven't placed any orders yet</p>
+                        <button onclick="showTab('cart')" class="medieval-button px-6 py-2 rounded-lg">View Cart</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                <div class="treasure-card p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-emerald-400">Order #${order.orderId}</h3>
+                            <p class="text-sm text-gray-400">${new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <span class="status-badge status-${order.status}">${order.status.replace('_', ' ')}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-400">Delivery Address:</p>
+                            <p class="text-white">${order.address}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400">Phone:</p>
+                            <p class="text-white">${order.phone}</p>
+                        </div>
+                    </div>
+
+                    ${order.trackingNumber ? `
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-400">Tracking Number:</p>
+                            <p class="text-emerald-400 font-mono">${order.trackingNumber}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="space-y-2">
+                        <p class="text-sm font-semibold text-emerald-400">Items (${order.items.length}):</p>
+                        ${order.items.map(item => `
+                            <div class="flex items-center gap-3 p-2 bg-gray-800/50 rounded">
+                                <img src="${item.image ? (item.image.startsWith('http') ? item.image : 'https://api.copup.copupbid.com' + item.image) : ''}" 
+                                     alt="${item.name}" 
+                                     class="w-12 h-12 object-cover rounded border border-emerald-400/30"
+                                     crossorigin="anonymous"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-12 h-12 rounded border border-emerald-400/30 bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center" style="display: none;">
+                                    <span class="text-yellow-200 text-sm">🏺</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white font-semibold">${item.name}</p>
+                                    <p class="text-yellow-400 text-sm">💰 ${item.finalPrice || 'N/A'} points</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Checkout form handler
+        document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const address = document.getElementById('address').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!address || !phone) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '🔄 Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/auction/checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ address, phone })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(`🎉 Order placed successfully! Order ID: ${result.auctionOrderId}`);
+                    document.getElementById('checkoutForm').reset();
+                    loadCartItems(); // Refresh cart
+                } else {
+                    alert(`❌ ${result.message || 'Checkout failed'}`);
+                }
+            } catch (error) {
+                alert('❌ Network error during checkout');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

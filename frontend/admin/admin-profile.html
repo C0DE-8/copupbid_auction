@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Admin • Profile</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' },
+            accent:{ 500: '#3b82f6' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Axios (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 1rem;
+      backdrop-filter: blur(6px);
+    }
+    .ring-soft { box-shadow: 0 0 0 6px rgba(16,185,129,.12); }
+  </style>
+</head>
+<body class="min-h-dvh bg-slate-900 text-slate-100">
+  <!-- Page BG -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(90%_70%_at_10%_-10%,rgba(34,211,238,.10),rgba(59,130,246,.10),rgba(0,0,0,0))]"></div>
+  </div>
+
+  <header class="sticky top-0 z-10 bg-slate-900/70 backdrop-blur border-b border-white/10">
+    <div class="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Back to Dashboard -->
+        <a id="backBtn"
+           class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-200 hover:bg-white/10 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Dashboard
+        </a>
+        <h1 class="text-lg font-semibold tracking-tight">
+          Admin <span class="text-brand-500">Profile</span>
+        </h1>
+      </div>
+      <a id="logoutBtn" class="text-sm text-slate-300 hover:text-white cursor-pointer">Log out</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-4xl px-4 py-8">
+    <!-- Card -->
+    <section class="glass p-6 md:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">Your Account</h2>
+          <p class="text-slate-400 mt-1">View and update your admin profile.</p>
+        </div>
+        <span id="roleBadge" class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-200">
+          <svg class="h-4 w-4 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 3l7 4v6c0 5-7 8-7 8s-7-3-7-8V7l7-4z" stroke-width="2"/>
+          </svg>
+          role: —
+        </span>
+      </div>
+
+      <!-- Form -->
+      <form id="profileForm" class="mt-8 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="name">Name</label>
+            <input id="name" type="text" autocomplete="name"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/30"
+                   placeholder="Your full name" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="username">Username</label>
+            <input id="username" type="text" autocomplete="username"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/30"
+                   placeholder="handle_123" />
+            <p class="mt-1 text-xs text-slate-400">3–20 chars; letters, numbers, dot, underscore or hyphen.</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="email">Email</label>
+          <input id="email" type="email" autocomplete="email"
+                 class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/30"
+                 placeholder="admin@example.com" />
+          <p id="emailHint" class="mt-1 text-xs text-slate-400">
+            Not shown by GET /api/admin/profile. Enter a new email to update.
+          </p>
+        </div>
+
+        <div class="pt-2 flex items-center gap-3">
+          <button id="saveBtn" type="submit"
+                  class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg id="saveSpinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="4"></circle>
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="4"></path>
+            </svg>
+            <span>Save changes</span>
+          </button>
+          <button id="resetBtn" type="button"
+                  class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 font-medium text-slate-100 hover:bg-white/10">
+            Reset
+          </button>
+        </div>
+      </form>
+
+      <!-- Messages -->
+      <div id="okBox"  class="hidden mt-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200">Profile updated.</div>
+      <div id="errBox" class="hidden mt-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+    </section>
+  </main>
+
+  <script>
+    // ====== CONFIG ======
+    const API_BASE = "https://api.copup.copupbid.com/api/admin";
+    const LOGIN_URL = "../auth/login.html";            // adjust if your path differs
+    const DASHBOARD_URL = "./admin-dashboard.html";    // <-- Back button target
+
+    // ====== STATE ======
+    let initial = { name: "", username: "", email: "" };
+
+    // ====== UTILS ======
+    const $ = (id) => document.getElementById(id);
+    const show = (el) => el.classList.remove("hidden");
+    const hide = (el) => el.classList.add("hidden");
+    const setErr = (msg) => { $("errBox").textContent = msg; show($("errBox")); };
+    const setOk  = (msg) => { $("okBox").textContent  = msg; show($("okBox")); };
+    const clearMsgs = () => { hide($("okBox")); hide($("errBox")); };
+
+    function startSaving() { $("saveBtn").disabled = true; $("saveSpinner").classList.remove("hidden"); $("saveBtn").classList.add("ring-soft"); }
+    function stopSaving()  { $("saveBtn").disabled = false; $("saveSpinner").classList.add("hidden"); $("saveBtn").classList.remove("ring-soft"); }
+
+    function validateEmail(e) {
+      if (!e) return true;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    }
+    function validateUsername(u) {
+      if (!u) return true;
+      return /^[a-zA-Z0-9._-]{3,20}$/.test(u);
+    }
+    function diffPayload() {
+      const name = $("name").value.trim();
+      const username = $("username").value.trim();
+      const email = $("email").value.trim().toLowerCase();
+
+      const body = {};
+      if (name && name !== initial.name) body.name = name;
+      if (username && username !== initial.username) body.username = username;
+      // Email isn’t returned by GET; only send when user typed a value
+      if (email) body.email = email;
+
+      return body;
+    }
+
+    // ====== AUTH SETUP ======
+    function ensureAuth() {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        window.location.href = LOGIN_URL;
+        return null;
+      }
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token.replace(/^"(.+)"$/, "$1");
+      axios.defaults.headers.common["Content-Type"] = "application/json";
+      return token;
+    }
+
+    // Auto-redirect on 401/403
+    axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem("authToken");
+          window.location.href = LOGIN_URL;
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    // ====== LOAD PROFILE ======
+    async function loadProfile() {
+      clearMsgs();
+      try {
+        const { data } = await axios.get("/profile", { params: { ts: Date.now() } });
+        // GET returns: { name, username, role }
+        $("name").value = data?.name ?? "";
+        $("username").value = data?.username ?? "";
+        $("roleBadge").innerHTML = `
+          <svg class="h-4 w-4 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 3l7 4v6c0 5-7 8-7 8s-7-3-7-8V7l7-4z" stroke-width="2"/>
+          </svg>
+          role: ${data?.role ?? "—"}
+        `;
+
+        // Track initial snapshot
+        initial.name = $("name").value;
+        initial.username = $("username").value;
+        initial.email = ""; // unknown from GET
+        // Hint about email
+        $("emailHint").textContent = "Enter a new email to update (current email isn’t returned by GET).";
+      } catch (err) {
+        console.error("loadProfile error:", err);
+        setErr(err?.response?.data?.message || "Error fetching admin profile");
+      }
+    }
+
+    // ====== SAVE PROFILE ======
+    async function onSubmit(e) {
+      e.preventDefault();
+      clearMsgs();
+
+      const body = diffPayload();
+      if (!Object.keys(body).length) {
+        setOk("No changes.");
+        return;
+      }
+      if (body.email && !validateEmail(body.email)) {
+        setErr("Invalid email format.");
+        return;
+      }
+      if (body.username && !validateUsername(body.username)) {
+        setErr("Invalid username. Use 3–20 letters, numbers, dot, underscore or hyphen.");
+        return;
+      }
+      if (body.name && body.name.length > 80) {
+        setErr("Name too long (max 80 chars).");
+        return;
+      }
+
+      try {
+        startSaving();
+        const { data } = await axios.patch("/profile", body);
+        // Success → reflect new values
+        if (data?.name !== undefined) $("name").value = data.name;
+        if (data?.username !== undefined) $("username").value = data.username;
+        if (data?.email !== undefined) $("email").value = data.email;
+
+        // Update initial snapshot
+        initial.name = $("name").value;
+        initial.username = $("username").value;
+        initial.email = $("email").value;
+
+        setOk(data?.message || "Profile updated.");
+      } catch (err) {
+        console.error("saveProfile error:", err);
+        setErr(err?.response?.data?.message || "Error updating admin profile");
+      } finally {
+        stopSaving();
+      }
+    }
+
+    // ====== RESET ======
+    function onReset() {
+      clearMsgs();
+      $("name").value = initial.name || "";
+      $("username").value = initial.username || "";
+      $("email").value = ""; // keep empty unless explicitly changed
+    }
+
+    // ====== NAV + LOGOUT ======
+    function goDashboard() { window.location.href = DASHBOARD_URL; }
+    function logout() {
+      localStorage.removeItem("authToken");
+      window.location.href = LOGIN_URL;
+    }
+
+    // ====== INIT ======
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!ensureAuth()) return;
+      $("profileForm").addEventListener("submit", onSubmit);
+      $("resetBtn").addEventListener("click", onReset);
+      $("logoutBtn").addEventListener("click", logout);
+      $("backBtn").addEventListener("click", goDashboard);
+      await loadProfile();
+    });
+  </script>
+</body>
+</html>

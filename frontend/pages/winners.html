@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hall of Champions - Heist Winners</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    .glass { background: rgba(16,185,129,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(16,185,129,0.2); }
+    .glass-dark { background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border: 1px solid rgba(16,185,129,0.3); }
+    .medieval-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+    .champion-card { background: linear-gradient(145deg, rgba(16,185,129,0.05) 0%, rgba(6,78,59,0.1) 100%); border: 2px solid rgba(16,185,129,0.2); transition: all 0.3s ease; }
+    .champion-card:hover { border-color: rgba(16,185,129,0.4); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(16,185,129,0.1); }
+    .crown-icon { background: linear-gradient(45deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .loading-shimmer { background: linear-gradient(90deg, transparent, rgba(16,185,129,0.1), transparent); animation: shimmer 2s infinite; }
+    @keyframes shimmer { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
+    .medieval-title { font-family: 'Cinzel', serif; background: linear-gradient(45deg, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .medieval-text { font-family: 'Crimson Text', serif; }
+
+    .prize-image-fallback {
+      background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+      border: 2px solid rgba(16,185,129,0.3);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #10b981; font-family: 'Cinzel', serif;
+    }
+    .prize-image-fallback::before { content: '🏛️'; font-size: 2rem; margin-bottom: 0.5rem; }
+    .prize-image-fallback::after { content: 'CHAMPION PRIZE'; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; }
+
+    .prize-image { height: 200px; object-fit: contain; background: rgba(16,185,129,0.05); }
+
+    .modal-overlay { background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+    .modal-content { background: linear-gradient(145deg, #1e293b 0%, #334155 100%); border: 2px solid rgba(16,185,129,0.3); max-height: 90vh; overflow-y: auto; }
+
+    /* ✅ Avatar styling */
+    .avatar-ring { box-shadow: 0 0 0 2px rgba(16,185,129,0.35), 0 10px 30px rgba(16,185,129,0.08); }
+    .avatar-img { object-fit: cover; }
+  </style>
+</head>
+
+<body class="medieval-bg min-h-screen text-white">
+  <!-- Header -->
+  <header class="glass-dark border-b border-emerald-500/30 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <button onclick="goBack()" class="glass rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-emerald-500/20 transition-colors">
+          <span class="text-xl">←</span>
+          <span class="medieval-text">Return to Quests</span>
+        </button>
+        <h1 class="medieval-title text-2xl md:text-3xl font-bold text-center">🏆 Hall of Champions</h1>
+        <div class="w-32"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Loading State -->
+    <div id="loadingState" class="space-y-6">
+      <div class="text-center medieval-text text-emerald-300 mb-8">
+        <p class="text-lg">Consulting the ancient scrolls of victory...</p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="champion-card rounded-xl p-6 relative overflow-hidden">
+          <div class="loading-shimmer absolute inset-0"></div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gray-700 rounded-full animate-pulse"></div>
+              <div class="space-y-2 flex-1">
+                <div class="h-4 bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3 animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-32 bg-gray-700 rounded-lg animate-pulse"></div>
+            <div class="space-y-2">
+              <div class="h-3 bg-gray-700 rounded animate-pulse"></div>
+              <div class="h-3 bg-gray-700 rounded w-3/4 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        <div class="champion-card rounded-xl p-6 relative overflow-hidden">
+          <div class="loading-shimmer absolute inset-0"></div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gray-700 rounded-full animate-pulse"></div>
+              <div class="space-y-2 flex-1">
+                <div class="h-4 bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3 animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-32 bg-gray-700 rounded-lg animate-pulse"></div>
+            <div class="space-y-2">
+              <div class="h-3 bg-gray-700 rounded animate-pulse"></div>
+              <div class="h-3 bg-gray-700 rounded w-3/4 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        <div class="champion-card rounded-xl p-6 relative overflow-hidden">
+          <div class="loading-shimmer absolute inset-0"></div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gray-700 rounded-full animate-pulse"></div>
+              <div class="space-y-2 flex-1">
+                <div class="h-4 bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3 animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-32 bg-gray-700 rounded-lg animate-pulse"></div>
+            <div class="space-y-2">
+              <div class="h-3 bg-gray-700 rounded animate-pulse"></div>
+              <div class="h-3 bg-gray-700 rounded w-3/4 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Winners List -->
+    <div id="winnersContainer" class="hidden">
+      <div class="text-center mb-8">
+        <p class="medieval-text text-emerald-300 text-lg">
+          Behold the legendary champions who conquered the greatest quests
+        </p>
+      </div>
+
+      <div id="winnersList" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
+
+      <div id="loadMoreContainer" class="text-center mt-8 hidden">
+        <button id="loadMoreBtn" class="glass rounded-lg px-6 py-3 medieval-text hover:bg-emerald-500/20 transition-colors">
+          Load More Champions
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16">
+      <div class="text-6xl mb-4">🏆</div>
+      <h3 class="medieval-title text-2xl mb-2">No Champions Yet</h3>
+      <p class="medieval-text text-emerald-300">The hall awaits its first legendary victor</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden text-center py-16">
+      <div class="text-6xl mb-4">⚠️</div>
+      <h3 class="medieval-title text-2xl mb-2">Ancient Scrolls Unavailable</h3>
+      <p class="medieval-text text-emerald-300 mb-4">The chronicles of victory cannot be retrieved</p>
+      <button onclick="loadWinners()" class="glass rounded-lg px-6 py-3 medieval-text hover:bg-emerald-500/20 transition-colors">
+        Try Again
+      </button>
+    </div>
+  </main>
+
+  <!-- Winner Details Modal -->
+  <div id="winnerModal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4 hidden">
+    <div class="modal-content rounded-xl p-6 max-w-2xl w-full">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="medieval-title text-2xl font-bold text-emerald-300">Champion Details</h2>
+        <button onclick="closeWinnerModal()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let hasMorePages = true;
+    let isLoading = false;
+
+    function goBack() {
+      window.location.href = "heist.html";
+    }
+
+    function validateAuth() {
+      const authToken = localStorage.getItem("authToken");
+      if (!authToken) {
+        showAuthError();
+        return false;
+      }
+      return authToken;
+    }
+
+    function showAuthError() {
+      document.getElementById("loadingState").classList.add("hidden");
+      document.getElementById("winnersContainer").classList.add("hidden");
+      document.getElementById("emptyState").classList.add("hidden");
+
+      const errorState = document.getElementById("errorState");
+      errorState.innerHTML = `
+        <div class="text-6xl mb-4">🔒</div>
+        <h3 class="medieval-title text-2xl mb-2">Authentication Required</h3>
+        <p class="medieval-text text-emerald-300 mb-4">You must be logged in to view the Hall of Champions</p>
+        <button onclick="redirectToLogin()" class="glass rounded-lg px-6 py-3 medieval-text hover:bg-emerald-500/20 transition-colors">
+          Return to Login
+        </button>
+      `;
+      errorState.classList.remove("hidden");
+    }
+
+    function redirectToLogin() {
+      window.location.href = "../auth/login.html";
+    }
+
+    // Small helper so we don't crash if values are missing
+    function safeText(v, fallback = "") {
+      if (v === null || v === undefined) return fallback;
+      return String(v);
+    }
+
+    function formatDate(dt) {
+      if (!dt) return "";
+      try {
+        return new Date(dt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+      } catch {
+        return "";
+      }
+    }
+
+    function formatDateTime(dt) {
+      if (!dt) return "";
+      try {
+        return new Date(dt).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch {
+        return "";
+      }
+    }
+
+    /* ✅ NEW: Avatar renderer (image first, crown fallback) */
+    function renderAvatarHtml(winner, sizeClass = "w-12 h-12", textSizeClass = "text-2xl") {
+      const img = safeText(winner?.image, "").trim();
+      const username = safeText(winner?.username, "User").trim();
+
+      // If no image at all -> crown
+      if (!img) {
+        return `
+          <div class="${sizeClass} glass avatar-ring rounded-full flex items-center justify-center">
+            <span class="crown-icon ${textSizeClass}">👑</span>
+          </div>
+        `;
+      }
+
+      // Image exists -> try show image; if it fails -> swap to crown
+      // We keep a hidden crown sibling and reveal it onerror
+      return `
+        <div class="${sizeClass} relative">
+          <img
+            src="${img}"
+            alt="${username}"
+            class="${sizeClass} avatar-img avatar-ring rounded-full border border-emerald-500/30 bg-black/20"
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="${sizeClass} glass avatar-ring rounded-full items-center justify-center hidden">
+            <span class="crown-icon ${textSizeClass}">👑</span>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadWinners(page = 1, append = false) {
+      if (isLoading) return;
+      isLoading = true;
+
+      try {
+        const authToken = validateAuth();
+        if (!authToken) return;
+
+        const url = new URL("https://api.copup.copupbid.com/api/users/heist/winners");
+        url.searchParams.set("page", String(page));
+        url.searchParams.set("limit", "12");
+
+        const response = await fetch(url.toString(), {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("authToken");
+          showAuthError();
+          return;
+        }
+
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+        const result = await response.json();
+
+        document.getElementById("loadingState").classList.add("hidden");
+
+        if (result.data && result.data.length > 0) {
+          displayWinners(result.data, append);
+
+          hasMorePages = (result.page * result.limit) < result.total;
+          currentPage = result.page;
+
+          const loadMoreContainer = document.getElementById("loadMoreContainer");
+          if (hasMorePages) loadMoreContainer.classList.remove("hidden");
+          else loadMoreContainer.classList.add("hidden");
+
+          document.getElementById("winnersContainer").classList.remove("hidden");
+        } else if (page === 1) {
+          document.getElementById("emptyState").classList.remove("hidden");
+        }
+      } catch (error) {
+        console.error("Error loading winners:", error);
+        document.getElementById("loadingState").classList.add("hidden");
+
+        const errorState = document.getElementById("errorState");
+        errorState.innerHTML = `
+          <div class="text-6xl mb-4">⚠️</div>
+          <h3 class="medieval-title text-2xl mb-2">Connection Failed</h3>
+          <p class="medieval-text text-emerald-300 mb-2">Unable to reach the ancient archives</p>
+          <p class="text-sm text-gray-400 mb-4">${safeText(error.message)}</p>
+          <div class="space-x-4">
+            <button onclick="loadWinners()" class="glass rounded-lg px-6 py-3 medieval-text hover:bg-emerald-500/20 transition-colors">
+              Try Again
+            </button>
+            <button onclick="goBack()" class="glass rounded-lg px-6 py-3 medieval-text hover:bg-emerald-500/20 transition-colors">
+              Return to Quests
+            </button>
+          </div>
+        `;
+        errorState.classList.remove("hidden");
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    function displayWinners(winners, append = false) {
+      const container = document.getElementById("winnersList");
+      if (!append) container.innerHTML = "";
+
+      winners.forEach((winnerItem) => {
+        const winnerCard = createWinnerCard(winnerItem);
+        container.appendChild(winnerCard);
+      });
+    }
+
+    function createWinnerCard(w) {
+      const card = document.createElement("div");
+      card.className = "champion-card rounded-xl p-6 cursor-pointer";
+      card.onclick = () => viewWinnerDetails(w.heistId, w.winner, w.completedAt);
+
+      const completedDate = formatDate(w.completedAt);
+      const username = safeText(w?.winner?.username, "Unknown");
+      const fullName = safeText(w?.winner?.fullName, "");
+
+      card.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <!-- ✅ UPDATED: avatar first, crown fallback -->
+            ${renderAvatarHtml(w?.winner, "w-12 h-12", "text-2xl")}
+
+            <div class="flex-1">
+              <h3 class="medieval-text font-semibold text-emerald-300">${username}</h3>
+              ${fullName ? `<p class="text-xs text-gray-300">${fullName}</p>` : ""}
+              <p class="text-sm text-gray-400">${completedDate}</p>
+            </div>
+          </div>
+
+          <div class="relative">
+            ${w.prizeImage ? `
+              <img src="${w.prizeImage}"
+                alt="${safeText(w.name)}"
+                class="w-full prize-image rounded-lg"
+                crossorigin="anonymous"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="w-full h-48 rounded-lg prize-image-fallback" style="display:none;"></div>
+            ` : `
+              <div class="w-full h-48 rounded-lg prize-image-fallback"></div>
+            `}
+            <div class="absolute top-2 right-2 glass-dark rounded-lg px-2 py-1">
+              <span class="text-xs text-emerald-300">🏆 Champion</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="medieval-text font-semibold text-white">${safeText(w.name)}</h4>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-emerald-300">Prize: ${safeText(w.prize)} coins</span>
+              <span class="text-gray-400">Entry: ${safeText(w.ticketPrice)} coins</span>
+            </div>
+            ${w.prizeName ? `<p class="text-sm text-gray-300">${safeText(w.prizeName)}</p>` : ""}
+          </div>
+
+          <div class="pt-2 border-t border-emerald-500/20">
+            <span class="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
+              View Champion Details →
+            </span>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    async function viewWinnerDetails(heistId, winnerFromList, completedAtFromList) {
+      try {
+        const authToken = validateAuth();
+        if (!authToken) return;
+
+        const response = await fetch(`https://api.copup.copupbid.com/api/users/heist/winner/${heistId}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("authToken");
+          showAuthError();
+          return;
+        }
+
+        if (!response.ok) throw new Error("Failed to fetch winner details");
+
+        const winnerData = await response.json();
+        winnerData.__completedAt = completedAtFromList || null;
+        winnerData.__winnerFromList = winnerFromList || null;
+
+        showWinnerModal(winnerData);
+      } catch (error) {
+        console.error("Error fetching winner details:", error);
+        alert("Unable to load champion details. Please try again.");
+      }
+    }
+
+    function showWinnerModal(data) {
+      const modalContent = document.getElementById("modalContent");
+
+      const w = data?.winner || data?.__winnerFromList || {};
+      const h = data?.heist || {};
+
+      const username = safeText(w.username, "Unknown");
+      const fullName = safeText(w.full_name || w.fullName || "", "");
+      const completedAt = data.__completedAt ? formatDateTime(data.__completedAt) : "";
+
+      modalContent.innerHTML = `
+        <div class="space-y-6">
+          <div class="text-center">
+            <!-- ✅ UPDATED: avatar first, crown fallback -->
+            <div class="flex justify-center mb-4">
+              ${renderAvatarHtml(w, "w-20 h-20", "text-4xl")}
+            </div>
+
+            <h3 class="medieval-title text-3xl font-bold text-emerald-300">${username}</h3>
+            ${fullName ? `<p class="medieval-text text-gray-300">${fullName}</p>` : ""}
+            <p class="medieval-text text-gray-400">Victorious Champion</p>
+            ${completedAt ? `<p class="text-sm text-gray-400 mt-2">Completed: ${completedAt}</p>` : ""}
+          </div>
+
+          <div class="glass-dark rounded-lg p-6">
+            <h4 class="medieval-title text-xl font-semibold mb-4 text-emerald-300">Quest Conquered</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between gap-4">
+                <span class="medieval-text text-gray-300">Quest Name:</span>
+                <span class="text-white font-semibold text-right">${safeText(h.name)}</span>
+              </div>
+              <div class="flex justify-between gap-4">
+                <span class="medieval-text text-gray-300">Prize Won:</span>
+                <span class="text-emerald-300 font-semibold text-right">${safeText(h.prize)} coins</span>
+              </div>
+              <div class="flex justify-between gap-4">
+                <span class="medieval-text text-gray-300">Entry Cost:</span>
+                <span class="text-gray-300 text-right">${safeText(h.ticket_price)} coins</span>
+              </div>
+              ${h.category ? `
+                <div class="flex justify-between gap-4">
+                  <span class="medieval-text text-gray-300">Category:</span>
+                  <span class="text-gray-300 text-right">${safeText(h.category)}</span>
+                </div>
+              ` : ""}
+              ${h.prize_name ? `
+                <div class="flex justify-between gap-4">
+                  <span class="medieval-text text-gray-300">Prize Name:</span>
+                  <span class="text-gray-300 text-right">${safeText(h.prize_name)}</span>
+                </div>
+              ` : ""}
+            </div>
+          </div>
+
+          ${h.story ? `
+            <div class="glass-dark rounded-lg p-6">
+              <h4 class="medieval-title text-lg font-semibold mb-3 text-emerald-300">Ancient Chronicle</h4>
+              <div class="medieval-text text-gray-300 leading-relaxed">
+                ${safeText(h.story)}
+              </div>
+            </div>
+          ` : ""}
+
+          ${h.prize_image ? `
+            <div class="text-center">
+              <h4 class="medieval-title text-lg font-semibold mb-3 text-emerald-300">Champion's Prize</h4>
+              <img src="${h.prize_image}"
+                alt="${safeText(h.name)}"
+                class="w-full max-w-md mx-auto prize-image rounded-lg"
+                crossorigin="anonymous"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="w-full max-w-md mx-auto h-48 rounded-lg prize-image-fallback" style="display:none;"></div>
+            </div>
+          ` : ""}
+
+          ${h.question ? `
+            <div class="glass-dark rounded-lg p-6">
+              <h4 class="medieval-title text-lg font-semibold mb-3 text-emerald-300">The Challenge</h4>
+              <p class="medieval-text text-gray-300 italic mb-4">"${safeText(h.question)}"</p>
+              ${h.answer ? `
+                <div class="border-t border-emerald-500/20 pt-4">
+                  <h5 class="text-sm font-semibold text-emerald-400 mb-2">Winning Answer:</h5>
+                  <p class="medieval-text text-white font-semibold">"${safeText(h.answer)}"</p>
+                </div>
+              ` : ""}
+            </div>
+          ` : ""}
+        </div>
+      `;
+
+      document.getElementById("winnerModal").classList.remove("hidden");
+    }
+
+    function closeWinnerModal() {
+      document.getElementById("winnerModal").classList.add("hidden");
+    }
+
+    document.getElementById("winnerModal").addEventListener("click", (e) => {
+      if (e.target.id === "winnerModal") closeWinnerModal();
+    });
+
+    document.getElementById("loadMoreBtn").addEventListener("click", () => {
+      if (hasMorePages && !isLoading) loadWinners(currentPage + 1, true);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (validateAuth()) loadWinners();
+    });
+  </script>
+</body>
+</html>

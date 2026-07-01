@@ -1,0 +1,44 @@
+/* usage: add <div class="color-ball"></div> to your HTML */
+
+:root{
+    --teal: #033B3A;
+    --silver: #C0C0C0;
+    --mint: #00FFD1;
+}
+
+.color-ball{
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+
+    /* soft multicolor orb */
+    background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.95) 0 6%,
+                                                            var(--mint) 18%, var(--teal) 85%);
+    box-shadow:
+        0 20px 40px rgba(3,59,58,0.35),
+        inset -10px -10px 30px rgba(255,255,255,0.12);
+    transform: translateZ(0);
+}
+
+/* glossy highlight */
+.color-ball::after{
+    content: "";
+    position: absolute;
+    left: 12%;
+    top: 10%;
+    width: 44%;
+    height: 44%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(255,255,255,0) 60%);
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+/* optional slow hue rotation — add the class "animate" to enable */
+@keyframes hue-rotate {
+    from { filter: hue-rotate(0deg); }
+    to   { filter: hue-rotate(360deg); }
+}
+.color-ball.animate { animation: hue-rotate 10s linear infinite; }

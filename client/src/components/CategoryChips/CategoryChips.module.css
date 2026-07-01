@@ -1,0 +1,350 @@
+/* src/components/CategoryChips/CategoryChips.module.css */
+
+.wrap{
+  width: 100%;
+  color: #241d33;
+}
+
+/* ✅ prevent children from forcing overflow */
+.wrap *{
+  box-sizing: border-box;
+}
+
+.topRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ✅ right side group (featured + live) */
+.topRightGroup{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* category select button */
+.selectBtn{
+  flex: 1;
+  min-width: 220px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #fff;
+  color: #241d33;
+  font-weight: 900;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  min-width: 0; /* ✅ critical for overflow */
+}
+
+.selectBtn:hover{
+  background: #faf9fd;
+  border-color: rgba(113,84,232,0.18);
+}
+
+.selectLabel{
+  font-size: 13px;
+  opacity: .92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.chev{
+  opacity: .75;
+  transition: transform 140ms ease;
+  flex-shrink: 0;
+}
+.chevUp{
+  transform: rotate(180deg);
+}
+
+/* ✅ Featured pill */
+.featurePill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.06);
+  padding: 10px 12px;
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+  user-select: none;
+}
+
+.featurePill:hover{
+  background: rgba(255,255,255,0.10);
+}
+
+.featurePill:active{
+  transform: scale(0.98);
+}
+
+.featurePillOn{
+  border-color: rgba(16,185,129,0.22);
+  background: rgba(16,185,129,0.12);
+}
+
+.featureDot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background: rgba(255,255,255,0.35);
+  box-shadow: 0 0 18px rgba(255,255,255,.12);
+}
+
+.featurePillOn .featureDot{
+  background: rgba(16,185,129,1);
+  box-shadow: 0 0 18px rgba(16,185,129,.35);
+}
+
+.featureText{
+  font-size:12px;
+  font-weight:950;
+  color: rgba(255,255,255,.82);
+}
+
+.featurePillOn .featureText{
+  color: rgba(16,185,129,1);
+}
+
+/* live pill */
+.livePill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #faf9fd;
+  padding: 10px 12px;
+  backdrop-filter: blur(12px);
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background: #29b979;
+  box-shadow: 0 0 18px rgba(41,185,121,.35);
+}
+
+.liveText{
+  font-size:12px;
+  font-weight:900;
+  color: #5f586f;
+}
+
+/* dropdown menu */
+.menu{
+  margin-top: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 60px rgba(48,38,83,0.14);
+  overflow: hidden;
+}
+
+.searchRow{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(36,28,54,0.08);
+}
+
+.searchIcon{
+  opacity: .7;
+  flex-shrink: 0;
+}
+
+.searchInput{
+  width:100%;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #faf9fd;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline:none;
+  color:#241d33;
+  font-weight: 800;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.searchInput:focus{
+  border-color: rgba(113,84,232,0.24);
+  box-shadow: 0 12px 30px rgba(113,84,232,0.10);
+}
+
+.list{
+  max-height: 320px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.option{
+  width:100%;
+  text-align:left;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.00);
+  background: transparent;
+  color: #352b48;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.option:hover{
+  background: rgba(113,84,232,0.07);
+  border-color: rgba(113,84,232,0.08);
+}
+
+.optionActive{
+  background: rgba(113,84,232,0.12);
+  border-color: rgba(113,84,232,0.18);
+  color: #7154e8;
+}
+
+/* ✅ toolbar controls row - overflow FIX */
+.controls{
+  margin-top: 12px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.searchWrap2{
+  position:relative;
+  flex: 1;
+  min-width: 240px;
+  width: 100%;
+  min-width: 0; /* ✅ critical */
+}
+
+.searchIcon2{
+  position:absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .7;
+  pointer-events: none;
+}
+
+.search2{
+  width:100%;
+  border-radius: 16px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #fff;
+  padding: 11px 46px 11px 36px;
+  outline:none;
+  color:#241d33;
+  font-weight:800;
+  font-size:13px;
+  min-width: 0;
+}
+
+.search2:focus{
+  border-color: rgba(113,84,232,0.24);
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(113,84,232,0.10);
+}
+
+.kbd{
+  position:absolute;
+  right: 10px;
+  top:50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #f4f2f8;
+  color: #756d82;
+  pointer-events: none;
+}
+
+.select2{
+  border-radius: 16px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #fff;
+  padding: 10px 12px;
+  outline:none;
+  color:#241d33;
+  font-weight:900;
+  font-size:13px;
+  min-width: 210px;
+  max-width: 100%;
+}
+
+.select2:focus{
+  border-color: rgba(113,84,232,0.24);
+  box-shadow: 0 10px 30px rgba(113,84,232,0.10);
+}
+
+.btnPrimary{
+  border-radius: 16px;
+  border: 0;
+  padding: 10px 14px;
+  color:#0a0f1c;
+  font-weight:950;
+  cursor:pointer;
+  background: linear-gradient(90deg, rgba(16,185,129,1), rgba(59,130,246,1));
+  white-space: nowrap;
+}
+
+.btnPrimary:hover{ filter: brightness(1.05); }
+
+.statusLine{
+  margin-top: 10px;
+  font-size: 12px;
+  color: #756d82;
+}
+
+/* chips mode (optional) */
+.chips{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip{
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 900;
+  font-size: 13px;
+  border: 1px solid rgba(36,28,54,0.08);
+  background: #fff;
+  color: #352b48;
+  cursor: pointer;
+}
+
+.active{
+  border-color: rgba(113,84,232,0.22);
+  background: rgba(113,84,232,0.12);
+  color: #7154e8;
+}
+
+@media (max-width: 820px){
+  .searchWrap2{ min-width: 100%; }
+  .select2{ min-width: 100%; }
+}
+
+/* ✅ extra small: hide the kbd hint to prevent crowding */
+@media (max-width: 420px){
+  .kbd{ display: none; }
+  .search2{ padding-right: 14px; }
+}

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <title>Admin • Coin Bank Management</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: "#10b981", 600: "#059669" },
+            accent: { 500: "#3b82f6" }
+          },
+          boxShadow: {
+            glow: "0 0 80px rgba(16,185,129,.18)"
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1rem;
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-900 text-slate-100">
+
+<!-- Background -->
+<div class="fixed inset-0 -z-10 pointer-events-none">
+  <div class="absolute inset-0 bg-[radial-gradient(1000px_450px_at_30%_0%,rgba(16,185,129,.08),transparent)]"></div>
+  <div class="absolute inset-0 bg-[radial-gradient(900px_500px_at_80%_90%,rgba(59,130,246,.12),transparent)]"></div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 bg-slate-900/80 backdrop-blur border-b border-white/10 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <button id="backBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+      ← Dashboard
+    </button>
+    <h1 class="text-lg font-semibold">
+      Coin Bank <span class="text-brand-500">Management</span>
+    </h1>
+    <button id="logoutBtn" class="text-sm text-slate-300 hover:text-white">Logout</button>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+  <!-- TOP SUMMARY -->
+  <section class="glass p-6 space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">
+          Coin <span class="text-brand-500">Overview</span>
+        </h2>
+        <p class="text-xs text-slate-400">
+          Snapshot of total coins (bid_points) in the system and their estimated fiat value.
+        </p>
+      </div>
+      <button id="refreshBtn"
+              class="px-3 py-2 text-xs rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+        Refresh
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumTotalUsers" class="text-2xl font-bold text-slate-50">—</div>
+        <div class="text-xs text-slate-400">Total Users</div>
+      </div>
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumTotalCoins" class="text-2xl font-bold text-amber-300">—</div>
+        <div class="text-xs text-slate-400">Total Coins (bid_points)</div>
+      </div>
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumAvgPerUser" class="text-2xl font-bold text-sky-300">—</div>
+        <div class="text-xs text-slate-400">Average Coins / User</div>
+      </div>
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumBankValue" class="text-lg font-bold text-emerald-300">—</div>
+        <div class="text-xs text-slate-400" id="sumBankValueLabel">Estimated Bank Value</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COIN RATE CARD -->
+  <section class="glass p-6 space-y-4">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">
+          Coin <span class="text-brand-500">Rate</span>
+        </h2>
+        <p class="text-xs text-slate-400">
+          How much 1 CopUpCoin (bid_point) is worth in your base currency.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+      <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+        <div class="text-xs text-slate-400 mb-1">Current Rate</div>
+        <div id="rateValue" class="text-xl font-semibold text-emerald-300">—</div>
+        <div id="rateCurrency" class="text-xs text-slate-400 mt-1">Currency: —</div>
+      </div>
+      <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+        <div class="text-xs text-slate-400 mb-1">Last Updated</div>
+        <div id="rateUpdated" class="text-sm text-slate-200">—</div>
+        <div class="text-[11px] text-slate-500 mt-1">
+          Pulled from <code class="bg-black/20 px-1 py-0.5 rounded">coin_rate</code> (id = 1).
+        </div>
+      </div>
+      <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+        <div class="text-xs text-slate-400 mb-1">Notes</div>
+        <p class="text-xs text-slate-300">
+          This page uses the coin rate only for display / estimation.
+          Any changes to the rate itself should be done via the backend route
+          (e.g. <code class="bg-black/20 px-1 py-0.5 rounded">POST /api/admin/coin-rate</code>) once implemented.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <section class="glass p-6 space-y-4">
+    <form id="filterForm" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+      <div>
+        <label class="text-xs mb-1 block">Search</label>
+        <input id="fSearch" type="text"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+               placeholder="Email, username or full name">
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Min Coins</label>
+        <input id="fMinCoins" type="number"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+               placeholder="0">
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Max Coins</label>
+        <input id="fMaxCoins" type="number"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+               placeholder="No limit">
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Sort</label>
+        <select id="fSort"
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm">
+          <option value="id_desc">Newest Users (ID ↓)</option>
+          <option value="id_asc">Oldest Users (ID ↑)</option>
+          <option value="coins_desc">Most Coins (↓)</option>
+          <option value="coins_asc">Least Coins (↑)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Page Size</label>
+        <select id="fPageSize"
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+
+      <div class="md:col-span-4 flex items-center gap-2 text-[11px] text-slate-500">
+        Use filters to quickly find high-value accounts or users within a specific coin range.
+      </div>
+
+      <div class="flex items-end">
+        <button class="px-4 py-2 rounded-lg bg-brand-500 text-slate-900 font-semibold w-full text-sm">
+          Apply Filters
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+      <div>
+        Total / average stats above are based on the full dataset. Table below is client-side filtered.
+      </div>
+      <button type="button" id="clearFilters"
+              class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-[11px]">
+        Clear
+      </button>
+    </div>
+  </section>
+
+  <!-- USERS TABLE -->
+  <section class="glass p-6">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-slate-400 border-b border-white/10">
+            <th class="px-3 py-2 text-left">User</th>
+            <th class="px-3 py-2 text-left">Email</th>
+            <th class="px-3 py-2 text-left">Username</th>
+            <th class="px-3 py-2 text-right">Coins</th>
+            <th class="px-3 py-2 text-right">Value (NGN)</th>
+            <th class="px-3 py-2 text-left">Created</th>
+            <th class="px-3 py-2 text-right">User ID</th>
+          </tr>
+        </thead>
+        <tbody id="usersTbody" class="divide-y divide-white/10"></tbody>
+      </table>
+    </div>
+
+    <div id="pagination" class="mt-4 flex items-center justify-between text-sm text-slate-400"></div>
+
+    <div id="errorBox" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/40 rounded-lg text-red-200 text-sm"></div>
+    <div id="okBox" class="hidden mt-4 p-3 bg-emerald-500/10 border border-emerald-500/40 rounded-lg text-emerald-200 text-sm"></div>
+  </section>
+
+</main>
+
+<script>
+const API = "https://api.copup.copupbid.com/api/admin";
+const LOGIN_URL = "../auth/login.html";
+axios.defaults.baseURL = API;
+
+// Ensure Auth
+(function ensureAuth() {
+  const raw = localStorage.getItem("authToken");
+  if (!raw) return (location.href = LOGIN_URL);
+  axios.defaults.headers.common["Authorization"] =
+    "Bearer " + raw.replace(/^"(.+)"$/, "$1");
+})();
+
+// DOM helpers
+const $ = id => document.getElementById(id);
+const show = el => el && el.classList.remove("hidden");
+const hide = el => el && el.classList.add("hidden");
+
+// Nav buttons
+$("logoutBtn").onclick = () => {
+  localStorage.removeItem("authToken");
+  location.href = LOGIN_URL;
+};
+$("backBtn").onclick = () => (location.href = "./admin-dashboard.html");
+
+/* ========= GLOBAL MESSAGES ========= */
+function setOk(msg) {
+  const box = $("okBox");
+  if (!box) return;
+  box.textContent = msg;
+  show(box);
+  hide($("errorBox"));
+}
+function setErr(msg) {
+  const box = $("errorBox");
+  if (!box) return;
+  box.textContent = msg;
+  show(box);
+  hide($("okBox"));
+}
+function clearMainMsgs() {
+  hide($("okBox"));
+  hide($("errorBox"));
+}
+
+/* ========= UTILITIES ========= */
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+function formatNumber(v) {
+  const n = Number(v || 0);
+  if (Number.isNaN(n)) return String(v ?? 0);
+  return n.toLocaleString();
+}
+function formatMoney(v) {
+  const n = Number(v || 0);
+  if (Number.isNaN(n)) return String(v ?? 0);
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+/* ========= STATE ========= */
+let allUsers = [];      // full array from /users-copupcoin
+let filteredUsers = []; // after local filter/sort
+let totalUsers = 0;
+let totalBidPoints = 0;
+let coinRate = { unit_price: 0, currency: "NGN", updated_at: null };
+
+let page = 1;
+let pageSize = 50;
+
+/* ========= LOAD COIN RATE ========= */
+async function loadCoinRate() {
+  try {
+    const { data } = await axios.get("/coin-rate");
+    coinRate.unit_price = Number(data?.unit_price || 0);
+    coinRate.currency = data?.currency || "NGN";
+    coinRate.updated_at = data?.updated_at || null;
+
+    $("rateValue").textContent =
+      `1 Coin = ${coinRate.currency} ${formatMoney(coinRate.unit_price)}`;
+    $("rateCurrency").textContent = `Currency: ${coinRate.currency}`;
+    $("rateUpdated").textContent = coinRate.updated_at || "—";
+  } catch (err) {
+    console.error("loadCoinRate error", err);
+    $("rateValue").textContent = "—";
+    $("rateCurrency").textContent = "Currency: —";
+    $("rateUpdated").textContent = "Error fetching rate";
+    setErr(err?.response?.data?.message || "Error fetching coin rate.");
+  }
+}
+
+/* ========= LOAD USERS / COIN BANK ========= */
+async function loadUsersCoin() {
+  try {
+    const { data } = await axios.get("/users-copupcoin");
+    const users = data?.users || [];
+    totalUsers = Number(data?.totalUsers || users.length || 0);
+    totalBidPoints = Number(data?.totalBidPoints || 0);
+    allUsers = users.map(u => ({
+      ...u,
+      bid_points: Number(u.bid_points || 0)
+    }));
+
+    // Summary
+    $("sumTotalUsers").textContent = formatNumber(totalUsers);
+    $("sumTotalCoins").textContent = formatNumber(totalBidPoints);
+
+    const avg = totalUsers > 0 ? totalBidPoints / totalUsers : 0;
+    $("sumAvgPerUser").textContent = formatNumber(avg.toFixed(2));
+
+    const estBankValue = totalBidPoints * (coinRate.unit_price || 0);
+    if (coinRate.unit_price > 0) {
+      $("sumBankValue").textContent =
+        `${coinRate.currency} ${formatMoney(estBankValue)}`;
+      $("sumBankValueLabel").textContent =
+        `Estimated Bank Value (@ ${coinRate.currency} ${formatMoney(coinRate.unit_price)} / coin)`;
+    } else {
+      $("sumBankValue").textContent = "—";
+      $("sumBankValueLabel").textContent =
+        "Estimated Bank Value (rate is 0)";
+    }
+
+    applyFilters(); // initial filter + render
+  } catch (err) {
+    console.error("loadUsersCoin error", err);
+    setErr(err?.response?.data?.message || "Error fetching coin users.");
+  }
+}
+
+/* ========= FILTER + SORT ========= */
+function applyFilters() {
+  const q = $("fSearch").value.trim().toLowerCase();
+  const minCoinsRaw = $("fMinCoins").value.trim();
+  const maxCoinsRaw = $("fMaxCoins").value.trim();
+  const sortMode = $("fSort").value;
+  pageSize = Number($("fPageSize").value || 50) || 50;
+
+  let minCoins = Number.MIN_SAFE_INTEGER;
+  let maxCoins = Number.MAX_SAFE_INTEGER;
+
+  if (minCoinsRaw !== "") {
+    const n = Number(minCoinsRaw);
+    if (!Number.isNaN(n)) minCoins = n;
+  }
+  if (maxCoinsRaw !== "") {
+    const n = Number(maxCoinsRaw);
+    if (!Number.isNaN(n)) maxCoins = n;
+  }
+
+  filteredUsers = allUsers.filter(u => {
+    const coins = Number(u.bid_points || 0);
+    if (coins < minCoins) return false;
+    if (coins > maxCoins) return false;
+
+    if (q) {
+      const bucket = [
+        u.email || "",
+        u.username || "",
+        u.full_name || ""
+      ].join(" ").toLowerCase();
+      if (!bucket.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  filteredUsers.sort((a, b) => {
+    switch (sortMode) {
+      case "id_asc":
+        return a.id - b.id;
+      case "id_desc":
+        return b.id - a.id;
+      case "coins_asc":
+        return a.bid_points - b.bid_points || a.id - b.id;
+      case "coins_desc":
+        return b.bid_points - a.bid_points || a.id - b.id;
+      default:
+        return b.id - a.id;
+    }
+  });
+
+  page = 1; // reset page
+  renderTable();
+}
+
+/* ========= TABLE RENDER ========= */
+function renderTable() {
+  const tbody = $("usersTbody");
+  if (!filteredUsers.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="px-3 py-4 text-center text-slate-400">
+          No users match your filters.
+        </td>
+      </tr>
+    `;
+    renderPagination();
+    return;
+  }
+
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredUsers.length);
+  const slice = filteredUsers.slice(startIndex, endIndex);
+
+  tbody.innerHTML = slice
+    .map(u => {
+      const name =
+        u.full_name ||
+        (u.username ? u.username : "Unnamed User");
+      const created = u.created_at || "";
+      const coins = Number(u.bid_points || 0);
+      const fiat =
+        coinRate.unit_price && coinRate.unit_price > 0
+          ? coins * coinRate.unit_price
+          : 0;
+      const fiatText =
+        coinRate.unit_price && coinRate.unit_price > 0
+          ? `${coinRate.currency} ${formatMoney(fiat)}`
+          : "—";
+
+      return `
+        <tr class="hover:bg-white/5">
+          <td class="px-3 py-2 align-top">
+            <div class="text-sm font-semibold text-slate-100">
+              ${escapeHtml(name)}
+            </div>
+          </td>
+          <td class="px-3 py-2 align-top text-xs text-slate-300">
+            ${escapeHtml(u.email || "")}
+          </td>
+          <td class="px-3 py-2 align-top text-xs text-slate-300">
+            ${u.username ? escapeHtml(u.username) : "—"}
+          </td>
+          <td class="px-3 py-2 align-top text-right text-sm font-semibold text-amber-200">
+            ${formatNumber(coins)}
+          </td>
+          <td class="px-3 py-2 align-top text-right text-xs text-emerald-200">
+            ${fiatText}
+          </td>
+          <td class="px-3 py-2 align-top text-xs text-slate-400">
+            ${created}
+          </td>
+          <td class="px-3 py-2 align-top text-right text-xs text-slate-400">
+            #${u.id}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = filteredUsers.length;
+  if (!total) {
+    $("pagination").innerHTML = `<div>0 of 0 users</div><div></div>`;
+    return;
+  }
+
+  const totalPages = Math.ceil(total / pageSize);
+  if (page > totalPages) page = totalPages;
+
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+
+  $("pagination").innerHTML = `
+    <div>
+      Showing <span class="text-slate-100">${start}</span>–
+      <span class="text-slate-100">${end}</span> of
+      <span class="text-slate-100">${formatNumber(total)}</span> users
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="prevBtn"
+        class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs disabled:opacity-40"
+        ${page <= 1 ? "disabled" : ""}>
+        Prev
+      </button>
+      <span class="text-xs text-slate-400">
+        Page <span class="text-slate-100">${page}</span> / ${totalPages}
+      </span>
+      <button id="nextBtn"
+        class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs disabled:opacity-40"
+        ${page >= totalPages ? "disabled" : ""}>
+        Next
+      </button>
+    </div>
+  `;
+
+  const prevBtn = $("prevBtn");
+  const nextBtn = $("nextBtn");
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      if (page > 1) {
+        page--;
+        renderTable();
+      }
+    };
+  }
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      const totalPagesLocal = Math.ceil(filteredUsers.length / pageSize);
+      if (page < totalPagesLocal) {
+        page++;
+        renderTable();
+      }
+    };
+  }
+}
+
+/* ========= EVENTS ========= */
+
+// Filters submit
+$("filterForm").onsubmit = e => {
+  e.preventDefault();
+  applyFilters();
+};
+
+// Clear filters
+$("clearFilters").onclick = () => {
+  $("fSearch").value = "";
+  $("fMinCoins").value = "";
+  $("fMaxCoins").value = "";
+  $("fSort").value = "id_desc";
+  $("fPageSize").value = "50";
+  applyFilters();
+};
+
+// Refresh button
+$("refreshBtn").onclick = async () => {
+  clearMainMsgs();
+  await Promise.all([loadCoinRate(), loadUsersCoin()]);
+  setOk("Coin bank data refreshed.");
+};
+
+/* ========= INITIAL LOAD ========= */
+(async function init() {
+  clearMainMsgs();
+  await loadCoinRate();
+  await loadUsersCoin();
+})();
+</script>
+
+</body>
+</html>

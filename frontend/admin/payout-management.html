@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Admin • Payout Management</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' },
+            accent:{ 500: '#3b82f6' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Axios (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 1.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    }
+    
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 1rem;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.4);
+      border-color: rgba(16,185,129,.3);
+    }
+    
+    .badge {
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.4rem .8rem; border-radius:.8rem; font-size:.75rem; font-weight: 600;
+      border:1px solid rgba(255,255,255,.15); 
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+    
+    .toast {
+      position: fixed; top: 20px; right: 20px; z-index: 100;
+      min-width: 320px; max-width: 480px;
+      padding: 1.2rem 1.5rem; border-radius: 1.2rem;
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
+      background: linear-gradient(135deg, rgba(15,23,42,.95), rgba(30,41,59,.95));
+      backdrop-filter: blur(20px);
+      color: #f1f5f9; 
+      display: none; 
+      white-space: pre-wrap;
+      transform: translateX(400px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+      animation: toastBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .toast.ok { 
+      border-color: rgba(16,185,129,.4);
+      background: linear-gradient(135deg, rgba(16,185,129,.15), rgba(5,150,105,.1));
+    }
+    
+    .toast.err { 
+      border-color: rgba(239,68,68,.5);
+      background: linear-gradient(135deg, rgba(239,68,68,.15), rgba(220,38,38,.1));
+    }
+    
+    @keyframes toastBounce {
+      0% { transform: translateX(400px) scale(0.8); opacity: 0; }
+      50% { transform: translateX(-10px) scale(1.05); }
+      100% { transform: translateX(0) scale(1); opacity: 1; }
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: 1px solid rgba(16,185,129,.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(16,185,129,.3);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.15);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border-color: rgba(255,255,255,.25);
+    }
+    
+    .form-input {
+      background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.12);
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      border-color: rgba(16,185,129,.5);
+      box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    }
+    
+    .ring-soft { 
+      box-shadow: 0 0 0 8px rgba(16,185,129,.15);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 8px rgba(16,185,129,.15); }
+      50% { box-shadow: 0 0 0 12px rgba(16,185,129,.08); }
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .stat-card:hover::before {
+      opacity: 1;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16,185,129,.25);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, rgba(15,23,42,.95), rgba(30,41,59,.9));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 80px rgba(0,0,0,.8);
+      transform: scale(0.9);
+      animation: modalSlideIn 0.3s ease forwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes modalSlideIn {
+      from { transform: scale(0.9) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="min-h-dvh bg-slate-900 text-slate-100">
+  <!-- Background -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(90%_70%_at_10%_-10%,rgba(34,211,238,.10),rgba(59,130,246,.10),rgba(0,0,0,0))]"></div>
+  </div>
+
+  <header class="sticky top-0 z-10 bg-slate-900/70 backdrop-blur border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <a href="./admin-dashboard.html"
+           class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back
+        </a>
+        <h1 class="text-lg font-semibold tracking-tight">Admin <span class="text-brand-500">Payout Management</span></h1>
+      </div>
+      <a id="logoutBtn" class="text-sm text-slate-300 hover:text-white cursor-pointer">Log out</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-8">
+    <!-- Filters + Stats -->
+    <section class="glass p-6 md:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight">
+            <span class="gradient-text">Payout Management</span>
+          </h2>
+          <p class="text-slate-400 mt-2 text-lg">Review, approve, or reject user payout requests with ease.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="refreshBtn" class="btn-secondary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium hover:scale-105 transition-transform">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4v6h6M20 20v-6h-6M5 19A9 9 0 0 1 19 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-[280px_auto] gap-4">
+        <select id="fStatus" class="form-input w-full rounded-xl px-4 py-3 outline-none text-white">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <div class="flex items-center gap-3">
+          <button id="applyFiltersBtn" class="btn-primary rounded-xl px-6 py-3 font-semibold text-white">Apply Filters</button>
+          <button id="clearFiltersBtn" class="btn-secondary rounded-xl px-6 py-3 font-medium">Clear All</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div id="statsWrap" class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="stat-card">
+          <div class="text-slate-400 text-sm font-medium uppercase tracking-wide">Total Payouts</div>
+          <div id="statTotal" class="text-3xl font-bold mt-2 gradient-text">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-slate-400 text-sm font-medium uppercase tracking-wide">Pending Review</div>
+          <div id="statPending" class="text-3xl font-bold mt-2 text-amber-400">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-slate-400 text-sm font-medium uppercase tracking-wide">Approved</div>
+          <div id="statApproved" class="text-3xl font-bold mt-2 text-emerald-400">—</div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="mt-6 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left text-slate-300">
+            <tr class="border-b border-white/10">
+              <th class="py-2 pr-3">#</th>
+              <th class="py-2 pr-3">User</th>
+              <th class="py-2 pr-3">Coins</th>
+              <th class="py-2 pr-3">Account Name</th>
+              <th class="py-2 pr-3">Account Number</th>
+              <th class="py-2 pr-3">Bank</th>
+              <th class="py-2 pr-3">Status</th>
+              <th class="py-2 pr-3">Admin Note</th>
+              <th class="py-2 pr-3">Created</th>
+              <th class="py-2 pr-3">Updated</th>
+              <th class="py-2 pr-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="payoutsTbody" class="align-top"></tbody>
+        </table>
+      </div>
+
+      <div id="listErr" class="hidden mt-6 rounded-xl border border-red-500/40 bg-red-500/10 px-6 py-4 text-red-200 backdrop-blur-sm"></div>
+    </section>
+  </main>
+
+  <!-- Added custom modal for user input instead of system prompts -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="modalTitle" class="text-xl font-bold mb-4 gradient-text"></h3>
+      <p id="modalMessage" class="text-slate-300 mb-6"></p>
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-slate-300 mb-2">Admin Note (Optional)</label>
+        <textarea id="modalInput" class="form-input w-full rounded-xl px-4 py-3 outline-none text-white resize-none" rows="3" placeholder="Enter your note here..."></textarea>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button id="modalCancel" class="btn-secondary px-6 py-2.5 rounded-xl font-medium">Cancel</button>
+        <button id="modalConfirm" class="btn-primary px-6 py-2.5 rounded-xl font-semibold text-white">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ====== CONFIG ======
+    const API_BASE = "https://api.copup.copupbid.com/api/admin";
+    const LOGIN_URL = "../auth/login.html";
+
+    // ====== HELPERS ======
+    const $ = (id) => document.getElementById(id);
+    const show = (el) => el.classList.remove("hidden");
+    const hide = (el) => el.classList.add("hidden");
+    
+    const toast = (msg, kind='ok', ms=4000) => {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = 'toast ' + (kind === 'err' ? 'err' : 'ok');
+      t.style.display = 'block';
+      t.classList.add('show');
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(() => { t.style.display = 'none'; }, 400);
+      }, ms);
+    };
+    
+    const fmtDate = (d) => d ? new Date(d).toLocaleString() : "—";
+    
+    function statusBadge(st){
+      const s = String(st || '').toLowerCase();
+      if (s === 'approved') return `<span class="badge border-emerald-500/40 text-emerald-300 bg-emerald-500/10">✓ Approved</span>`;
+      if (s === 'rejected') return `<span class="badge border-red-500/40 text-red-300 bg-red-500/10">✗ Rejected</span>`;
+      return `<span class="badge border-amber-500/40 text-amber-300 bg-amber-500/10">⏳ Pending</span>`;
+    }
+
+    function showModal(title, message, placeholder = "") {
+      return new Promise((resolve) => {
+        const overlay = $("modalOverlay");
+        const titleEl = $("modalTitle");
+        const messageEl = $("modalMessage");
+        const input = $("modalInput");
+        const confirmBtn = $("modalConfirm");
+        const cancelBtn = $("modalCancel");
+        
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        input.value = "";
+        input.placeholder = placeholder;
+        
+        overlay.classList.add("show");
+        input.focus();
+        
+        const cleanup = () => {
+          overlay.classList.remove("show");
+          confirmBtn.removeEventListener("click", onConfirm);
+          cancelBtn.removeEventListener("click", onCancel);
+          overlay.removeEventListener("click", onOverlayClick);
+        };
+        
+        const onConfirm = () => {
+          cleanup();
+          resolve(input.value.trim());
+        };
+        
+        const onCancel = () => {
+          cleanup();
+          resolve(null);
+        };
+        
+        const onOverlayClick = (e) => {
+          if (e.target === overlay) onCancel();
+        };
+        
+        confirmBtn.addEventListener("click", onConfirm);
+        cancelBtn.addEventListener("click", onCancel);
+        overlay.addEventListener("click", onOverlayClick);
+      });
+    }
+
+    // ====== AUTH / AXIOS ======
+    function ensureAuth() {
+      const tok = localStorage.getItem("authToken");
+      if (!tok) { window.location.href = LOGIN_URL; return null; }
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = "Bearer " + tok.replace(/^"(.+)"$/, "$1");
+      axios.defaults.headers.common["Content-Type"] = "application/json";
+      return tok;
+    }
+    axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        const s = err?.response?.status;
+        if (s === 401 || s === 403) {
+          localStorage.removeItem("authToken");
+          window.location.href = LOGIN_URL;
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    // ====== LOAD LIST ======
+    async function loadPayouts(){
+      hide($("listErr"));
+      $("refreshBtn").classList.add("ring-soft");
+      const status = $("fStatus").value || "";
+
+      const params = {};
+      if (status) params.status = status;
+
+      try {
+        const { data } = await axios.get("/payouts", { params: { ...params, ts: Date.now() } });
+        renderPayouts(data || []);
+      } catch (err) {
+        console.error("load payouts error:", err);
+        $("listErr").textContent = err?.response?.data?.message || "Error listing payouts";
+        show($("listErr"));
+      } finally {
+        $("refreshBtn").classList.remove("ring-soft");
+      }
+    }
+
+    function renderPayouts(rows){
+      const tb = $("payoutsTbody");
+      tb.innerHTML = "";
+      if (!rows.length) {
+        tb.innerHTML = `<tr><td colspan="11" class="py-6 text-center text-slate-400">No payouts found.</td></tr>`;
+        // reset stats
+        $("statTotal").textContent = "0";
+        $("statPending").textContent = "0";
+        $("statApproved").textContent = "0";
+        return;
+      }
+
+      // stats
+      const total = rows.length;
+      const pending = rows.filter(r => r.status === 'pending').length;
+      const approved = rows.filter(r => r.status === 'approved').length;
+      $("statTotal").textContent = total.toLocaleString();
+      $("statPending").textContent = pending.toLocaleString();
+      $("statApproved").textContent = approved.toLocaleString();
+
+      for (const r of rows) {
+        const user = `${r.username || '—'}<br><span class="text-slate-400">${r.email || ''}</span>`;
+        const coins = Number(r.bid_points || 0).toLocaleString();
+        const actions = (r.status === 'pending')
+          ? `
+            <div class="flex flex-wrap gap-2">
+              <button data-act="approve" data-id="${r.id}" class="px-2.5 py-1 rounded-lg border border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/10">Approve</button>
+              <button data-act="reject"  data-id="${r.id}" class="px-2.5 py-1 rounded-lg border border-red-500/30 text-red-200 hover:bg-red-500/10">Reject</button>
+            </div>
+          `
+          : `<span class="text-slate-400">—</span>`;
+
+        const row = document.createElement("tr");
+        row.className = "border-b border-white/10";
+        row.innerHTML = `
+          <td class="py-2 pr-3">${r.id}</td>
+          <td class="py-2 pr-3">${user}</td>
+          <td class="py-2 pr-3">${coins}</td>
+          <td class="py-2 pr-3">${r.account_name || '—'}</td>
+          <td class="py-2 pr-3">${r.account_number || '—'}</td>
+          <td class="py-2 pr-3">${r.bank_name || '—'}</td>
+          <td class="py-2 pr-3">${statusBadge(r.status)}</td>
+          <td class="py-2 pr-3 max-w-[240px]"><div class="line-clamp-3">${r.admin_note || '—'}</div></td>
+          <td class="py-2 pr-3">${fmtDate(r.created_at)}</td>
+          <td class="py-2 pr-3">${fmtDate(r.updated_at)}</td>
+          <td class="py-2 pr-3">${actions}</td>
+        `;
+        tb.appendChild(row);
+      }
+
+      // bind actions
+      tb.querySelectorAll("button[data-act]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = Number(btn.getAttribute("data-id"));
+          const act = btn.getAttribute("data-act");
+          if (!Number.isInteger(id) || id <= 0) return;
+
+          try {
+            let note = "";
+            if (act === "approve") {
+              note = await showModal(
+                "Approve Payout", 
+                `Are you sure you want to approve payout #${id}?`,
+                "Optional admin note..."
+              );
+              if (note === null) return; // User cancelled
+              
+              await axios.patch(`/payouts/${id}`, { action: "approve", admin_note: note });
+              toast(`✅ Payout #${id} has been approved successfully!`, "ok");
+            } else {
+              note = await showModal(
+                "Reject Payout", 
+                `Please provide a reason for rejecting payout #${id}:`,
+                "Reason for rejection..."
+              );
+              if (note === null) return; // User cancelled
+              
+              await axios.patch(`/payouts/${id}`, { action: "reject", admin_note: note });
+              toast(`❌ Payout #${id} has been rejected and refunded.`, "ok");
+            }
+            await loadPayouts();
+          } catch (err) {
+            console.error("update payout error:", err);
+            toast(err?.response?.data?.message || "❌ Error updating payout", "err");
+          }
+        });
+      });
+    }
+
+    // ====== FILTERS / LOGOUT ======
+    function applyFilters(){ loadPayouts(); }
+    function clearFilters(){ $("fStatus").value = ""; loadPayouts(); }
+    function logout(){ localStorage.removeItem("authToken"); window.location.href = LOGIN_URL; }
+
+    // ====== INIT ======
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!ensureAuth()) return;
+      $("applyFiltersBtn").addEventListener("click", applyFilters);
+      $("clearFiltersBtn").addEventListener("click", clearFilters);
+      $("refreshBtn").addEventListener("click", loadPayouts);
+      $("logoutBtn").addEventListener("click", logout);
+      await loadPayouts();
+    });
+  </script>
+</body>
+</html>

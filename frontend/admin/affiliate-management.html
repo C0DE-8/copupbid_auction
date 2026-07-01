@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Admin • Affiliate Management</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#06b6d4', 600: '#0891b2' },
+            leaf:  { 500: '#10b981' },
+            ink:   { 900: '#0b1020' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    /* Enhanced glass morphism and modern styling */
+    .glass { 
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); 
+      border: 1px solid rgba(255,255,255,.12); 
+      border-radius: 1.5rem; 
+      backdrop-filter: blur(12px); 
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .glass:hover {
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border-color: rgba(255,255,255,.18);
+      transform: translateY(-2px);
+      transition: all 0.3s ease;
+    }
+    
+    .ring-soft { box-shadow: 0 0 0 6px rgba(6,182,212,.15); }
+    
+    .btn { 
+      @apply rounded-xl px-6 py-3 font-semibold transition-all duration-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:scale-105 hover:shadow-lg; 
+    }
+    .btn-primary { 
+      @apply bg-gradient-to-r from-brand-500 to-leaf-500 text-slate-900 hover:from-brand-600 hover:to-leaf-600 border-transparent shadow-lg; 
+    }
+    .btn-danger {
+      @apply bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-transparent;
+    }
+    
+    .badge { 
+      @apply inline-flex items-center gap-2 rounded-lg border border-white/20 bg-gradient-to-r from-white/10 to-white/5 px-4 py-2 text-sm font-medium backdrop-blur-sm; 
+    }
+    
+    .input-enhanced {
+      @apply w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 outline-none transition-all duration-300 focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500/50 hover:bg-white/8;
+    }
+    
+    .table-enhanced {
+      @apply w-full text-sm border-separate border-spacing-0;
+    }
+    .table-enhanced th {
+      @apply bg-gradient-to-r from-white/10 to-white/5 text-slate-300 font-semibold p-4 first:rounded-tl-xl last:rounded-tr-xl border-b border-white/10;
+    }
+    .table-enhanced td {
+      @apply p-4 border-b border-white/5 transition-colors hover:bg-white/5;
+    }
+    .table-enhanced tr:last-child td {
+      @apply border-b-0;
+    }
+    .table-enhanced tr:last-child td:first-child {
+      @apply rounded-bl-xl;
+    }
+    .table-enhanced tr:last-child td:last-child {
+      @apply rounded-br-xl;
+    }
+
+    /* Enhanced toast notifications */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      min-width: 300px;
+      max-width: 500px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.2);
+      transform: translateX(400px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 40px rgba(0,0,0,.3);
+    }
+    .toast.show {
+      transform: translateX(0);
+    }
+    .toast-success {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.8));
+      color: white;
+    }
+    .toast-error {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.8));
+      color: white;
+    }
+    .toast-info {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.8));
+      color: white;
+    }
+
+    /* Modal styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      backdrop-filter: blur(20px);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .modal-overlay.show .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Enhanced animations */
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeInUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-in { animation: slideInRight 0.5s ease-out; }
+    .animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
+  </style>
+</head>
+<body class="min-h-dvh bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100">
+  <!-- Enhanced background with animated gradients -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(90%_70%_at_10%_-10%,rgba(34,211,238,.15),rgba(99,102,241,.12),rgba(16,185,129,.08),rgba(0,0,0,0))]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(16,185,129,.1),transparent_50%)]"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="backBtn" class="badge hover:bg-white/15 hover:scale-105 transition-all duration-300">
+          ← Back to Dashboard
+        </button>
+        <h1 class="text-lg md:text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+          Affiliate <span class="bg-gradient-to-r from-brand-500 to-leaf-500 bg-clip-text text-transparent">Management</span>
+        </h1>
+      </div>
+      <button id="logoutBtn" class="text-sm text-slate-300 hover:text-white transition-colors duration-300 hover:scale-105">Log out</button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-8">
+
+    <!-- Enhanced Heist Requirement section -->
+    <section class="glass p-8 animate-fade-in-up">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            Heist Affiliate Requirement
+          </h2>
+          <p class="text-slate-400 mt-2 text-lg">Set or remove the required referrals and reward for a heist.</p>
+        </div>
+        <span class="badge bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400/30">
+          🏛️ Heists
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[220px_1fr_1fr_auto_auto] gap-4 mb-8">
+        <input id="heistId" type="number" min="1" placeholder="Heist ID" class="input-enhanced">
+        <input id="heistTarget" type="number" min="0" placeholder="Target Users" class="input-enhanced">
+        <input id="heistReward" type="number" min="0" placeholder="Reward Bid Points" class="input-enhanced">
+        <button id="saveHeistBtn" class="btn btn-primary">💾 Save</button>
+        <button id="delHeistBtn" class="btn btn-danger">🗑️ Delete</button>
+      </div>
+
+      <!-- Enhanced heist search section -->
+      <div class="glass p-6">
+        <div class="flex items-center justify-between gap-4 mb-4">
+          <div class="text-slate-200 font-semibold text-lg">🔍 Quick Find Heist</div>
+          <div class="flex items-center gap-3">
+            <input id="heistSearch" placeholder="Search name/story…" class="input-enhanced min-w-[250px]">
+            <button id="findHeistsBtn" class="btn">Search</button>
+          </div>
+        </div>
+        <div id="heistTableWrap" class="overflow-auto border border-white/10 rounded-xl bg-white/5">
+          <table class="table-enhanced">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Category</th>
+                <th>Participants</th>
+                <th>Target</th>
+                <th>Reward</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="heistRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Enhanced Auction Requirement section -->
+    <section class="glass p-8 animate-fade-in-up" style="animation-delay: 0.2s;">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            Auction Affiliate Requirement
+          </h2>
+          <p class="text-slate-400 mt-2 text-lg">Set the required referrals and reward for an auction.</p>
+        </div>
+        <span class="badge bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-400/30">
+          🏺 Auctions
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[220px_1fr_1fr_auto] gap-4 mb-8">
+        <input id="auctionId" type="number" min="1" placeholder="Auction ID" class="input-enhanced">
+        <input id="auctionTarget" type="number" min="1" placeholder="Target Users (≥1)" class="input-enhanced">
+        <input id="auctionReward" type="number" min="0" placeholder="Reward Bid Points" class="input-enhanced">
+        <button id="saveAuctionBtn" class="btn btn-primary">💾 Save</button>
+      </div>
+
+      <!-- Enhanced auction search section -->
+      <div class="glass p-6">
+        <div class="flex items-center justify-between gap-4 mb-4">
+          <div class="text-slate-200 font-semibold text-lg">🔍 Quick Find Auction</div>
+          <div class="flex items-center gap-3">
+            <input id="auctionSearch" placeholder="Search name/description…" class="input-enhanced min-w-[250px]">
+            <button id="findAuctionsBtn" class="btn">Search</button>
+          </div>
+        </div>
+        <div id="auctionTableWrap" class="overflow-auto border border-white/10 rounded-xl bg-white/5">
+          <table class="table-enhanced">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Category</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="auctionRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Enhanced Current Auction Affiliate Configs section -->
+    <section class="glass p-8 animate-fade-in-up" style="animation-delay: 0.4s;">
+      <div class="flex items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            Configured Affiliate Requirements
+          </h2>
+          <p class="text-slate-400 mt-2 text-lg">Quick view of auctions already configured with affiliate requirements.</p>
+        </div>
+        <button id="refreshListBtn" class="btn bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-emerald-400/30 hover:from-emerald-500/30 hover:to-teal-500/30">
+          🔄 Refresh
+        </button>
+      </div>
+
+      <div id="affListWrap" class="overflow-auto border border-white/10 rounded-xl bg-white/5">
+        <table class="table-enhanced">
+          <thead>
+            <tr>
+              <th>Auction ID</th>
+              <th>Name</th>
+              <th>Target Users</th>
+              <th>Reward (BP)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="affListRows"></tbody>
+        </table>
+      </div>
+
+      <div id="emptyAffList" class="hidden mt-6 text-center text-slate-400 py-8">
+        <div class="text-6xl mb-4">📋</div>
+        <div class="text-lg">No auctions have affiliate requirements yet.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Custom confirmation modal -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="text-center">
+        <div class="text-4xl mb-4">⚠️</div>
+        <h3 class="text-xl font-bold mb-4 text-white">Confirm Action</h3>
+        <p id="confirmMessage" class="text-slate-300 mb-6"></p>
+        <div class="flex gap-3 justify-center">
+          <button id="confirmCancel" class="btn">Cancel</button>
+          <button id="confirmOk" class="btn btn-danger">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer"></div>
+
+  <script>
+    // ===== CONFIG =====
+    const API_BASE   = "https://api.copup.copupbid.com/api/admin";
+    const LOGIN_URL  = "../auth/login.html";
+    const DASHBOARD  = "admin-dashboard.html";
+
+    // ===== HELPERS =====
+    const $ = (id) => document.getElementById(id);
+
+    function showToast(message, type = 'info', duration = 4000) {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="text-xl">
+            ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info'}</div>
+            <div class="text-sm opacity-90">${message}</div>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="text-white/70 hover:text-white text-xl">×</button>
+        </div>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, duration);
+    }
+
+    function showConfirm(message) {
+      return new Promise((resolve) => {
+        const modal = $('confirmModal');
+        const messageEl = $('confirmMessage');
+        const cancelBtn = $('confirmCancel');
+        const okBtn = $('confirmOk');
+        
+        messageEl.textContent = message;
+        modal.classList.add('show');
+        
+        const cleanup = () => {
+          modal.classList.remove('show');
+          cancelBtn.removeEventListener('click', onCancel);
+          okBtn.removeEventListener('click', onOk);
+        };
+        
+        const onCancel = () => {
+          cleanup();
+          resolve(false);
+        };
+        
+        const onOk = () => {
+          cleanup();
+          resolve(true);
+        };
+        
+        cancelBtn.addEventListener('click', onCancel);
+        okBtn.addEventListener('click', onOk);
+      });
+    }
+
+    const setErr = (msg) => showToast(msg, 'error');
+    const setOk = (msg) => showToast(msg, 'success');
+
+    function start(btn){ 
+      btn.disabled = true; 
+      btn.classList.add("ring-soft"); 
+      const originalText = btn.textContent;
+      btn.textContent = '⏳ Processing...';
+      btn.dataset.originalText = originalText;
+    }
+    
+    function stop(btn){ 
+      btn.disabled = false; 
+      btn.classList.remove("ring-soft"); 
+      btn.textContent = btn.dataset.originalText || btn.textContent;
+    }
+
+    function ensureAuth() {
+      const token = localStorage.getItem("authToken");
+      if (!token) { window.location.href = LOGIN_URL; return null; }
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token.replace(/^"(.+)"$/, "$1");
+      axios.defaults.headers.common["Content-Type"] = "application/json";
+      return token;
+    }
+
+    axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        const s = err?.response?.status;
+        if (s === 401 || s === 403) {
+          localStorage.removeItem("authToken");
+          window.location.href = LOGIN_URL;
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    async function deleteHeistReq() {
+      const heistId = Number($("heistId").value);
+      if (!Number.isInteger(heistId) || heistId <= 0) return setErr("Enter a valid Heist ID.");
+      
+      const confirmed = await showConfirm("Delete affiliate requirement for this heist? This action cannot be undone.");
+      if (!confirmed) return;
+
+      start($("delHeistBtn"));
+      try {
+        const { data } = await axios.delete(`/heist/affiliate/delete/${heistId}`);
+        setOk(data?.message || "Heist requirement deleted successfully.");
+        $("heistTarget").value = "";
+        $("heistReward").value = "";
+        await findHeists();
+      } catch (e) {
+        setErr(e?.response?.data?.message || "Error deleting heist requirement");
+      } finally {
+        stop($("delHeistBtn"));
+      }
+    }
+
+    async function saveHeistReq() {
+      clearMsgs();
+      const heistId = Number($("heistId").value);
+      const target  = Number($("heistTarget").value);
+      const reward  = Number($("heistReward").value);
+      if (!Number.isInteger(heistId) || heistId <= 0) return setErr("Enter a valid Heist ID.");
+      if (!Number.isInteger(target) || target < 0)    return setErr("Target Users must be a non-negative integer.");
+      if (!Number.isInteger(reward) || reward < 0)    return setErr("Reward must be a non-negative integer.");
+
+      start($("saveHeistBtn"));
+      try {
+        const { data } = await axios.post(`/affiliate/set-requirement/heist/${heistId}`, {
+          targetUsers: target, rewardBidPoints: reward
+        });
+        setOk(data?.message || "Heist requirement saved.");
+        await findHeists(); // refresh table (shows target/reward columns)
+      } catch (e) {
+        setErr(e?.response?.data?.message || "Error saving heist requirement");
+      } finally {
+        stop($("saveHeistBtn"));
+      }
+    }
+
+    async function saveAuctionReq() {
+      clearMsgs();
+      const auctionId = Number($("auctionId").value);
+      const target    = Number($("auctionTarget").value);
+      const reward    = Number($("auctionReward").value);
+      if (!Number.isInteger(auctionId) || auctionId <= 0) return setErr("Enter a valid Auction ID.");
+      if (!Number.isInteger(target) || target < 1)        return setErr("Target Users must be an integer ≥ 1.");
+      if (!Number.isInteger(reward) || reward < 0)        return setErr("Reward must be a non-negative integer.");
+
+      start($("saveAuctionBtn"));
+      try {
+        const { data } = await axios.post(`/affiliate/set-requirement/${auctionId}`, {
+          targetUsers: target, rewardBidPoints: reward
+        });
+        setOk(data?.message || "Auction requirement saved.");
+        await loadAffAuctions();
+      } catch (e) {
+        setErr(e?.response?.data?.message || "Error saving auction requirement");
+      } finally {
+        stop($("saveAuctionBtn"));
+      }
+    }
+
+    async function loadAffAuctions() {
+      clearMsgs();
+      $("affListRows").innerHTML = "";
+      hide($("emptyAffList"));
+      try {
+        const { data } = await axios.get("/affiliate/list", { params: { ts: Date.now() } });
+        if (!Array.isArray(data) || data.length === 0) {
+          show($("emptyAffList")); return;
+        }
+        $("affListRows").innerHTML = data.map(r => `
+          <tr class="border-t border-white/10">
+            <td class="p-4">${r.id}</td>
+            <td class="p-4">${escapeHtml(r.name || "")}</td>
+            <td class="p-4">${r.target_users ?? 0}</td>
+            <td class="p-4">${r.reward_bid_points ?? 0}</td>
+            <td class="p-4">
+              <button class="btn text-xs" onclick="pickAuction(${r.id}, ${r.target_users ?? 1}, ${r.reward_bid_points ?? 0})">Edit</button>
+            </td>
+          </tr>
+        `).join("");
+      } catch (e) {
+        // 404 → none configured yet
+        if (e?.response?.status === 404) {
+          show($("emptyAffList"));
+        } else {
+          setErr(e?.response?.data?.message || "Error fetching configured auctions");
+        }
+      }
+    }
+
+    async function findHeists() {
+      const q = $("heistSearch").value.trim();
+      const params = { q, page: 1, limit: 20 };
+      try {
+        const { data } = await axios.get("/heists", { params });
+        const rows = Array.isArray(data?.data) ? data.data : [];
+        $("heistRows").innerHTML = rows.map(createHeistRow).join("");
+        if (rows.length === 0) {
+          $("heistRows").innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400">No heists found</td></tr>';
+        }
+      } catch (e) {
+        $("heistRows").innerHTML = '<tr><td colspan="8" class="p-8 text-center text-red-400">Error loading heists</td></tr>';
+        setErr(e?.response?.data?.message || "Error searching heists");
+      }
+    }
+
+    async function findAuctions() {
+      const q = $("auctionSearch").value.trim();
+      const params = { q, page: 1, limit: 20 };
+      try {
+        const { data } = await axios.get("/auctions", { params });
+        const rows = Array.isArray(data?.data) ? data.data : [];
+        $("auctionRows").innerHTML = rows.map(createAuctionRow).join("");
+        if (rows.length === 0) {
+          $("auctionRows").innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400">No auctions found</td></tr>';
+        }
+      } catch (e) {
+        $("auctionRows").innerHTML = '<tr><td colspan="5" class="p-8 text-center text-red-400">Error loading auctions</td></tr>';
+        setErr(e?.response?.data?.message || "Error searching auctions");
+      }
+    }
+
+    function pickHeist(id, target = 0, reward = 0) {
+      $("heistId").value = id;
+      $("heistTarget").value = Number.isFinite(target) ? target : "";
+      $("heistReward").value = Number.isFinite(reward) ? reward : "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setOk(`Heist #${id} selected and ready for configuration.`);
+    }
+    
+    function pickAuction(id, target, reward) {
+      $("auctionId").value = id;
+      if (Number.isFinite(target)) $("auctionTarget").value = target;
+      if (Number.isFinite(reward)) $("auctionReward").value = reward;
+      setOk(`Auction #${id} selected and ready for configuration.`);
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function logout(){ localStorage.removeItem("authToken"); window.location.href = LOGIN_URL; }
+
+    function createHeistRow(h) {
+      return `
+        <tr class="hover:bg-white/5 transition-colors duration-200">
+          <td class="p-4 font-mono text-brand-400">#${h.id}</td>
+          <td class="p-4 font-medium">${escapeHtml(h.name || "")}</td>
+          <td class="p-4">
+            <span class="px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(h.status)}">
+              ${h.status || ""}
+            </span>
+          </td>
+          <td class="p-4">${h.category || ""}</td>
+          <td class="p-4 text-center">
+            <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-medium">
+              ${h.participants_count ?? 0}
+            </span>
+          </td>
+          <td class="p-4 text-center">${h.target_users ?? "—"}</td>
+          <td class="p-4 text-center">${h.reward_bid_points ?? "—"}</td>
+          <td class="p-4">
+            <button class="btn text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-400/30 hover:from-blue-500/30 hover:to-purple-500/30" 
+                    onclick="pickHeist(${h.id}, ${h.target_users ?? 0}, ${h.reward_bid_points ?? 0})">
+              📌 Pick
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function createAuctionRow(a) {
+      return `
+        <tr class="hover:bg-white/5 transition-colors duration-200">
+          <td class="p-4 font-mono text-brand-400">#${a.id}</td>
+          <td class="p-4 font-medium">${escapeHtml(a.name || "")}</td>
+          <td class="p-4">
+            <span class="px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(a.status)}">
+              ${a.status || ""}
+            </span>
+          </td>
+          <td class="p-4">${a.category || ""}</td>
+          <td class="p-4">
+            <button class="btn text-xs bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-emerald-400/30 hover:from-emerald-500/30 hover:to-teal-500/30" 
+                    onclick="pickAuction(${a.id})">
+              📌 Pick
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function getStatusColor(status) {
+      switch(status?.toLowerCase()) {
+        case 'pending': return 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30';
+        case 'started': return 'bg-green-500/20 text-green-300 border border-green-400/30';
+        case 'hold': return 'bg-red-500/20 text-red-300 border border-red-400/30';
+        case 'completed': return 'bg-blue-500/20 text-blue-300 border border-blue-400/30';
+        default: return 'bg-gray-500/20 text-gray-300 border border-gray-400/30';
+      }
+    }
+
+    // ===== INIT =====
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!ensureAuth()) return;
+
+      $("logoutBtn").addEventListener("click", logout);
+      $("backBtn").addEventListener("click", () => window.location.href = DASHBOARD);
+
+      $("saveHeistBtn").addEventListener("click", saveHeistReq);
+      $("delHeistBtn").addEventListener("click", deleteHeistReq);
+      $("findHeistsBtn").addEventListener("click", findHeists);
+
+      $("saveAuctionBtn").addEventListener("click", saveAuctionReq);
+      $("findAuctionsBtn").addEventListener("click", findAuctions);
+
+      $("refreshListBtn").addEventListener("click", loadAffAuctions);
+
+      // initial loads
+      await Promise.all([findHeists(), findAuctions(), loadAffAuctions()]);
+    });
+  </script>
+</body>
+</html>

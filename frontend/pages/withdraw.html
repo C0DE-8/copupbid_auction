@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Withdraw CopUp Coin - CopUpBid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      background: radial-gradient(
+          circle at top left,
+          rgba(16, 185, 129, 0.18),
+          transparent 55%
+        ),
+        radial-gradient(
+          circle at top right,
+          rgba(52, 211, 153, 0.12),
+          transparent 55%
+        ),
+        radial-gradient(
+          circle at bottom,
+          rgba(20, 184, 166, 0.16),
+          transparent 55%
+        ),
+        #020617;
+    }
+
+    .glass-effect {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.8);
+    }
+
+    .custom-alert {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1000;
+      padding: 14px 18px;
+      border-radius: 999px;
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.92);
+      transform: translateX(400px);
+      transition: transform 0.3s ease-in-out, opacity 0.2s;
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .custom-alert.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .custom-alert.success {
+      border-color: rgba(16, 185, 129, 0.9);
+      box-shadow: 0 18px 45px rgba(16, 185, 129, 0.35);
+    }
+
+    .custom-alert.error {
+      border-color: rgba(239, 68, 68, 0.9);
+      box-shadow: 0 18px 45px rgba(239, 68, 68, 0.4);
+    }
+
+    .custom-alert.warning {
+      border-color: rgba(245, 158, 11, 0.9);
+      box-shadow: 0 18px 45px rgba(245, 158, 11, 0.4);
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen">
+  <!-- Header -->
+  <header class="p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <button
+        onclick="window.history.back()"
+        class="glass-effect rounded-full p-2 hover:bg-emerald-500/20 transition-colors"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          ></path>
+        </svg>
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">CopUp Coin Vault</h1>
+        <p class="text-xs text-emerald-300/70 uppercase tracking-[0.15em]">
+          Secure coin bank payout
+        </p>
+      </div>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="glass-effect rounded-full px-4 py-2 flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+        <span class="font-bold text-emerald-300 text-sm">₵</span>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-[10px] text-slate-300 uppercase tracking-widest">
+          CopUp Coin
+        </span>
+        <span id="currentBalance" class="font-semibold text-sm">***</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="container mx-auto px-4 pb-10 max-w-5xl">
+    <div class="grid gap-6 lg:grid-cols-[1.5fr,2fr] mt-4">
+      <!-- Left: Profile + quick info -->
+      <section class="glass-effect rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <span class="inline-flex h-8 w-8 rounded-full bg-emerald-500/15 items-center justify-center">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </span>
+              Wallet Snapshot
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Payout requests are processed manually after review.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-300">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Wallet owner</span>
+            <span id="userName" class="font-medium text-slate-100">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Available CopUp Coin</span>
+            <span id="userCoins" class="font-semibold text-emerald-300 text-sm">0</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Last refresh</span>
+            <span id="lastRefreshed" class="text-slate-500 text-[11px]">—</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2 mt-4">
+          <button
+            type="button"
+            onclick="reloadProfile()"
+            class="flex-1 border border-emerald-500/40 text-emerald-300 text-xs py-2 rounded-lg hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582M20 20v-5h-.581M5.64 9A7.5 7.5 0 0119 7m-7 10a7.5 7.5 0 01-7.359-5"></path>
+            </svg>
+            Refresh balance
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='coin-topup.html'"
+            class="flex-1 border border-sky-500/50 text-sky-300 text-xs py-2 rounded-lg hover:bg-sky-500/10 transition-colors flex items-center justify-center gap-1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4v16m8-8H4" />
+            </svg>
+            Top-up coins
+          </button>
+        </div>
+
+        <div class="mt-4 text-xs text-slate-400">
+          <p class="font-semibold text-slate-200 mb-1">Payout rules</p>
+          <ul class="list-disc list-inside space-y-1.5">
+            <li>Minimum payout: 1 CopUp Coin.</li>
+            <li>Insufficient balance will block the request.</li>
+            <li>Status updates: <span class="text-emerald-300">pending</span> → <span class="text-emerald-300">approved</span> / <span class="text-red-300">rejected</span>.</li>
+          </ul>
+
+          <!-- ✅ NEW: Hardcoded rate badge -->
+          <div class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-emerald-100/90">Current payout rate</span>
+              <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-900/50 border border-emerald-400/40 text-emerald-200">
+                1 CopUp = ₦<span id="rateValue">200</span>
+              </span>
+            </div>
+            <p class="text-[11px] text-emerald-100/70 mt-1">
+              This page shows a live estimate based on the fixed rate above.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Payout form + history + other methods -->
+      <section class="space-y-4">
+        <!-- Payout form -->
+        <div class="glass-effect rounded-2xl p-6">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+              <span class="inline-flex h-8 w-8 rounded-full bg-amber-500/15 items-center justify-center">
+                <svg class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 9V7a5 5 0 00-10 0v2M5 9h14l-1 11H6L5 9z"></path>
+                </svg>
+              </span>
+              Request bank payout
+            </h2>
+
+            <!-- ✅ NEW: Live NGN preview pill -->
+            <div class="text-right">
+              <div class="text-[10px] uppercase tracking-widest text-slate-400">You’ll receive</div>
+              <div class="mt-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/40 border border-slate-700/70">
+                <span class="text-slate-300 text-xs">₦</span>
+                <span id="ngnPreview" class="text-emerald-300 font-semibold">0</span>
+              </div>
+            </div>
+          </div>
+
+          <form id="payoutForm" class="space-y-4 text-sm">
+            <!-- Bid points -->
+            <div>
+              <label class="block text-xs mb-1 text-slate-300">Amount (CopUp Coin)</label>
+              <input
+                type="number"
+                id="bidPoints"
+                min="1"
+                step="1"
+                placeholder="Enter coins to withdraw"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none"
+              />
+
+              <!-- ✅ NEW: Live breakdown row -->
+              <div class="mt-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400">Live estimate</span>
+                  <span class="text-slate-200">
+                    <span id="coinPreview">0</span> CopUp × ₦<span id="ratePreview">200</span>
+                    = <span class="font-semibold text-emerald-300">₦<span id="ngnPreview2">0</span></span>
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">
+                  This is an estimate display. Final payout depends on admin processing.
+                </p>
+              </div>
+
+              <p class="text-[11px] text-slate-500 mt-2">
+                This amount will be deducted immediately and locked to this payout request.
+              </p>
+            </div>
+
+            <!-- Bank details -->
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs mb-1 text-slate-300">Account name</label>
+                <input
+                  type="text"
+                  id="accountName"
+                  placeholder="e.g. John Doe"
+                  class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs mb-1 text-slate-300">Account number</label>
+                <input
+                  type="text"
+                  id="accountNumber"
+                  placeholder="e.g. 0123456789"
+                  class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs mb-1 text-slate-300">Bank name</label>
+              <select
+                id="bankNameSelect"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none"
+              >
+                <option value="">Select bank</option>
+                <option value="Access Bank">Access Bank</option>
+                <option value="GTBank">GTBank</option>
+                <option value="First Bank">First Bank</option>
+                <option value="UBA">UBA</option>
+                <option value="Zenith Bank">Zenith Bank</option>
+                <option value="Fidelity Bank">Fidelity Bank</option>
+                <option value="Stanbic IBTC">Stanbic IBTC</option>
+                <option value="Sterling Bank">Sterling Bank</option>
+                <option value="Union Bank">Union Bank</option>
+                <option value="Wema Bank">Wema Bank</option>
+                <option value="Kuda Bank">Kuda Bank</option>
+                <option value="Opay">Opay</option>
+                <option value="Palmpay">Palmpay</option>
+                <option value="OTHER">Other bank (type manually)</option>
+              </select>
+
+              <input
+                type="text"
+                id="bankNameOther"
+                placeholder="Enter bank name"
+                class="mt-2 hidden w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none"
+              />
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              id="payoutSubmitBtn"
+              class="w-full mt-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-semibold py-3 rounded-xl text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <span id="payoutBtnText">Submit payout request</span>
+              <svg
+                id="payoutBtnSpinner"
+                class="w-4 h-4 animate-spin hidden"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- Other withdrawal methods (Coming soon) -->
+        <div class="glass-effect rounded-2xl p-5 text-xs text-slate-300">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold flex items-center gap-2">
+              <span class="inline-flex h-7 w-7 rounded-full bg-sky-500/15 items-center justify-center">
+                <svg class="w-4 h-4 text-sky-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2M5 8h.01M19 8h.01M5 16h.01M19 16h.01"></path>
+                </svg>
+              </span>
+              Other withdrawal channels
+            </h3>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-600/60 text-slate-200">
+              Coming soon
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-700/80 opacity-70">
+              <div>
+                <p class="font-semibold text-slate-100">PayPal</p>
+                <p class="text-[11px] text-slate-400">
+                  Withdraw CopUp Coin directly to your PayPal account.
+                </p>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800/90 border border-slate-600/60">
+                Coming soon
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-700/80 opacity-70">
+              <div>
+                <p class="font-semibold text-slate-100">Crypto payout</p>
+                <p class="text-[11px] text-slate-400">
+                  Receive payout in BTC, USDT or other supported coins.
+                </p>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800/90 border border-slate-600/60">
+                Coming soon
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payout history -->
+        <div class="glass-effect rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold flex items-center gap-2">
+              <span class="inline-flex h-7 w-7 rounded-full bg-slate-500/10 items-center justify-center">
+                <svg class="w-4 h-4 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h4m1 4H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z"></path>
+                </svg>
+              </span>
+              Payout history
+            </h2>
+            <button
+              type="button"
+              onclick="loadPayouts()"
+              class="text-[11px] px-3 py-1 rounded-full border border-slate-600 text-slate-200 hover:bg-slate-700/50 transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+
+          <div id="payoutsEmpty" class="text-xs text-slate-500">
+            No payout requests yet.
+          </div>
+
+          <div id="payoutsList" class="space-y-2 mt-2 text-xs hidden"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // === CONFIG ===
+    const API_BASE = "https://api.copup.copupbid.com/api/users";
+
+    // ✅ HARD CODED RATE: 200 NGN per 1 coin
+    const NGN_PER_COIN = 200;
+
+    function formatNaira(n) {
+      const num = Number(n || 0);
+      if (!Number.isFinite(num)) return "0";
+      return num.toLocaleString("en-NG");
+    }
+
+    function showAlert(message, type = "success") {
+      const existing = document.querySelectorAll(".custom-alert");
+      existing.forEach((el) => el.remove());
+
+      const alert = document.createElement("div");
+      alert.className = `custom-alert ${type}`;
+      alert.innerHTML = `
+        <span>${
+          type === "success"
+            ? "✅"
+            : type === "error"
+            ? "⛔"
+            : type === "warning"
+            ? "⚠️"
+            : "ℹ️"
+        }</span>
+        <span>${message}</span>
+      `;
+
+      document.body.appendChild(alert);
+      setTimeout(() => alert.classList.add("show"), 50);
+
+      setTimeout(() => {
+        alert.classList.remove("show");
+        setTimeout(() => alert.remove(), 250);
+      }, 4000);
+    }
+
+    function setPayoutButtonLoading(isLoading) {
+      const btn = document.getElementById("payoutSubmitBtn");
+      const text = document.getElementById("payoutBtnText");
+      const spinner = document.getElementById("payoutBtnSpinner");
+
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add("opacity-70", "cursor-not-allowed");
+        text.textContent = "Submitting request...";
+        spinner.classList.remove("hidden");
+      } else {
+        btn.disabled = false;
+        btn.classList.remove("opacity-70", "cursor-not-allowed");
+        text.textContent = "Submit payout request";
+        spinner.classList.add("hidden");
+      }
+    }
+
+    function updateLiveEstimate() {
+      const coinVal = Number(document.getElementById("bidPoints").value || 0);
+      const coins = Number.isFinite(coinVal) && coinVal > 0 ? Math.floor(coinVal) : 0;
+
+      const ngn = coins * NGN_PER_COIN;
+
+      // top pill
+      document.getElementById("ngnPreview").textContent = formatNaira(ngn);
+
+      // breakdown
+      document.getElementById("coinPreview").textContent = String(coins);
+      document.getElementById("ratePreview").textContent = String(NGN_PER_COIN);
+      document.getElementById("ngnPreview2").textContent = formatNaira(ngn);
+
+      // rate badge
+      document.getElementById("rateValue").textContent = String(NGN_PER_COIN);
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await axios.get(`${API_BASE}/profile`);
+        const data = res.data;
+
+        const coins = Number(data.bid_points ?? 0);
+
+        document.getElementById("currentBalance").textContent = coins;
+        document.getElementById("userCoins").textContent = coins;
+
+        document.getElementById("userName").textContent =
+          data.full_name || data.username || data.email || "User";
+        document.getElementById("lastRefreshed").textContent =
+          new Date().toLocaleString();
+
+        updateLiveEstimate();
+      } catch (err) {
+        console.error("Error loading profile:", err);
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem("authToken");
+          window.location.href = "../auth/login.html";
+        } else {
+          showAlert("Unable to load profile", "error");
+        }
+      }
+    }
+
+    function reloadProfile() {
+      loadProfile();
+    }
+
+    function renderPayoutRow(payout) {
+      const status = String(payout.status || "").toLowerCase();
+      let statusClass =
+        "bg-slate-700/60 text-slate-200 border border-slate-500/60";
+      if (status === "pending") {
+        statusClass =
+          "bg-amber-500/10 text-amber-200 border border-amber-400/60";
+      } else if (status === "approved") {
+        statusClass =
+          "bg-emerald-500/10 text-emerald-200 border border-emerald-400/60";
+      } else if (status === "rejected") {
+        statusClass =
+          "bg-red-500/10 text-red-200 border border-red-400/60";
+      }
+
+      const createdAt = payout.created_at
+        ? new Date(payout.created_at).toLocaleString()
+        : "—";
+
+      return `
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/40 border border-slate-700/70">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-slate-100">
+                ${payout.bid_points} CopUp
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] ${statusClass}">
+                ${status || "unknown"}
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              ${payout.bank_name || ""} • ${payout.account_name || ""} • ${payout.account_number || ""}
+            </div>
+          </div>
+          <div class="text-right text-[11px] text-slate-500">
+            <div>ID: ${payout.id}</div>
+            <div>${createdAt}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadPayouts() {
+      const listEl = document.getElementById("payoutsList");
+      const emptyEl = document.getElementById("payoutsEmpty");
+
+      listEl.innerHTML = "";
+      listEl.classList.add("hidden");
+      emptyEl.classList.remove("hidden");
+      emptyEl.textContent = "Loading payouts...";
+
+      try {
+        const res = await axios.get(`${API_BASE}/payouts`);
+        const rows = res.data || [];
+
+        if (!rows.length) {
+          emptyEl.textContent = "No payout requests yet.";
+          return;
+        }
+
+        emptyEl.classList.add("hidden");
+        listEl.classList.remove("hidden");
+
+        listEl.innerHTML = rows.map(renderPayoutRow).join("");
+      } catch (err) {
+        console.error("Error loading payouts:", err);
+        emptyEl.textContent = "Unable to load payout history.";
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const authToken = localStorage.getItem("authToken");
+      if (!authToken) {
+        window.location.href = "../auth/login.html";
+        return;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+
+      // Toggle "other bank" input
+      const bankSelect = document.getElementById("bankNameSelect");
+      const bankOther = document.getElementById("bankNameOther");
+      bankSelect.addEventListener("change", () => {
+        if (bankSelect.value === "OTHER") {
+          bankOther.classList.remove("hidden");
+        } else {
+          bankOther.classList.add("hidden");
+          bankOther.value = "";
+        }
+      });
+
+      // ✅ live estimate on input
+      const bidPointsInput = document.getElementById("bidPoints");
+      bidPointsInput.addEventListener("input", updateLiveEstimate);
+
+      // initial label
+      updateLiveEstimate();
+
+      loadProfile();
+      loadPayouts();
+
+      const form = document.getElementById("payoutForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const bid_points = Number(document.getElementById("bidPoints").value || 0);
+        const account_name = document.getElementById("accountName").value.trim();
+        const account_number = document.getElementById("accountNumber").value.trim();
+
+        const bankSelect = document.getElementById("bankNameSelect");
+        const bankOther = document.getElementById("bankNameOther");
+        const bank_name =
+          bankSelect.value === "OTHER"
+            ? bankOther.value.trim()
+            : bankSelect.value;
+
+        if (!Number.isInteger(bid_points) || bid_points < 1) {
+          showAlert("Minimum coin required is 1", "warning");
+          return;
+        }
+        if (!account_name || !account_number || !bank_name) {
+          showAlert("Please fill account name, account number and bank name", "warning");
+          return;
+        }
+
+        setPayoutButtonLoading(true);
+        try {
+          const res = await axios.post(
+            `${API_BASE}/payout`,
+            {
+              bid_points,
+              account_name,
+              account_number,
+              bank_name,
+            },
+            { headers: { "Content-Type": "application/json" } }
+          );
+
+          showAlert(res.data?.message || "Payout request created", "success");
+
+          // Clear form
+          document.getElementById("bidPoints").value = "";
+          document.getElementById("accountName").value = "";
+          document.getElementById("accountNumber").value = "";
+          bankSelect.value = "";
+          bankOther.value = "";
+          bankOther.classList.add("hidden");
+
+          updateLiveEstimate();
+
+          // Refresh profile + payouts
+          loadProfile();
+          loadPayouts();
+        } catch (err) {
+          console.error("Payout error:", err);
+          const msg = err.response?.data?.message || "Error creating payout request";
+          showAlert(msg, "error");
+        } finally {
+          setPayoutButtonLoading(false);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

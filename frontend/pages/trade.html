@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade - CopUpBid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-alert.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+   
+    <div id="alertContainer"></div>
+
+ 
+    <header class="p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <button onclick="window.history.back()" class="glass rounded-full p-2 hover:bg-white/20 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h1 class="text-2xl font-bold">Trade Center</h1>
+        </div>
+        
+      
+        <div class="glass rounded-full px-4 py-2 flex items-center space-x-2">
+            <img src="../assets/icons/coin-sign.png" alt="Copup Coin" class="w-6 h-6">
+            <span id="copupCoinBalance" class="font-semibold">***</span>
+            <button onclick="toggleBalance()" class="text-emerald-400 hover:text-emerald-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 pb-8 space-y-6">
+       
+        <div class="glass-dark rounded-2xl p-6">
+            <h2 class="text-xl font-bold mb-4 text-emerald-400">Your Wallet Address</h2>
+            <div class="bg-gray-800/50 rounded-lg p-4 flex justify-between items-center">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-400 mb-1">Your Wallet Address</p>
+                    <p id="userWalletAddress" class="font-mono text-sm break-all">Loading...</p>
+                </div>
+                <button onclick="copyWalletAddress()" class="ml-4 glass rounded-lg p-2 hover:bg-white/20 transition-colors" title="Copy wallet address">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-dark rounded-2xl p-6">
+            <h2 class="text-xl font-bold mb-4 text-emerald-400">Send Copup Coin</h2>
+            
+            <form id="sendPointsForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Recipient Wallet Address</label>
+                    <input type="text" id="recipientWallet" placeholder="Enter wallet address" 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Amount</label>
+                    <input type="number" id="sendAmount" placeholder="Enter amount" min="1"
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">4-Digit PIN</label>
+                    <input type="password" id="sendPin" placeholder="Enter your PIN" maxlength="4"
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                    Send Copup Coin
+                </button>
+            </form>
+        </div>
+
+         
+        <div class="glass-dark rounded-2xl p-6">
+            <h2 class="text-xl font-bold mb-4 text-emerald-400">PIN Management</h2>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-semibold mb-3">Set/Update PIN</h3>
+                    <form id="setPinForm" class="space-y-3">
+                        <input type="password" id="oldPin" placeholder="Current PIN (if any)" maxlength="4"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500 transition-colors">
+                        <input type="password" id="newPin" placeholder="New 4-digit PIN" maxlength="4"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500 transition-colors">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition-colors">
+                            Set PIN
+                        </button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold mb-3">Recover PIN</h3>
+                    <form id="recoverPinForm" class="space-y-3">
+                        <input type="email" id="recoverEmail" placeholder="Your email address"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500 transition-colors">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-colors">
+                            Send PIN to Email
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+         Transaction History Card 
+        <div class="glass-dark rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-emerald-400">Transaction History</h2>
+                <button onclick="loadTransactions()" class="text-emerald-400 hover:text-emerald-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="transactionsList" class="space-y-3">
+                <div class="text-center text-gray-400 py-8">
+                    <p>Loading transactions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api/users';
+        let balanceVisible = false;
+        let userCopupCoin = 0;
+
+        // Custom Alert System
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            const colors = {
+                success: 'bg-emerald-600 border-emerald-500',
+                error: 'bg-red-600 border-red-500',
+                warning: 'bg-yellow-600 border-yellow-500',
+                info: 'bg-blue-600 border-blue-500'
+            };
+            
+            const alertHTML = `
+                <div id="${alertId}" class="custom-alert glass rounded-lg p-4 border ${colors[type]} text-white shadow-lg max-w-sm">
+                    <div class="flex justify-between items-start">
+                        <p class="text-sm font-medium">${message}</p>
+                        <button onclick="hideAlert('${alertId}')" class="ml-2 text-white/80 hover:text-white">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+            
+            setTimeout(() => {
+                document.getElementById(alertId).classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                hideAlert(alertId);
+            }, 5000);
+        }
+
+        function hideAlert(alertId) {
+            const alert = document.getElementById(alertId);
+            if (alert) {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+
+        // Authentication check
+        window.addEventListener('DOMContentLoaded', () => {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            loadUserProfile();
+            loadTransactions();
+        });
+
+        // Load user profile
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axios.get(`${API_BASE}/profile`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                userCopupCoin = response.data.bid_points;
+                document.getElementById('copupCoinBalance').textContent = balanceVisible ? userCopupCoin : '***';
+                
+                document.getElementById('userWalletAddress').textContent = response.data.wallet_address || 'Not available';
+                
+                // Pre-fill email for PIN recovery
+                document.getElementById('recoverEmail').value = response.data.email;
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../auth/login.html';
+                }
+            }
+        }
+
+        // Toggle balance visibility
+        function toggleBalance() {
+            balanceVisible = !balanceVisible;
+            document.getElementById('copupCoinBalance').textContent = balanceVisible ? userCopupCoin : '***';
+        }
+
+        // Send copup coin
+        document.getElementById('sendPointsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const recipientWallet = document.getElementById('recipientWallet').value.trim();
+            const amount = parseInt(document.getElementById('sendAmount').value);
+            const pin = document.getElementById('sendPin').value.trim();
+            
+            if (!recipientWallet || !amount || !pin) {
+                showAlert('Please fill in all fields', 'warning');
+                return;
+            }
+            
+            if (!/^\d{4}$/.test(pin)) {
+                showAlert('PIN must be a 4-digit number', 'warning');
+                return;
+            }
+            
+            if (amount > userCopupCoin) {
+                showAlert('Insufficient copup coin', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                await axios.post(`${API_BASE}/send-bid-points`, {
+                    recipientWallet,
+                    amount,
+                    pin
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                showAlert('Copup coin sent successfully!', 'success');
+                document.getElementById('sendPointsForm').reset();
+                loadUserProfile();
+                loadTransactions();
+            } catch (error) {
+                showAlert(error.response?.data?.message || 'Error sending copup coin', 'error');
+            }
+        });
+
+        // Set PIN
+        document.getElementById('setPinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const oldPin = document.getElementById('oldPin').value.trim();
+            const newPin = document.getElementById('newPin').value.trim();
+            
+            if (!newPin || !/^\d{4}$/.test(newPin)) {
+                showAlert('New PIN must be a 4-digit number', 'warning');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                await axios.post(`${API_BASE}/set-pin`, {
+                    oldPin: oldPin || null,
+                    newPin
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                showAlert('PIN set successfully!', 'success');
+                document.getElementById('setPinForm').reset();
+            } catch (error) {
+                showAlert(error.response?.data?.message || 'Error setting PIN', 'error');
+            }
+        });
+
+        // Recover PIN
+        document.getElementById('recoverPinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('recoverEmail').value.trim();
+            
+            if (!email) {
+                showAlert('Please enter your email address', 'warning');
+                return;
+            }
+            
+            try {
+                await axios.post(`${API_BASE}/recover-pin`, { email });
+                showAlert('PIN has been sent to your email!', 'success');
+            } catch (error) {
+                showAlert(error.response?.data?.message || 'Error recovering PIN', 'error');
+            }
+        });
+
+        // Load transactions
+        async function loadTransactions() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axios.get(`${API_BASE}/transactions`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                const transactionsList = document.getElementById('transactionsList');
+                
+                if (response.data.length === 0) {
+                    transactionsList.innerHTML = `
+                        <div class="text-center text-gray-400 py-8">
+                            <p>No transactions found</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                transactionsList.innerHTML = response.data.map(transaction => `
+                    <div class="bg-gray-800/50 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-semibold">${transaction.sender} → ${transaction.recipient}</span>
+                            </div>
+                            <p class="text-sm text-gray-400">${transaction.timestamp_local}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-emerald-400">${transaction.amount} CP</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                document.getElementById('transactionsList').innerHTML = `
+                    <div class="text-center text-red-400 py-8">
+                        <p>Error loading transactions</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Copy wallet address function
+        function copyWalletAddress() {
+            const walletAddress = document.getElementById('userWalletAddress').textContent;
+            if (walletAddress && walletAddress !== 'Loading...' && walletAddress !== 'Not available') {
+                navigator.clipboard.writeText(walletAddress).then(() => {
+                    showAlert('Wallet address copied to clipboard!', 'success');
+                }).catch(() => {
+                    showAlert('Failed to copy wallet address', 'error');
+                });
+            } else {
+                showAlert('No wallet address to copy', 'warning');
+            }
+        }
+    </script>
+</body>
+</html>

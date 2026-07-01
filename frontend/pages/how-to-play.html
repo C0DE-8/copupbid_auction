@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Play - CopUpBid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #10b981, #059669);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+    <!-- Header -->
+    <header class="p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <button onclick="window.history.back()" class="glass-effect rounded-full p-2 hover:bg-emerald-500/20 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h1 class="text-2xl font-bold">How to Play</h1>
+        </div>
+        
+        <!-- Current Balance -->
+        <div class="glass-effect rounded-full px-4 py-2 flex items-center space-x-2">
+            <img src="../assets/icons/coin-sign.png" alt="Coin" class="w-6 h-6">
+            <span id="currentBalance" class="font-bold">***</span>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- Welcome Section -->
+        <div class="glass-effect rounded-2xl p-6 mb-6 text-center">
+            <div class="text-4xl mb-4">🎮</div>
+            <h2 class="text-2xl font-bold mb-3 text-emerald-400">Welcome to CopUpBid!</h2>
+            <p class="text-gray-300 text-lg">Learn how to play and win big with our exciting games</p>
+        </div>
+
+        <!-- Copupbid Auction Section -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center text-emerald-400">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2V7a2 2 0 012-2h2a2 2 0 002 2v2a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 00-2 2h-2a2 2 0 00-2 2v6"></path>
+                </svg>
+                Copupbid Auction (Mimi Mat)
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Start with Coins</h3>
+                        <p class="text-gray-300">Begin your journey with CopUp Coins (1 CopUp Coin = ₦100)</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Join Auctions</h3>
+                        <p class="text-gray-300">All auctions begin at just 5 coins - affordable entry for everyone</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Place Strategic Bids</h3>
+                        <p class="text-gray-300">Bid step by step (6, 7, 8...) and use strategy to outlast competitors</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Win or Get Refunded</h3>
+                        <p class="text-gray-300">If you win → pay only the winning coins and claim your item<br>
+                        If you lose → your coins are fully refunded</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mt-4">
+                <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <span class="font-semibold text-emerald-400">Pro Tip</span>
+                </div>
+                <p class="text-sm text-emerald-300">The more coins you have, the longer you can stay in the game — but strategy matters most!</p>
+            </div>
+        </div>
+
+        <!-- Copup Heist Section -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center text-emerald-400">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Copup Heist
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Purchase Your Ticket</h3>
+                        <p class="text-gray-300">Join the heist by purchasing a ticket with your CopUp Coins</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Follow the Story</h3>
+                        <p class="text-gray-300">An exciting story with hidden clues is revealed - pay close attention!</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Answer the Question</h3>
+                        <p class="text-gray-300">At the end, a question is asked based on the story and clues</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h3 class="font-semibold mb-1">Win the Prize</h3>
+                        <p class="text-gray-300">The first player to answer correctly wins amazing prizes (coins, gadgets, etc.)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mt-4">
+                <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="font-semibold text-emerald-400">Pro Tip</span>
+                </div>
+                <p class="text-sm text-emerald-300">Read carefully, think fast, and answer quickly — speed and accuracy decide the winner!</p>
+            </div>
+        </div>
+
+        <!-- Why CopUpBid Section -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center text-emerald-400">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Why CopUpBid is Safe & Fun
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                        <span class="font-semibold">Pay Only When You Win</span>
+                    </div>
+                    <p class="text-gray-300 text-sm">No risk - you only pay when you actually win an auction</p>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">Fair & Transparent</span>
+                    </div>
+                    <p class="text-gray-300 text-sm">All games are fair, transparent, and easy to understand</p>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        <span class="font-semibold">Huge Discounts</span>
+                    </div>
+                    <p class="text-gray-300 text-sm">Win amazing items and prizes at massive discounts</p>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span class="font-semibold">Always Another Chance</span>
+                    </div>
+                    <p class="text-gray-300 text-sm">Didn't win? No problem - there's always another game to try</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="glass-effect rounded-2xl p-6 text-center">
+            <div class="text-3xl mb-4">🚀</div>
+            <h2 class="text-2xl font-bold mb-3 text-emerald-400">Ready to Start Playing?</h2>
+            <p class="text-gray-300 mb-6">Start your first bid or join your first heist today — play smart, win big!</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="window.location.href='./auctions.html'" 
+                        class="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    Start Bidding
+                </button>
+                <button onclick="window.location.href='./heist.html'" 
+                        class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    Join a Heist
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api/users';
+
+        // Check authentication and load user profile
+        window.addEventListener('DOMContentLoaded', () => {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            // Set axios default header
+            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+            
+            // Load user profile for current balance
+            loadUserProfile();
+        });
+
+        // Load user profile for current balance
+        async function loadUserProfile() {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                const response = await axios.get(`${API_BASE}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const userData = response.data;
+                document.getElementById('currentBalance').textContent = userData.bid_points || 0;
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../auth/login.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

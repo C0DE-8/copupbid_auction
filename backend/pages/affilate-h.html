@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Join Heist • Affiliate Entry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{ --ink:#0b1320; --muted:#6b7280; --ring:rgba(23,99,255,.15);
+      --ok:#0ea5e9; --ok-ink:#082f49; --err:#ef4444; --ok2:#10b981;
+      --bg:#0b1020; --card:#0f172a; --cardEdge:#1e293b; --accent:#22d3ee; }
+    body{
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(34,211,238,.10), transparent 60%),
+        radial-gradient(800px 500px at 120% 10%, rgba(99,102,241,.10), transparent 60%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Ubuntu, Arial;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
+      border:1px solid var(--cardEdge);
+      border-radius: 1.25rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.02);
+      backdrop-filter: blur(6px);
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: .9rem;
+      padding:.9rem 1.1rem;
+      font-weight:600;
+      transition:.2s transform ease, .2s border-color ease, .2s background-color ease;
+    }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.2); }
+    .btn-primary{ background: linear-gradient(180deg, rgba(34,211,238,.20), rgba(34,211,238,.05)); }
+    .btn-ghost{ background: rgba(255,255,255,.03); }
+    .badge{
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.4rem .7rem; border-radius:.7rem; font-size:.8rem;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color:#cbd5e1;
+    }
+    .toast{
+      position: fixed; top: 16px; right: 16px; z-index: 50;
+      min-width: 260px; max-width: 480px;
+      padding: .9rem 1.1rem; border-radius:.9rem;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      background: #0b1320;
+      display: none; white-space: pre-wrap;
+    }
+    .toast.ok{ border-color: rgba(16,185,129,.35); }
+    .toast.err{ border-color: rgba(239,68,68,.45); }
+    .ring { box-shadow: 0 0 0 6px var(--ring); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+  </style>
+</head>
+<body>
+  <div class="min-h-dvh flex items-center justify-center p-4">
+    <div class="w-full max-w-xl card p-6 md:p-8">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Heist Entry via Affiliate</h1>
+          <p class="text-slate-400 mt-1">Pay the ticket price to join this heist through your referrer.</p>
+        </div>
+        <span class="badge">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Secure
+        </span>
+      </div>
+
+      <!-- User strip -->
+      <div class="mt-4 flex items-center justify-between rounded-xl border border-slate-700/60 bg-white/5 p-3">
+        <div class="text-sm">
+          <div class="text-slate-400">Signed in as</div>
+          <div id="userName" class="font-semibold text-slate-100">—</div>
+        </div>
+        <button id="balanceBtn" class="badge" title="Tap to toggle balance">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2" />
+          </svg>
+          <span id="coinBadge" class="mono">***</span>
+        </button>
+      </div>
+
+      <div id="meta" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="p-4 rounded-xl border border-slate-700/60 bg-white/5">
+          <div class="text-slate-400 text-sm">Heist ID</div>
+          <div id="heistIdEl" class="mono text-lg mt-1">—</div>
+        </div>
+        <div class="p-4 rounded-xl border border-slate-700/60 bg-white/5">
+          <div class="text-slate-400 text-sm">Referrer ID</div>
+          <div id="referrerIdEl" class="mono text-lg mt-1">—</div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 rounded-xl border border-slate-700/60 bg-white/5">
+        <div class="text-slate-400 text-sm mb-2">Notes</div>
+        <ul class="list-disc pl-5 space-y-1 text-slate-300 text-sm">
+          <li>You must be logged in. We’ll validate your session before joining.</li>
+          <li>We’ll charge your <span class="mono">bid_points</span> by the heist ticket price.</li>
+          <li>You cannot refer yourself.</li>
+        </ul>
+      </div>
+
+      <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <button id="payBtn" class="btn btn-primary w-full sm:w-auto">
+          Join Heist
+        </button>
+        <button id="backBtn" class="btn btn-ghost w-full sm:w-auto">
+          Go Back
+        </button>
+      </div>
+
+      <div id="debug" class="mt-6">
+        <div class="text-slate-400 text-sm mb-2">Debug</div>
+        <pre class="mono text-slate-300 text-xs p-3 rounded-xl border border-slate-700/60 bg-white/5 overflow-auto" id="debugPre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ===== CONFIG =====
+    const BACKEND_ORIGIN     = "http://localhost:4000"; // this page
+    const FRONTEND_ORIGIN    = "http://127.0.0.1:5500"; // where login happened
+    const FRONTEND_BRIDGE    = FRONTEND_ORIGIN + "/frontend/pages/token-bridge.html";
+    const FRONTEND_LOGIN_URL = FRONTEND_ORIGIN + "/frontend/pages/auth/login.html";
+    const USERS_BASE         = BACKEND_ORIGIN + "/api/users";
+    const DEBUG_MODE         = new URLSearchParams(location.search).has("debug");
+
+    // ===== STATE =====
+    let balanceVisible = false;
+    let actualBalance = 0;
+
+    // ===== DEBUG =====
+    const dbg = (...args) => {
+      const pre = document.getElementById('debugPre');
+      pre.textContent += args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ') + '\n';
+    };
+
+    // ===== UTILS =====
+    function showToast(msg, kind='err', ms=4000){
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + (kind === 'err' ? 'err' : 'ok');
+      t.style.display = 'block';
+      setTimeout(()=>{ t.style.display='none'; }, ms);
+    }
+    const getLocalToken  = () => localStorage.getItem("authToken") || "";
+    const setLocalToken  = (t) => localStorage.setItem("authToken", t);
+    const normalizeToken = (t) => (t || "").replace(/^"(.*)"$/, "$1").replace(/^Bearer\s+/i, "");
+    const tokenPreview   = (t) => t ? `${t.length} chars (${t.slice(0,6)}…${t.slice(-6)})` : "(empty)";
+
+    function parseJwt(token) {
+      try {
+        if (!token || token.startsWith("Bearer ")) return null;
+        const base64Url = token.split('.')[1]; if (!base64Url) return null;
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+      } catch { return null; }
+    }
+    function isExpired(token) {
+      const p = parseJwt(token);
+      if (!p || !p.exp) return false;
+      const now = Math.floor(Date.now()/1000);
+      return p.exp <= now;
+    }
+
+    function setLoading(btn, yes){
+      btn.disabled = yes;
+      btn.classList.toggle('ring', yes);
+      btn.textContent = yes ? 'Processing…' : 'Join Heist';
+    }
+    function toggleBalance(){
+      const el = document.getElementById('coinBadge');
+      balanceVisible = !balanceVisible;
+      el.textContent = balanceVisible ? actualBalance : '***';
+    }
+
+    // Accept path, query, or hash:
+    //  - /pages/affilate-h.html/1/2          (backend link)
+    //  - ?heistId=1&referrerId=2             (works everywhere)
+    //  - #/1/2  OR  #heistId=1&referrerId=2  (for static/local testing)
+    function parseHeistRefFromURL(){
+      const { pathname, search, hash } = window.location;
+
+      // 1) Path segments
+      const parts = pathname.split('/').filter(Boolean);
+      const idx = parts.findIndex(p => p.endsWith('affilate-h.html') || p.endsWith('affiliate-h.html'));
+      if (idx >= 0 && parts.length >= idx + 3){
+        const heistId = Number(parts[idx+1]);
+        const referrerId = Number(parts[idx+2]);
+        if (Number.isFinite(heistId) && heistId>0 && Number.isFinite(referrerId) && referrerId>0){
+          return { heistId, referrerId, source: 'path' };
+        }
+      }
+
+      // 2) Query string
+      {
+        const q = new URLSearchParams(search);
+        const heistId = Number(q.get('heistId'));
+        const referrerId = Number(q.get('referrerId'));
+        if (Number.isFinite(heistId) && heistId>0 && Number.isFinite(referrerId) && referrerId>0){
+          return { heistId, referrerId, source: 'query' };
+        }
+      }
+
+      // 3) Hash fragment
+      if (hash) {
+        // support #/1/2
+        const h = hash.replace(/^#/, '');
+        const segs = h.split('/').filter(Boolean);
+        if (segs.length >= 2 && /^\d+$/.test(segs[0]) && /^\d+$/.test(segs[1])) {
+          return { heistId: Number(segs[0]), referrerId: Number(segs[1]), source: 'hash-path' };
+        }
+        // support #heistId=1&referrerId=2
+        const hq = new URLSearchParams(h);
+        const heistId = Number(hq.get('heistId'));
+        const referrerId = Number(hq.get('referrerId'));
+        if (Number.isFinite(heistId) && heistId>0 && Number.isFinite(referrerId) && referrerId>0) {
+          return { heistId, referrerId, source: 'hash-query' };
+        }
+      }
+
+      return { heistId: null, referrerId: null, source: 'none' };
+    }
+
+    // Avoid 304s confusing the auth flow
+    async function fetchJsonNo304(url, options = {}) {
+      const bust = (url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+      const headers = {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-store',
+        ...(options.headers || {})
+      };
+      return fetch(url + bust, { ...options, headers, cache: 'no-store' });
+    }
+
+    // ===== API =====
+    async function fetchProfile(){
+      const token = normalizeToken(getLocalToken());
+      dbg("[fetchProfile] token:", tokenPreview(token));
+      const res = await fetchJsonNo304(`${USERS_BASE}/profile`, {
+        headers: { "Authorization": `Bearer ${token}` },
+        method: 'GET'
+      });
+      dbg("[fetchProfile] status:", res.status);
+      if (res.status === 401) throw new Error("401");
+      if (!res.ok) throw new Error("profile_failed");
+      return res.json();
+    }
+
+    async function payEntry(heistId, referrerId){
+      const token = normalizeToken(getLocalToken());
+      const url = `${USERS_BASE}/heist/pay-entry/affiliate/${heistId}/${referrerId}`;
+      dbg("[payEntry] POST", url, "tok:", tokenPreview(token));
+      const res = await fetchJsonNo304(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await res.json().catch(()=> ({}));
+      dbg("[payEntry] status:", res.status, "body:", data);
+      if (!res.ok) throw new Error(data?.message || `Request failed (${res.status})`);
+      return data;
+    }
+
+    // ===== TOKEN BRIDGE =====
+    function requestTokenFromFrontend(maxWaitMs=3500){
+      dbg("[bridge] start →", FRONTEND_BRIDGE);
+      return new Promise((resolve) => {
+        const iframe = document.createElement("iframe");
+        iframe.src = FRONTEND_BRIDGE;
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
+
+        const timeout = setTimeout(() => {
+          window.removeEventListener("message", onMsg);
+          if (document.body.contains(iframe)) document.body.removeChild(iframe);
+          dbg("[bridge] timeout, no reply");
+          resolve("");
+        }, maxWaitMs);
+
+        function onMsg(event){
+          if (event.origin !== FRONTEND_ORIGIN) return;
+          const { type, token } = event.data || {};
+          if (type === "copupbid:token") {
+            clearTimeout(timeout);
+            window.removeEventListener("message", onMsg);
+            if (document.body.contains(iframe)) document.body.removeChild(iframe);
+            const nt = normalizeToken(token || "");
+            dbg("[bridge] got token:", tokenPreview(nt));
+            resolve(nt);
+          }
+        }
+        window.addEventListener("message", onMsg);
+        iframe.onload = () => {
+          dbg("[bridge] iframe loaded, requesting token");
+          iframe.contentWindow.postMessage({ type: "copupbid:getToken" }, FRONTEND_ORIGIN);
+        };
+      });
+    }
+
+    // ===== AUTH GUARD =====
+    async function ensureToken(){
+      let token = normalizeToken(getLocalToken());
+      dbg("[ensureToken] local token:", tokenPreview(token));
+      if (token && !isExpired(token)) return token;
+
+      const bridged = await requestTokenFromFrontend();
+      dbg("[ensureToken] bridged token:", tokenPreview(bridged));
+      if (bridged) {
+        setLocalToken(bridged);
+        if (!isExpired(bridged)) return bridged;
+        dbg("[ensureToken] bridged token appears expired");
+      }
+
+      showToast("Please sign in first.", "err");
+      if (!DEBUG_MODE) window.location.href = FRONTEND_LOGIN_URL;
+      else dbg("[ensureToken] DEBUG: would redirect →", FRONTEND_LOGIN_URL);
+      return "";
+    }
+
+    // ===== INIT =====
+    async function guardedInit(){
+      dbg("[init] origin:", window.location.origin, "debug:", DEBUG_MODE);
+      const token = await ensureToken();
+      if (!token) return; // redirected or debug pause
+
+      // Validate token
+      let profile;
+      try {
+        profile = await fetchProfile();
+      } catch (e) {
+        dbg("[init] profile check failed:", String(e));
+        localStorage.removeItem("authToken");
+        showToast("Session invalid. Please sign in again.");
+        if (!DEBUG_MODE) window.location.href = FRONTEND_LOGIN_URL;
+        else dbg("[init] DEBUG: would redirect →", FRONTEND_LOGIN_URL);
+        return;
+      }
+
+      // Fill UI
+      const name = profile.full_name || profile.username || "User";
+      document.getElementById("userName").textContent = name;
+      if (typeof profile.bid_points === "number") {
+        actualBalance = profile.bid_points;
+        document.getElementById("coinBadge").textContent = '***';
+      }
+
+      init();
+    }
+
+    function init(){
+      const { heistId, referrerId, source } = parseHeistRefFromURL();
+      const heistIdEl = document.getElementById('heistIdEl');
+      const referrerIdEl = document.getElementById('referrerIdEl');
+      const payBtn = document.getElementById('payBtn');
+      const backBtn = document.getElementById('backBtn');
+      const balanceBtn = document.getElementById('balanceBtn');
+
+      balanceBtn.addEventListener('click', toggleBalance);
+
+      dbg("[url] parsed:", { heistId, referrerId, source });
+
+      if (!heistId || !referrerId){
+        heistIdEl.textContent = 'Invalid';
+        referrerIdEl.textContent = 'Invalid';
+        payBtn.disabled = true;
+        showToast('Invalid or missing heist/referrer in URL.');
+        return;
+      }
+
+      heistIdEl.textContent = String(heistId);
+      referrerIdEl.textContent = String(referrerId);
+
+      payBtn.addEventListener('click', async () => {
+        try{
+          setLoading(payBtn, true);
+          const result = await payEntry(heistId, referrerId);
+          showToast(result?.message || 'Entry fee paid successfully!', 'ok', 4500);
+          if (balanceVisible) {
+            fetchProfile().then(p => {
+              actualBalance = p?.bid_points ?? actualBalance;
+              document.getElementById('coinBadge').textContent = actualBalance;
+            }).catch(()=>{});
+          }
+        }catch(err){
+          if (/401|unauthorized|token|auth/i.test(String(err.message))) {
+            localStorage.removeItem('authToken');
+            showToast("Session expired. Please sign in again.");
+            if (!DEBUG_MODE) window.location.href = FRONTEND_LOGIN_URL;
+            else dbg("[pay] DEBUG: would redirect →", FRONTEND_LOGIN_URL);
+            return;
+          }
+          showToast(err.message || 'Error processing entry fee');
+        }finally{
+          setLoading(payBtn, false);
+        }
+      });
+
+      backBtn.addEventListener('click', () => {
+        history.length > 1 ? history.back() : window.location.href = '/';
+      });
+    }
+
+    // Extra visibility
+    window.addEventListener('error', (e)=> dbg('[window.onerror]', e.message));
+    window.addEventListener('unhandledrejection', (e)=> dbg('[unhandledrejection]', String(e.reason || e)));
+
+    window.addEventListener('DOMContentLoaded', guardedInit);
+  </script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeoKicks — Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Smooth scrolling + nicer scrollbar */
+      html { scroll-behavior: smooth; }
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 999px; }
+      ::-webkit-scrollbar-track { background: rgba(0,0,0,.25); }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-[#070A0F] text-white">
+    <!-- Background glow -->
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div class="absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full bg-emerald-500/25 blur-[90px]"></div>
+      <div class="absolute top-1/3 -right-40 h-[520px] w-[520px] rounded-full bg-lime-400/15 blur-[90px]"></div>
+      <div class="absolute bottom-[-160px] left-1/3 h-[620px] w-[620px] rounded-full bg-emerald-400/10 blur-[110px]"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-transparent to-transparent"></div>
+    </div>
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-40 border-b border-white/10 bg-black/35 backdrop-blur-xl">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <div class="flex items-center gap-3">
+          <div class="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
+            <span class="text-lg">👟</span>
+          </div>
+          <div>
+            <p class="text-sm text-white/60">Welcome back</p>
+            <h1 class="text-lg font-semibold leading-tight">NeoKicks Shop</h1>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="openCartBtn"
+            class="relative rounded-2xl bg-white/10 px-4 py-2 text-sm font-medium ring-1 ring-white/15 hover:bg-white/15 active:scale-[0.98]"
+          >
+            Cart
+            <span
+              id="cartBadge"
+              class="absolute -right-2 -top-2 hidden min-w-6 rounded-full bg-emerald-400 px-2 py-0.5 text-center text-xs font-bold text-black"
+            ></span>
+          </button>
+
+          <button class="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-black hover:bg-emerald-300 active:scale-[0.98]">
+            Explore
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 pb-24 pt-6">
+      <!-- Hero -->
+      <section class="grid gap-4 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="rounded-3xl border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl">
+            <p class="text-sm text-emerald-300/90">New drop • limited sizes</p>
+            <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              Your best collection, <span class="text-emerald-300">built for comfort.</span>
+            </h2>
+            <p class="mt-3 max-w-xl text-white/65">
+              Browse new arrivals, filter by brand, and add to cart — mock UI ready for your backend later.
+            </p>
+
+            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div class="relative w-full sm:max-w-md">
+                <input
+                  id="searchInput"
+                  type="text"
+                  placeholder="Search shoes, brands, colors..."
+                  class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 pr-10 text-sm text-white placeholder:text-white/40 outline-none ring-0 focus:border-emerald-400/40 focus:bg-black/40"
+                />
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">⌘K</span>
+              </div>
+
+              <div class="flex gap-2">
+                <button
+                  id="sortBtn"
+                  class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-medium ring-1 ring-white/15 hover:bg-white/15 active:scale-[0.98]"
+                >
+                  Sort: Popular
+                </button>
+                <button
+                  class="rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-black hover:bg-emerald-300 active:scale-[0.98]"
+                >
+                  Shop now
+                </button>
+              </div>
+            </div>
+
+            <!-- Brand chips -->
+            <div class="mt-6 flex flex-wrap gap-2">
+              <button data-filter="all" class="chip chip-active">All</button>
+              <button data-filter="Nike" class="chip">Nike</button>
+              <button data-filter="Adidas" class="chip">Adidas</button>
+              <button data-filter="Puma" class="chip">Puma</button>
+              <button data-filter="Fila" class="chip">Fila</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Highlight card -->
+        <div class="lg:col-span-5">
+          <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-500/20 via-white/[0.06] to-lime-400/10 p-6 backdrop-blur-xl">
+            <div class="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-400/25 blur-2xl"></div>
+
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm text-white/70">Featured</p>
+                <h3 class="mt-1 text-2xl font-bold">Air Max Plus Comfort</h3>
+                <p class="mt-2 text-white/65">Breathable mesh, soft cushioning, neon accents.</p>
+              </div>
+              <button
+                class="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15"
+                title="Favorite"
+              >
+                ♡
+              </button>
+            </div>
+
+            <div class="mt-6 flex items-end justify-between">
+              <div>
+                <p class="text-white/60">Starting at</p>
+                <p class="mt-1 text-3xl font-extrabold">$175</p>
+              </div>
+              <button
+                class="rounded-2xl bg-black/40 px-5 py-3 text-sm font-semibold ring-1 ring-white/15 hover:bg-black/50 active:scale-[0.98]"
+              >
+                Buy now
+              </button>
+            </div>
+
+            <!-- Fake product "image" -->
+            <div class="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5">
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-white/70">Neon Runner • 2025</div>
+                <div class="text-xs text-emerald-300">In stock</div>
+              </div>
+              <div class="mt-4 grid place-items-center rounded-2xl bg-gradient-to-b from-white/10 to-transparent p-6">
+                <div class="text-6xl">🥿</div>
+                <p class="mt-2 text-sm text-white/60">Mock image placeholder</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section title -->
+      <section class="mt-10">
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <h3 class="text-xl font-semibold">Popular picks</h3>
+            <p class="mt-1 text-sm text-white/60">Mock products — swap in your API later.</p>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-sm text-white/60">
+            <span id="resultCount">0</span> items
+          </div>
+        </div>
+
+        <!-- Products grid -->
+        <div id="productsGrid" class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+      </section>
+    </main>
+
+    <!-- Cart Drawer -->
+    <div id="cartOverlay" class="fixed inset-0 z-50 hidden">
+      <div class="absolute inset-0 bg-black/60" id="closeCartOverlay"></div>
+
+      <aside class="absolute right-0 top-0 h-full w-full max-w-md border-l border-white/10 bg-black/60 backdrop-blur-xl">
+        <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div>
+            <h4 class="text-lg font-semibold">Shopping cart</h4>
+            <p class="text-sm text-white/60">Mock UI</p>
+          </div>
+          <button id="closeCartBtn" class="rounded-2xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/15 hover:bg-white/15">✕</button>
+        </div>
+
+        <div class="h-[calc(100%-160px)] overflow-auto px-5 py-4">
+          <div id="cartItems" class="space-y-3"></div>
+
+          <div id="emptyCart" class="mt-10 rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-center">
+            <div class="text-3xl">🛒</div>
+            <p class="mt-2 font-semibold">Your cart is empty</p>
+            <p class="mt-1 text-sm text-white/60">Add something clean 🔥</p>
+          </div>
+        </div>
+
+        <div class="border-t border-white/10 px-5 py-4">
+          <div class="flex items-center justify-between text-sm text-white/70">
+            <span>Subtotal</span>
+            <span id="subtotal">$0.00</span>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-sm text-white/70">
+            <span>Shipping</span>
+            <span>$0.00</span>
+          </div>
+
+          <button
+            class="mt-4 w-full rounded-2xl bg-emerald-400 py-3 text-sm font-semibold text-black hover:bg-emerald-300 active:scale-[0.98]"
+          >
+            Checkout
+          </button>
+          <p class="mt-2 text-center text-xs text-white/45">Frontend-only mock page</p>
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      // Tailwind chip utility (simple)
+      const chipBase =
+        "chip inline-flex items-center rounded-full px-4 py-2 text-sm font-medium ring-1 ring-white/15 bg-white/10 hover:bg-white/15 active:scale-[0.98]";
+      const chipActive =
+        "chip chip-active inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 ring-emerald-400/35 bg-emerald-400/15 text-emerald-200";
+
+      // Apply styles to chip buttons
+      document.querySelectorAll(".chip").forEach((btn) => {
+        btn.className = chipBase;
+      });
+      document.querySelector('[data-filter="all"]').className = chipActive;
+
+      // Mock products (swap these with your API later)
+      const PRODUCTS = [
+        { id: 1, brand: "Nike", title: "Air Max Plus Comfort", price: 175, tag: "New", rating: 4.7, color: "Neon Green", emoji: "👟" },
+        { id: 2, brand: "Adidas", title: "Ultraboost Glide", price: 160, tag: "Hot", rating: 4.8, color: "Carbon", emoji: "🥿" },
+        { id: 3, brand: "Puma", title: "Ignite Velocity", price: 120, tag: "Sale", rating: 4.5, color: "Black/Volt", emoji: "👟" },
+        { id: 4, brand: "Fila", title: "Runner Pro X", price: 98, tag: "Budget", rating: 4.2, color: "White", emoji: "🩰" },
+        { id: 5, brand: "Nike", title: "React Sprint Neo", price: 140, tag: "Popular", rating: 4.6, color: "Lime", emoji: "👟" },
+        { id: 6, brand: "Adidas", title: "StreetFlex Prime", price: 110, tag: "Trending", rating: 4.4, color: "Olive", emoji: "🥿" },
+        { id: 7, brand: "Puma", title: "Nova Grip Runner", price: 135, tag: "New", rating: 4.3, color: "Graphite", emoji: "👟" },
+        { id: 8, brand: "Nike", title: "Zoom Lite Runner", price: 155, tag: "Hot", rating: 4.7, color: "Dark Green", emoji: "👟" },
+        { id: 9, brand: "Fila", title: "Everyday Motion", price: 85, tag: "Value", rating: 4.1, color: "Midnight", emoji: "🩰" },
+      ];
+
+      // State
+      let activeBrand = "all";
+      let activeSort = "popular"; // popular | price_low | price_high
+      let searchQuery = "";
+      const cart = new Map(); // id => qty
+
+      // DOM
+      const grid = document.getElementById("productsGrid");
+      const resultCount = document.getElementById("resultCount");
+      const searchInput = document.getElementById("searchInput");
+      const sortBtn = document.getElementById("sortBtn");
+
+      const cartOverlay = document.getElementById("cartOverlay");
+      const openCartBtn = document.getElementById("openCartBtn");
+      const closeCartBtn = document.getElementById("closeCartBtn");
+      const closeCartOverlay = document.getElementById("closeCartOverlay");
+      const cartItems = document.getElementById("cartItems");
+      const emptyCart = document.getElementById("emptyCart");
+      const subtotalEl = document.getElementById("subtotal");
+      const cartBadge = document.getElementById("cartBadge");
+
+      // Helpers
+      const money = (n) => `$${Number(n).toFixed(2)}`;
+
+      function getFilteredProducts() {
+        let items = [...PRODUCTS];
+
+        if (activeBrand !== "all") {
+          items = items.filter((p) => p.brand === activeBrand);
+        }
+
+        if (searchQuery.trim()) {
+          const q = searchQuery.trim().toLowerCase();
+          items = items.filter((p) => {
+            return (
+              p.title.toLowerCase().includes(q) ||
+              p.brand.toLowerCase().includes(q) ||
+              p.color.toLowerCase().includes(q) ||
+              p.tag.toLowerCase().includes(q)
+            );
+          });
+        }
+
+        if (activeSort === "popular") {
+          items.sort((a, b) => b.rating - a.rating);
+        } else if (activeSort === "price_low") {
+          items.sort((a, b) => a.price - b.price);
+        } else if (activeSort === "price_high") {
+          items.sort((a, b) => b.price - a.price);
+        }
+
+        return items;
+      }
+
+      function renderProducts() {
+        const items = getFilteredProducts();
+        resultCount.textContent = items.length;
+
+        grid.innerHTML = items
+          .map((p) => {
+            const tagStyles = {
+              New: "bg-emerald-400/15 text-emerald-200 ring-emerald-400/30",
+              Hot: "bg-lime-400/15 text-lime-200 ring-lime-400/30",
+              Sale: "bg-white/10 text-white/80 ring-white/15",
+              Budget: "bg-white/10 text-white/80 ring-white/15",
+              Popular: "bg-emerald-400/15 text-emerald-200 ring-emerald-400/30",
+              Trending: "bg-lime-400/15 text-lime-200 ring-lime-400/30",
+              Value: "bg-white/10 text-white/80 ring-white/15",
+            }[p.tag] || "bg-white/10 text-white/80 ring-white/15";
+
+            return `
+              <article class="group rounded-3xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-xl transition hover:bg-white/[0.08]">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm text-white/60">${p.brand}</p>
+                    <h4 class="mt-1 text-lg font-semibold tracking-tight">${p.title}</h4>
+                  </div>
+
+                  <button
+                    class="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15"
+                    title="Favorite"
+                  >♡</button>
+                </div>
+
+                <div class="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-transparent p-5">
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${tagStyles}">
+                      ${p.tag}
+                    </span>
+                    <span class="text-xs text-white/60">⭐ ${p.rating.toFixed(1)}</span>
+                  </div>
+
+                  <div class="mt-6 grid place-items-center">
+                    <div class="text-6xl drop-shadow">${p.emoji}</div>
+                    <p class="mt-2 text-xs text-white/55">${p.color}</p>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between">
+                  <div>
+                    <p class="text-xs text-white/55">Price</p>
+                    <p class="text-2xl font-extrabold">${money(p.price)}</p>
+                  </div>
+
+                  <button
+                    data-add="${p.id}"
+                    class="rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-black hover:bg-emerald-300 active:scale-[0.98]"
+                  >
+                    Add to cart
+                  </button>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        // Bind add buttons
+        grid.querySelectorAll("[data-add]").forEach((btn) => {
+          btn.addEventListener("click", () => addToCart(Number(btn.dataset.add)));
+        });
+      }
+
+      function addToCart(id) {
+        cart.set(id, (cart.get(id) || 0) + 1);
+        renderCart();
+        openCart();
+      }
+
+      function removeFromCart(id) {
+        cart.delete(id);
+        renderCart();
+      }
+
+      function setQty(id, qty) {
+        if (qty <= 0) return removeFromCart(id);
+        cart.set(id, qty);
+        renderCart();
+      }
+
+      function calcSubtotal() {
+        let total = 0;
+        for (const [id, qty] of cart.entries()) {
+          const p = PRODUCTS.find((x) => x.id === id);
+          if (p) total += p.price * qty;
+        }
+        return total;
+      }
+
+      function renderCart() {
+        const items = [...cart.entries()].map(([id, qty]) => {
+          const p = PRODUCTS.find((x) => x.id === id);
+          return { ...p, qty };
+        });
+
+        // Badge
+        const count = items.reduce((sum, it) => sum + it.qty, 0);
+        if (count > 0) {
+          cartBadge.textContent = count;
+          cartBadge.classList.remove("hidden");
+        } else {
+          cartBadge.classList.add("hidden");
+        }
+
+        // Empty state
+        if (items.length === 0) {
+          emptyCart.classList.remove("hidden");
+          cartItems.innerHTML = "";
+          subtotalEl.textContent = money(0);
+          return;
+        }
+
+        emptyCart.classList.add("hidden");
+
+        cartItems.innerHTML = items
+          .map((it) => {
+            return `
+              <div class="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-start gap-3">
+                    <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/10 text-2xl">
+                      ${it.emoji}
+                    </div>
+                    <div>
+                      <p class="text-sm text-white/60">${it.brand}</p>
+                      <p class="font-semibold leading-tight">${it.title}</p>
+                      <p class="mt-1 text-xs text-white/55">${it.color}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    data-remove="${it.id}"
+                    class="rounded-xl bg-white/10 px-3 py-2 text-xs ring-1 ring-white/15 hover:bg-white/15"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between">
+                  <p class="text-sm font-semibold">${money(it.price)}</p>
+
+                  <div class="flex items-center gap-2">
+                    <button data-dec="${it.id}" class="h-9 w-9 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15">−</button>
+                    <span class="min-w-10 text-center text-sm font-semibold">${it.qty}</span>
+                    <button data-inc="${it.id}" class="h-9 w-9 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15">+</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+
+        cartItems.querySelectorAll("[data-remove]").forEach((b) =>
+          b.addEventListener("click", () => removeFromCart(Number(b.dataset.remove)))
+        );
+        cartItems.querySelectorAll("[data-inc]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const id = Number(b.dataset.inc);
+            setQty(id, (cart.get(id) || 0) + 1);
+          })
+        );
+        cartItems.querySelectorAll("[data-dec]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const id = Number(b.dataset.dec);
+            setQty(id, (cart.get(id) || 0) - 1);
+          })
+        );
+
+        subtotalEl.textContent = money(calcSubtotal());
+      }
+
+      // Brand filter
+      document.querySelectorAll("[data-filter]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeBrand = btn.dataset.filter;
+
+          // update chip styles
+          document.querySelectorAll("[data-filter]").forEach((b) => (b.className = chipBase));
+          btn.className = chipActive;
+
+          renderProducts();
+        });
+      });
+
+      // Search
+      searchInput.addEventListener("input", (e) => {
+        searchQuery = e.target.value || "";
+        renderProducts();
+      });
+
+      // Sort cycle
+      const sortModes = [
+        { key: "popular", label: "Popular" },
+        { key: "price_low", label: "Price: Low" },
+        { key: "price_high", label: "Price: High" },
+      ];
+      sortBtn.addEventListener("click", () => {
+        const idx = sortModes.findIndex((m) => m.key === activeSort);
+        const next = sortModes[(idx + 1) % sortModes.length];
+        activeSort = next.key;
+        sortBtn.textContent = `Sort: ${next.label}`;
+        renderProducts();
+      });
+
+      // Cart drawer open/close
+      function openCart() {
+        cartOverlay.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+      }
+      function closeCart() {
+        cartOverlay.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      openCartBtn.addEventListener("click", openCart);
+      closeCartBtn.addEventListener("click", closeCart);
+      closeCartOverlay.addEventListener("click", closeCart);
+
+      // Keyboard shortcut: Cmd/Ctrl + K to focus search
+      window.addEventListener("keydown", (e) => {
+        const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k";
+        if (isCmdK) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+        if (e.key === "Escape" && !cartOverlay.classList.contains("hidden")) closeCart();
+      });
+
+      // Initial render
+      renderProducts();
+      renderCart();
+    </script>
+  </body>
+</html>

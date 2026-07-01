@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Token Bridge</title>
+  <meta name="robots" content="noindex">
+  <style>
+    body { font: 14px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial; padding: 12px; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div>Token bridge loaded on <code id="origin">—</code></div>
+  <div>Open DevTools Console to see logs.</div>
+
+<script>
+  // Frontend origin script (lives on 127.0.0.1:5500)
+  // Replies with the token in its own localStorage when requested by the BACKEND origin.
+
+  const FRONTEND_ORIGIN = window.location.origin;       // e.g. http://127.0.0.1:5500
+  const ALLOWED_REQUESTOR = "http://localhost:4000";    // backend origin ONLY
+
+  const log = (...args) => console.log("[token-bridge]", ...args);
+  const elOrigin = document.getElementById("origin");
+  elOrigin.textContent = FRONTEND_ORIGIN;
+
+  function tokenSummary(t) {
+    if (!t) return "(empty)";
+    // show first/last 6 chars only
+    const head = t.slice(0, 6);
+    const tail = t.slice(-6);
+    return `${t.length} chars (${head}…${tail})`;
+  }
+
+  // Log initial state
+  const initialToken = localStorage.getItem("authToken") || "";
+  log("init on", FRONTEND_ORIGIN);
+  log("initial localStorage.authToken:", tokenSummary(initialToken));
+
+  // Watch for token changes (useful while testing login)
+  window.addEventListener("storage", (e) => {
+    if (e.key === "authToken") {
+      log("storage change → new token:", tokenSummary(e.newValue || ""));
+    }
+  });
+
+  // Handle requests from backend origin
+  window.addEventListener("message", (event) => {
+    log("message received from", event.origin, "data:", event.data);
+
+    // Only accept from the backend origin
+    if (event.origin !== ALLOWED_REQUESTOR) {
+      log("blocked message: origin not allowed");
+      return;
+    }
+
+    const { type } = event.data || {};
+    if (type === "copupbid:getToken") {
+      try {
+        const token = localStorage.getItem("authToken") || "";
+        log("replying with token:", tokenSummary(token));
+        // Post back ONLY to the allowed requester origin
+        event.source && event.source.postMessage(
+          { type: "copupbid:token", token },
+          ALLOWED_REQUESTOR
+        );
+        log("reply posted to", ALLOWED_REQUESTOR);
+      } catch (err) {
+        log("error reading/sending token:", err);
+        event.source && event.source.postMessage(
+          { type: "copupbid:token", token: "" },
+          ALLOWED_REQUESTOR
+        );
+      }
+    } else {
+      log("ignored message type:", type);
+    }
+  });
+
+  // Optional: quick self-test helper you can run from console:
+  // window._bridgeTest = () => window.postMessage({ type: "copupbid:getToken" }, ALLOWED_REQUESTOR);
+</script>
+</body>
+</html>

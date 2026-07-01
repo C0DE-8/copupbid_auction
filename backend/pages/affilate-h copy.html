@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Join Heist - Coin Vault Bid</title>
+  <link rel="stylesheet" href="affiliate.css">
+</head>
+<body class="page medieval-bg text-white">
+  <!-- Header -->
+  <header class="header">
+    <div class="container header__inner">
+      <h1 class="brand gold-text">⚔️ Coin Vault Bid</h1>
+      <nav class="nav">
+        <a class="nav__link" href="/">Home</a>
+        <a class="nav__link" href="/heists">Heists</a>
+        <a class="nav__link" href="/affiliate">Affiliate</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="container main">
+    <!-- Loading -->
+    <section id="loading" class="loading">
+      <div class="loading__spinner"></div>
+      <p class="loading__text">Loading heist details...</p>
+    </section>
+
+    <!-- Error -->
+    <section id="error" class="error hidden">
+      <div class="card card--danger">
+        <h2 class="card__title">⚠️ Error</h2>
+        <p id="error-message"></p>
+        <button id="go-home" class="btn btn--gold">Return Home</button>
+      </div>
+    </section>
+
+    <!-- Heist Details -->
+    <section id="heist-content" class="hidden">
+      <!-- Referral -->
+      <div class="card card--ref">
+        <div class="ref">
+          <div class="ref__emoji">🤝</div>
+          <div>
+            <h3 class="ref__title">Referred by</h3>
+            <p id="referrer-name" class="ref__name">Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heist Card -->
+      <div class="card card--heist coin-glow">
+        <!-- Header -->
+        <div class="heist__header">
+          <div class="heist__titlewrap">
+            <h1 id="heist-name" class="heist__name gold-text">Loading...</h1>
+            <div class="heist__meta">
+              <span id="heist-status" class="badge badge--neutral">Loading...</span>
+              <span class="heist__price">💰 <span id="heist-price" class="heist__priceval">0</span> CP</span>
+            </div>
+          </div>
+          <div id="heist-image" class="heist__image hidden">
+            <img id="prize-image" src="/placeholder.svg" alt="Prize" class="heist__img" crossorigin="anonymous">
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="heist__body">
+          <div class="grid">
+            <!-- Story -->
+            <div>
+              <h3 class="section__title">📜 Story</h3>
+              <div class="box">
+                <p id="heist-story" class="box__text">Loading story...</p>
+              </div>
+            </div>
+
+            <!-- Participants -->
+            <div>
+              <h3 class="section__title">👥 Participants</h3>
+              <div class="stats">
+                <div class="stats__row"><span>Current:</span><span id="current-participants" class="stats__val">0</span></div>
+                <div class="stats__row"><span>Required:</span><span id="min-participants" class="stats__val">0</span></div>
+                <div class="progress"><div id="progress-bar" class="progress__bar" style="width:0%"></div></div>
+                <p id="progress-text" class="progress__text">0% complete</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Balance -->
+          <div class="balance">
+            <span class="balance__label">Your Balance:</span>
+            <span id="user-balance" class="balance__val">0 CP</span>
+          </div>
+
+          <!-- Join -->
+          <div class="center">
+            <button id="join-btn" class="btn btn--cta" disabled>
+              <span id="join-btn-text">Join Heist</span>
+              <span id="join-loading" class="loading__spinner loading__spinner--inline hidden"></span>
+            </button>
+            <p class="muted">Entry fee will be deducted from your balance</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__overlay"></div>
+    <div class="modal__content">
+      <div class="modal__emoji">🎉</div>
+      <h3 class="modal__title">Successfully Joined!</h3>
+      <p class="modal__text">You've successfully joined the heist via affiliate link!</p>
+      <div class="stack">
+        <button id="view-heists-btn" class="btn btn--gold">View All Heists</button>
+        <button id="stay-here-btn" class="btn btn--gray">Stay Here</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/pages/js/affiliate.js" defer></script>
+</body>
+</html>

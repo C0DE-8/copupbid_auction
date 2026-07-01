@@ -1,0 +1,479 @@
+/* src/pages/CopUpBidShop/CopUpBidShopD.module.css */
+
+.page {
+  min-height: 100vh;
+  position: relative;
+}
+
+.bgGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bgSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pulse1,
+.pulse2,
+.pulse3 {
+  animation: floaty 8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.pulse2 {
+  animation-duration: 10s;
+}
+.pulse3 {
+  animation-duration: 12s;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(12px);
+    opacity: 0.95;
+  }
+}
+
+.section {
+  position: relative;
+  padding: 22px 0 44px;
+}
+
+.container {
+  width: min(1100px, calc(100% - 28px));
+  margin: 0 auto;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backBtn {
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 120ms ease, background 120ms ease, box-shadow 180ms ease;
+}
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.1);
+}
+.backBtn:active {
+  transform: scale(0.99);
+}
+
+.favBtn {
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 120ms ease, background 120ms ease, box-shadow 180ms ease;
+}
+.favBtn:hover {
+  background: rgba(239, 68, 68, 0.16);
+  box-shadow: 0 16px 40px rgba(239, 68, 68, 0.08);
+}
+.favBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stateCard {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(26, 31, 46, 0.55);
+  backdrop-filter: blur(10px);
+  padding: 18px;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.25);
+}
+
+.stateTop {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.stateIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.stateTitle {
+  font-weight: 950;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.stateSub {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.stateDetails {
+  margin-top: 12px;
+}
+
+.devHint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 12px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.stateActions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btnPrimary,
+.btnGhost {
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 120ms ease, background 120ms ease, box-shadow 180ms ease;
+}
+
+.btnPrimary {
+  background: rgba(16, 185, 129, 0.16);
+}
+.btnPrimary:hover {
+  background: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 16px 40px rgba(16, 185, 129, 0.1);
+}
+
+.btnGhost {
+  background: rgba(255, 255, 255, 0.08);
+}
+.btnGhost:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.08);
+}
+
+.loadingCard {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(26, 31, 46, 0.55);
+  backdrop-filter: blur(10px);
+  padding: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================
+   DETAIL CARD
+========================= */
+
+.detailCard {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(26, 31, 46, 0.55);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.25);
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  min-height: 420px;
+}
+
+.media {
+  position: relative;
+  min-height: 360px;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(59, 130, 246, 0.1)
+  );
+  overflow: hidden;
+}
+
+/* ✅ same loader vibe as ProductCard */
+.imgLoader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 15, 28, 0.55);
+  z-index: 3;
+  backdrop-filter: blur(6px);
+}
+.imgLoader img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  opacity: 0.95;
+  animation: pop 0.9s ease-in-out infinite;
+}
+
+@keyframes pop {
+  0%,
+  100% {
+    transform: scale(0.98);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 240ms ease, transform 520ms ease;
+}
+
+.imgReady {
+  opacity: 0.95;
+  transform: scale(1);
+}
+
+.imgOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.62),
+    rgba(0, 0, 0, 0.08),
+    rgba(0, 0, 0, 0)
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.imgFallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 15, 28, 0.95);
+  z-index: 2;
+}
+
+.fallbackInner {
+  text-align: center;
+  padding: 0 18px;
+  color: #fff;
+}
+
+.fallbackIcon {
+  margin: 0 auto;
+  width: 74px;
+  height: 74px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
+  display: grid;
+  place-items: center;
+}
+.fallbackIcon img {
+  width: 40px;
+  height: 40px;
+  opacity: 1;
+}
+.fallbackName {
+  margin-top: 10px;
+  font-weight: 950;
+  font-size: 15px;
+}
+.fallbackSub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.info {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 950;
+  font-size: 20px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.15;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.price {
+  font-weight: 950;
+  font-size: 18px;
+  color: #10b981;
+}
+
+.desc {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.buyBox {
+  margin-top: auto;
+  border-radius: 20px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 15, 28, 0.35);
+}
+
+.qtyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.qtyLabel {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.qtyControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qtyBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.qtyInput {
+  width: 54px;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+}
+
+.buyBtn {
+  width: 100%;
+  border-radius: 18px;
+  padding: 12px 14px;
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.18);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, box-shadow 180ms ease;
+}
+.buyBtn:hover {
+  background: rgba(16, 185, 129, 0.22);
+  box-shadow: 0 18px 44px rgba(16, 185, 129, 0.1);
+}
+.buyBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.buyError {
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(239, 68, 68, 0.92);
+}
+
+.buySuccess {
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(16, 185, 129, 0.95);
+  font-weight: 900;
+}
+.buySuccessMini {
+  margin-top: 6px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 880px) {
+  .detailCard {
+    grid-template-columns: 1fr;
+  }
+  .media {
+    min-height: 320px;
+  }
+}

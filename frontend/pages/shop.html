@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CopUpBid — Premium Auction Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cop: { bg:'#0b1022', teal:'#10b981', cyan:'#06b6d4', blue:'#2563eb', accent: '#f59e0b' }
+          },
+          animation: {
+            'heart-pop': 'heartPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            'heart-fill': 'heartFill 0.4s ease-out forwards',
+            'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            heartPop: {
+              '0%': { transform: 'scale(0.8)', opacity: '0' },
+              '50%': { transform: 'scale(1.25)' },
+              '100%': { transform: 'scale(1)', opacity: '1' },
+            },
+            heartFill: {
+              '0%': { fill: 'none', transform: 'scale(1)' },
+              '100%': { fill: 'currentColor', transform: 'scale(1)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.4)' },
+              '70%': { boxShadow: '0 0 0 10px rgba(16, 185, 129, 0)' },
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body{
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(16,185,129,.08), transparent 60%),
+        radial-gradient(1000px 600px at 80% 20%, rgba(37,99,235,.08), transparent 65%),
+        radial-gradient(1000px 800px at 50% 100%, rgba(6,182,212,.08), transparent 60%),
+        #0b1022;
+    }
+    .glass { background: linear-gradient(to bottom right, rgba(22,33,62,.6), rgba(14,23,46,.5)); backdrop-filter: blur(12px); }
+    .glass-light { background: linear-gradient(to bottom right, rgba(22,33,62,.4), rgba(14,23,46,.3)); backdrop-filter: blur(8px); }
+    .ring-glow { box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 15px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06); }
+    .ring-glow-hover { transition: all 0.3s ease; }
+    .ring-glow-hover:hover { box-shadow: 0 0 0 1px rgba(16,185,129,.2), 0 20px 50px rgba(16,185,129,.15), inset 0 1px 0 rgba(255,255,255,.1); }
+    .chip { border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.03); transition: all 0.3s ease; }
+    .chip:hover { background: rgba(255,255,255,.08); border-color: rgba(16,185,129,.3); }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.15), rgba(255,255,255,.05)); background-size: 200% 100%; animation: sk 1.5s infinite; }
+    @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .product-image { position: relative; overflow: hidden; border-radius: 16px; }
+    .product-image img { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .product-image:hover img { transform: scale(1.08); }
+    .badge-featured { position: absolute; top: 8px; right: 8px; background: linear-gradient(135deg, rgba(245,158,11,.95), rgba(16,185,129,.95)); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(245,158,11,.3); }
+    .status-auction { background: rgba(59,130,246,.2); color: #93c5fd; border: 1px solid rgba(59,130,246,.3); }
+    .status-heist { background: rgba(168,85,247,.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,.3); }
+    .status-cash { background: rgba(16,185,129,.2); color: #86efac; border: 1px solid rgba(16,185,129,.3); }
+    .drawer-enter { transform: translateX(-100%); opacity:.6; }
+    .drawer-open { transform: translateX(0); opacity:1; transition: transform .25s ease, opacity .25s ease; }
+    
+    /* Heart animation */
+    .heart-btn { position: relative; cursor: pointer; transition: all 0.2s ease; }
+    .heart-btn:active { transform: scale(0.95); }
+    .heart-btn.filled svg { fill: #ef4444; color: #ef4444; }
+    .heart-btn.filled svg { animation: heartPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    
+    /* Category button active state */
+    .category-btn { position: relative; overflow: hidden; }
+    .category-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(16,185,129,.3), transparent); transition: left 0.5s ease; }
+    .category-btn:hover::before { left: 100%; }
+    .category-btn.active { background: rgba(16,185,129,.2); border-color: rgba(16,185,129,.5); }
+    
+    /* Smooth transitions */
+    * { transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; }
+    button { transition: all 0.3s ease; }
+
+    /* Coin modal */
+    .modal-backdrop {
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen">
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-[#0b1022]/85 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Left: Brand + Mobile Menu -->
+        <div class="flex items-center gap-4">
+          <button id="openDrawer" class="sm:hidden p-2 rounded-lg hover:bg-white/10 border border-white/10 transition-all duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <a href="javascript:history.back()" class="flex items-center gap-3">
+            <img src="./icons/copupcoin.png" alt="CopUpBid Logo" class="h-9 w-9 rounded-full ring-1 ring-white/10" />
+            <span class="font-semibold tracking-wide">CopUpBid</span>
+          </a>
+        </div>
+
+        <!-- Center: Navigation (desktop) -->
+        <nav class="hidden sm:flex items-center gap-8">
+          <a href="./shop.html" class="text-sm font-medium text-cop-cyan hover:text-cop-teal transition relative pb-1 border-b-2 border-cop-cyan">Shop</a>
+          <a href="./categories.html" class="text-sm font-medium text-white/80 hover:text-white transition">Categories</a>
+          <a href="./dashboard.html" class="text-sm font-medium text-white/80 hover:text-white transition">Dashboard</a>
+        </nav>
+
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-3">
+          <!-- Coin info pill -->
+          <button id="coinInfoBtn" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/15 hover:border-cop-cyan/60 hover:bg-white/10 text-xs font-medium">
+            <img src="./icons/copupcoin.png" class="w-4 h-4 rounded-full" alt="Coin">
+            <span>CopupCoin Value</span>
+            <span class="w-5 h-5 flex items-center justify-center rounded-full bg-cop-cyan/15 text-cop-cyan text-xs font-bold">?</span>
+          </button>
+
+          <a href="./favorites.html" class="relative p-2.5 rounded-lg hover:bg-white/10 border border-white/10 transition-all duration-300 group" aria-label="Favorites">
+            <svg class="w-5 h-5 group-hover:text-cop-cyan transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <span id="favBadge" class="absolute -top-2 -right-2 text-[10px] px-2 py-1 rounded-full bg-red-500 text-white font-bold hidden shadow-lg shadow-red-500/50">0</span>
+          </a>
+          <a href="./cart.html" class="relative p-2.5 rounded-lg hover:bg-white/10 border border-white/10 transition-all duration-300 group" aria-label="Cart">
+            <svg class="w-5 h-5 group-hover:text-cop-cyan transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span id="cartBadge" class="absolute -top-2 -right-2 text-[10px] px-2 py-1 rounded-full bg-cop-accent text-slate-900 font-bold hidden shadow-lg shadow-cop-accent/50">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Drawer (mobile) -->
+  <div id="drawerBackdrop" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm hidden"></div>
+  <aside id="drawer" class="fixed z-50 top-0 left-0 h-full w-72 p-4 glass ring-glow border border-white/10 drawer-enter hidden">
+    <div class="flex items-center justify-between mb-6">
+      <span class="font-bold text-lg">Menu</span>
+      <button id="closeDrawer" class="p-2 rounded-lg hover:bg-white/5 border border-white/10 transition-all duration-300">✕</button>
+    </div>
+    <nav class="space-y-2">
+      <a class="block px-4 py-3 rounded-lg hover:bg-cop-cyan/10 border border-white/10 font-medium transition-all duration-300 text-cop-cyan" href="./shop.html">Shop</a>
+      <a class="block px-4 py-3 rounded-lg hover:bg-white/5 border border-white/10 font-medium transition-all duration-300" href="./categories.html">Categories</a>
+      <a class="block px-4 py-3 rounded-lg hover:bg-white/5 border border-white/10 font-medium transition-all duration-300" href="./favorites.html">Favorites</a>
+      <a class="block px-4 py-3 rounded-lg hover:bg-white/5 border border-white/10 font-medium transition-all duration-300" href="./cart.html">Cart</a>
+      <a class="block px-4 py-3 rounded-lg hover:bg-white/5 border border-white/10 font-medium transition-all duration-300" href="./dashboard.html">Dashboard</a>
+    </nav>
+  </aside>
+
+  <!-- Auth Banner -->
+  <div id="authBanner" class="hidden bg-gradient-to-r from-cop-blue/10 to-cop-cyan/10 border-b border-cop-cyan/20">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4 flex-col sm:flex-row">
+      <p class="text-sm text-white/90 flex items-center gap-2">🔐 Guest mode: Some features require login.</p>
+      <button id="quickToken" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold text-sm hover:shadow-lg hover:shadow-cop-cyan/40 transition-all duration-300 hover:scale-105">Paste Token</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Sidebar -->
+    <aside class="lg:col-span-3 space-y-5">
+      <!-- Categories Section -->
+      <div class="p-6 rounded-2xl glass ring-glow ring-glow-hover">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="font-bold text-lg flex items-center gap-2">
+            <span class="text-2xl">📂</span>
+            Categories
+          </h2>
+          <button id="clearCat" class="text-xs px-3 py-1.5 rounded-lg chip hover:bg-white/15 font-medium transition-all duration-300 border border-white/20">Clear</button>
+        </div>
+        <div id="categoryList" class="space-y-2 max-h-96 overflow-y-auto">
+          <!-- Categories will load here -->
+        </div>
+      </div>
+
+      <!-- Search Section -->
+      <div class="p-6 rounded-2xl glass ring-glow ring-glow-hover">
+        <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
+          <span class="text-xl">🔍</span>
+          Search
+        </h2>
+        <div class="flex flex-col sm:flex-row lg:flex-col gap-2">
+          <input id="q" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 outline-none focus:border-cop-cyan focus:bg-white/8 transition-all duration-300 placeholder-white/50" placeholder="Search products..."/>
+          <button id="btnSearch" class="px-4 py-3 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-bold text-sm hover:shadow-lg hover:shadow-cop-cyan/40 transition-all duration-300 hover:scale-105">Go</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <section class="lg:col-span-9 space-y-8">
+      <!-- Hero Section -->
+      <div class="space-y-3 animate-in fade-in duration-700">
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight text-balance">
+          <span>Auction Everything,</span>
+          <br/>
+          <span class="bg-gradient-to-r from-cop-teal via-cop-cyan to-cop-blue bg-clip-text text-transparent">Win Everything</span>
+        </h1>
+        <p class="text-white/70 text-lg max-w-2xl leading-relaxed">
+          Join thousands bidding on exclusive items. All item prices are in <span class="text-cop-cyan font-semibold">CopupCoins</span>.
+          Tap the “CopupCoin Value ?” badge to see what a coin is worth in NGN, or tap the <span class="font-semibold">item “?”</span> to see that item’s value in NGN.
+        </p>
+      </div>
+
+      <!-- Featured Section -->
+      <div>
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <span class="text-3xl">🔥</span>
+              Featured Now
+            </h2>
+            <p class="text-white/60 text-sm mt-1.5">Handpicked items trending this week</p>
+          </div>
+          <div id="featCount" class="text-white/60 text-sm font-medium px-3 py-1 bg-white/5 rounded-lg border border-white/10"></div>
+        </div>
+        <div id="featuredGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+      </div>
+
+      <!-- View More Button -->
+      <div class="flex justify-center pt-6">
+        <button id="btnViewMore" class="px-8 py-4 rounded-xl bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-bold text-lg hover:shadow-2xl hover:shadow-cop-cyan/30 transition-all duration-300 hover:scale-105 active:scale-95">
+          View All Products →
+        </button>
+      </div>
+
+      <!-- All Products Section -->
+      <div id="allWrap" class="mt-12 hidden animate-in fade-in duration-500">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold">All Products</h2>
+            <p class="text-white/60 text-sm mt-1.5">Browse our complete catalog</p>
+          </div>
+          <div id="allCount" class="text-white/60 text-sm font-medium px-3 py-1 bg-white/5 rounded-lg border border-white/10"></div>
+        </div>
+        <div id="grid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        <div id="emptyState" class="hidden mt-16 text-center text-white/70 py-12">
+          <p class="text-lg">No items found. Try adjusting your filters.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden px-5 py-3 rounded-lg glass ring-glow text-sm font-medium max-w-sm backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-300"></div>
+
+  <!-- Coin Info Modal -->
+  <div id="coinModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+    <div class="absolute inset-0" id="coinModalOverlay"></div>
+    <div class="relative max-w-md w-full mx-4 glass ring-glow border border-white/10 rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-bold text-lg flex items-center gap-2">
+            <img src="./icons/copupcoin.png" class="w-6 h-6 rounded-full" alt="Coin">
+            CopupCoin Value
+          </h2>
+          <p class="text-xs text-white/60 mt-1">
+            Based on latest admin rate and approximate FX.
+          </p>
+        </div>
+        <button id="coinModalClose" class="p-2 rounded-full hover:bg-white/10 border border-white/10 text-xs">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-3 text-sm">
+        <!-- Global rate block -->
+        <div class="bg-white/5 rounded-xl p-4 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-white/70">Admin Rate:</span>
+            <span class="font-semibold">
+              <span id="cmUnit">—</span> CopupCoins = 
+              <span id="cmBasePrice">—</span> 
+              <span id="cmBaseCurrency">—</span>
+            </span>
+          </div>
+
+          <div class="flex justify-between">
+            <span class="text-white/70">Base ≈ NGN:</span>
+            <span class="font-semibold text-cop-cyan">
+              <span id="cmBaseToNGN">—</span> NGN
+            </span>
+          </div>
+
+          <div class="flex justify-between">
+            <span class="text-white/70">Approx. 1 CopupCoin ≈</span>
+            <span class="font-semibold text-cop-teal">
+              ₦<span id="cmPerCoinNGN">—</span>
+            </span>
+          </div>
+
+          <div class="flex justify-between">
+            <span class="text-white/70">Approx. NGN → CopupCoins:</span>
+            <span class="font-semibold">
+              ₦<span id="cmExampleNGN">—</span>
+              ≈
+              <span id="cmExampleCoins">—</span> CopupCoins
+            </span>
+          </div>
+        </div>
+
+        <!-- Item-specific block (hidden unless user clicked item “?”) -->
+        <div id="cmItemBlock" class="bg-white/5 rounded-xl p-4 space-y-2 hidden">
+          <p class="text-xs text-white/60 mb-1">Selected item value (using 1 CopupCoin ≈ ₦<span id="cmPerCoinNGNInline">—</span>):</p>
+
+          <div id="cmCashRow" class="flex justify-between">
+            <span class="text-white/70">Cash Price:</span>
+            <span class="font-semibold">
+              <span id="cmCashCoins">—</span> CopupCoins ≈ ₦<span id="cmCashNGN">—</span>
+            </span>
+          </div>
+
+          <div id="cmAuctionRow" class="flex justify-between">
+            <span class="text-white/70">Auction Price:</span>
+            <span class="font-semibold">
+              <span id="cmAuctionCoins">—</span> CopupCoins ≈ ₦<span id="cmAuctionNGN">—</span>
+            </span>
+          </div>
+
+          <div id="cmHeistRow" class="flex justify-between">
+            <span class="text-white/70">Heist Price:</span>
+            <span class="font-semibold">
+              <span id="cmHeistCoins">—</span> CopupCoins ≈ ₦<span id="cmHeistNGN">—</span>
+            </span>
+          </div>
+        </div>
+
+        <p class="text-xs text-white/50">
+          Example: if an item is <span class="text-cop-cyan font-semibold">100 CopupCoins</span> and
+          1 CopupCoin ≈ ₦1,500, that item is roughly ₦150,000 in value.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const API_BASE = 'https://api.copup.copupbid.com/api/users';
+    const api = axios.create({ baseURL: API_BASE.replace(/\/$/, ''), timeout: 15000 });
+    api.interceptors.request.use(cfg => {
+      const t = (localStorage.getItem('authToken') || '').trim();
+      if (t) cfg.headers.Authorization = 'Bearer ' + t;
+      return cfg;
+    });
+
+    // Adjust this manually to your real FX
+    const NGN_PER_USD = 1500; // example
+
+    let coinRate = null;      // { unit, price, currency }
+    let perCoinNGN = null;    // numeric NGN per 1 CopupCoin
+
+    const fmtN = n => (n == null ? '—' : Intl.NumberFormat('en-NG').format(Number(n)));
+    const fmtCoin = n => (n == null ? '—' : Number(n).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    const qs = k => new URLSearchParams(location.search).get(k);
+    const toast = (msg, kind='info') => {
+      const el = document.getElementById('toast'); if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.background = kind === 'error' ? 'rgba(220,38,38,.15)' : 'linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6))';
+      el.style.borderColor = kind === 'error' ? 'rgba(239,68,68,.4)' : 'rgba(16,185,129,.2)';
+      setTimeout(()=> el.classList.add('hidden'), 3500);
+    };
+    const tokenExists = () => !!(localStorage.getItem('authToken') || '').trim();
+    const showAuthBanner = () => { if (!tokenExists()) document.getElementById('authBanner')?.classList.remove('hidden'); };
+    function setBadge(id, n){ const el = document.getElementById(id); if(!el) return; if(n>0){ el.textContent = n; el.classList.remove('hidden'); } else { el.classList.add('hidden'); } }
+    function refreshBadges(){ setBadge('cartBadge', Number(localStorage.getItem('cartCount')||'0')); setBadge('favBadge', Number(localStorage.getItem('favCount')||'0')); }
+
+    const fetchCategories = async () => (await api.get('/categories')).data || [];
+    const fetchProducts = async (categoryId=null) => {
+      if (categoryId) return (await api.get('/products', { params:{categoryId} })).data || [];
+      return (await api.get('/products')).data || [];
+    };
+    const fetchFeatured = async (categoryId=null) => {
+      if (categoryId) return (await api.get('/featured/products', { params:{categoryId} })).data || [];
+      return (await api.get('/featured/products')).data || [];
+    };
+    const toggleFavorite = async (productId) => (await api.post(`/favorites/${productId}/toggle`)).data;
+
+    async function quickCheckout(productId, mode, opts = {}) {
+      const btn = opts.btn || null;
+      try {
+        if (btn) { btn.disabled = true; btn.style.opacity = .6; }
+        const body = { product_id: Number(productId), mode: String(mode) };
+        if (mode === 'cash') body.qty = opts.qty ?? 1;
+        const res = await api.post('/shop/check-pay', body);
+        const data = res.data || {};
+        if (mode === 'cash' && data?.created?.type === 'cart_item') {
+          const n = Number(localStorage.getItem('cartCount') || '0') + 1;
+          localStorage.setItem('cartCount', n);
+          refreshBadges();
+        }
+        toast(data.message || '✅ Added successfully');
+      } catch (err) {
+        toast(err?.response?.data?.message || 'Failed','error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      }
+    }
+
+    // ---------- WhatsApp share helper ----------
+    function shareToWhatsApp(p) {
+      if (!p || !p.id) return;
+
+      const bestPrice = p.cash_price || p.auction_price || p.heist_price || 0;
+      const priceLabel = bestPrice
+        ? fmtCoin(bestPrice) + ' CopupCoins'
+        : 'CopupCoins';
+
+      const url = `${location.origin}/product.html?id=${encodeURIComponent(p.id)}`;
+
+      const text =
+        '🔥 Check this product on CopUpBid\n\n' +
+        (p.name || 'Item') + '\n' +
+        priceLabel + '\n\n' +
+        url;
+
+      const waUrl = 'https://wa.me/?text=' + encodeURIComponent(text);
+      window.open(waUrl, '_blank');
+    }
+
+    // ---------- Coin modal helpers ----------
+    const coinInfoBtn = document.getElementById('coinInfoBtn');
+    const coinModal = document.getElementById('coinModal');
+    const coinModalClose = document.getElementById('coinModalClose');
+    const coinModalOverlay = document.getElementById('coinModalOverlay');
+
+    function showCoinModal(pricesOrNull) {
+      if (!coinModal) return;
+
+      const itemBlock = document.getElementById('cmItemBlock');
+      const perCoinInline = document.getElementById('cmPerCoinNGNInline');
+
+      // Global per-coin text mirrored
+      if (perCoinInline && perCoinNGN) {
+        perCoinInline.textContent = fmtN(perCoinNGN.toFixed(2));
+      }
+
+      if (itemBlock) {
+        if (pricesOrNull && perCoinNGN) {
+          const cash = Number(pricesOrNull.cash || 0);
+          const auction = Number(pricesOrNull.auction || 0);
+          const heist = Number(pricesOrNull.heist || 0);
+
+          const cmCashRow = document.getElementById('cmCashRow');
+          const cmAuctionRow = document.getElementById('cmAuctionRow');
+          const cmHeistRow = document.getElementById('cmHeistRow');
+
+          const cmCashCoins = document.getElementById('cmCashCoins');
+          const cmCashNGN = document.getElementById('cmCashNGN');
+          const cmAuctionCoins = document.getElementById('cmAuctionCoins');
+          const cmAuctionNGN = document.getElementById('cmAuctionNGN');
+          const cmHeistCoins = document.getElementById('cmHeistCoins');
+          const cmHeistNGN = document.getElementById('cmHeistNGN');
+
+          // Cash
+          if (cash > 0 && cmCashRow) {
+            cmCashRow.classList.remove('hidden');
+            if (cmCashCoins) cmCashCoins.textContent = fmtCoin(cash);
+            if (cmCashNGN) cmCashNGN.textContent = fmtN((cash * perCoinNGN).toFixed(2));
+          } else if (cmCashRow) {
+            cmCashRow.classList.add('hidden');
+          }
+
+          // Auction
+          if (auction > 0 && cmAuctionRow) {
+            cmAuctionRow.classList.remove('hidden');
+            if (cmAuctionCoins) cmAuctionCoins.textContent = fmtCoin(auction);
+            if (cmAuctionNGN) cmAuctionNGN.textContent = fmtN((auction * perCoinNGN).toFixed(2));
+          } else if (cmAuctionRow) {
+            cmAuctionRow.classList.add('hidden');
+          }
+
+          // Heist
+          if (heist > 0 && cmHeistRow) {
+            cmHeistRow.classList.remove('hidden');
+            if (cmHeistCoins) cmHeistCoins.textContent = fmtCoin(heist);
+            if (cmHeistNGN) cmHeistNGN.textContent = fmtN((heist * perCoinNGN).toFixed(2));
+          } else if (cmHeistRow) {
+            cmHeistRow.classList.add('hidden');
+          }
+
+          itemBlock.classList.remove('hidden');
+        } else {
+          // Global-only (header badge) → hide item block
+          itemBlock.classList.add('hidden');
+        }
+      }
+
+      coinModal.classList.remove('hidden');
+      coinModal.classList.add('flex');
+    }
+
+    function closeCoinModal() {
+      if (!coinModal) return;
+      coinModal.classList.add('hidden');
+      coinModal.classList.remove('flex');
+    }
+
+    if (coinInfoBtn) {
+      coinInfoBtn.addEventListener('click', () => {
+        // Show global rate only
+        showCoinModal(null);
+      });
+    }
+    coinModalClose?.addEventListener('click', closeCoinModal);
+    coinModalOverlay?.addEventListener('click', closeCoinModal);
+
+    // Load coin rate and fill modal
+    async function loadCoinRate(){
+      try {
+        const res = await api.get('/coin-rate');
+        const r = res.data || {};
+        const unit = Number(r.unit || 0);
+        const price = Number(r.price || 0);
+        const currency = (r.currency || 'USD').toUpperCase();
+        coinRate = { unit, price, currency };
+
+        if (!unit || !price) {
+          perCoinNGN = null;
+          console.warn('Coin rate invalid');
+          return;
+        }
+
+        // Convert base currency to NGN (simple approximation)
+        let priceInNGN = price;
+        if (currency === 'USD') {
+          priceInNGN = price * NGN_PER_USD;
+        } else if (currency !== 'NGN') {
+          // Unknown currency → treat as NGN for now
+          priceInNGN = price;
+        }
+
+        perCoinNGN = priceInNGN / unit;
+
+        const cmUnit = document.getElementById('cmUnit');
+        const cmBasePrice = document.getElementById('cmBasePrice');
+        const cmBaseCurrency = document.getElementById('cmBaseCurrency');
+        const cmBaseToNGN = document.getElementById('cmBaseToNGN');
+        const cmPerCoinNGN = document.getElementById('cmPerCoinNGN');
+        const cmExampleNGN = document.getElementById('cmExampleNGN');
+        const cmExampleCoins = document.getElementById('cmExampleCoins');
+        const cmPerCoinNGNInline = document.getElementById('cmPerCoinNGNInline');
+
+        if (cmUnit) cmUnit.textContent = unit || '—';
+        if (cmBasePrice) cmBasePrice.textContent = fmtN(price);
+        if (cmBaseCurrency) cmBaseCurrency.textContent = currency;
+        if (cmBaseToNGN) cmBaseToNGN.textContent = fmtN(priceInNGN.toFixed(2));
+        if (cmPerCoinNGN) cmPerCoinNGN.textContent = perCoinNGN ? fmtN(perCoinNGN.toFixed(2)) : '—';
+        if (cmPerCoinNGNInline) cmPerCoinNGNInline.textContent = perCoinNGN ? fmtN(perCoinNGN.toFixed(2)) : '—';
+
+        if (cmExampleNGN && cmExampleCoins) {
+          cmExampleNGN.textContent = fmtN(priceInNGN.toFixed(2));
+          cmExampleCoins.textContent = fmtCoin(unit);
+        }
+
+      } catch (err) {
+        console.error('Failed to load coin rate', err);
+        toast('Could not load CopupCoin rate', 'error');
+        perCoinNGN = null;
+      }
+    }
+
+    // ---------- Product cards ----------
+    const productCardFeatured = (p) => {
+      const cats = p.categories || p.category_name || '';
+      const el = document.createElement('div');
+      el.className = 'rounded-2xl glass ring-glow ring-glow-hover overflow-hidden flex flex-col group';
+      el.innerHTML = `
+        <div class="product-image aspect-video bg-gradient-to-br from-black/40 to-black/60 overflow-hidden relative">
+          <img src="${p.image_url || ''}" alt="${p.name}" class="w-full h-full object-cover"/>
+          <div class="badge-featured">★ Featured</div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition duration-300"></div>
+        </div>
+        <div class="p-6 flex-1 flex flex-col">
+          <h3 class="font-bold text-lg line-clamp-2 group-hover:text-cop-cyan transition">${p.name}</h3>
+          <p class="text-white/60 text-sm mt-2">${cats || '—'}</p>
+
+          <div class="mt-5 space-y-2">
+            <div class="flex gap-2 flex-wrap">
+              <span class="chip px-3 py-1.5 rounded-lg text-sm status-cash font-medium">
+                💰 <span class="font-semibold">${fmtCoin(p.cash_price)}</span> CopupCoins
+                <button type="button"
+                  class="ml-2 inline-flex items-center justify-center text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 hover:bg-cop-cyan/20 item-coin-info"
+                  data-cash="${p.cash_price || 0}"
+                  data-auction="${p.auction_price || 0}"
+                  data-heist="${p.heist_price || 0}">
+                  ?
+                </button>
+              </span>
+              <span class="chip px-3 py-1.5 rounded-lg text-sm status-auction font-medium">
+                🏁 ${fmtCoin(p.auction_price)} CopupCoins
+              </span>
+              <span class="chip px-3 py-1.5 rounded-lg text-sm status-heist font-medium">
+                ⚔️ ${fmtCoin(p.heist_price)} CopupCoins
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-5 grid grid-cols-3 gap-2">
+            <button class="px-3 py-2.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-bold text-sm hover:shadow-lg hover:shadow-cop-cyan/40 transition-all duration-300 hover:scale-105 active:scale-95" data-action="buy">Buy</button>
+            <button class="px-3 py-2.5 rounded-lg border border-white/30 hover:bg-white/10 font-medium text-sm transition-all duration-300 hover:border-cop-cyan" data-action="auction">Auction</button>
+            <button class="px-3 py-2.5 rounded-lg border border-white/30 hover:bg-white/10 font-medium text-sm transition-all duration-300 hover:border-cop-cyan" data-action="heist">Heist</button>
+          </div>
+
+          <button
+            class="mt-3 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-green-500/40 bg-green-500/10 text-xs font-medium text-green-200 hover:bg-green-500/20 share-btn"
+            type="button"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.486 2 2 6.028 2 11.012c0 1.784.486 3.446 1.338 4.9L2 22l6.305-1.291A10.4 10.4 0 0 0 12 20.024C17.514 20.024 22 15.996 22 11.012 22 6.028 17.514 2 12 2Zm0 2c4.067 0 8 3.172 8 7.012 0 3.868-3.226 7.012-8 7.012-1.07 0-2.137-.21-3.137-.62l-.447-.184-3.57.731.73-3.313-.23-.359C4.76 14.064 4 12.58 4 11.012 4 7.172 7.933 4 12 4Zm3.217 3.994c-.2-.004-.412-.01-.637-.01-.5 0-1.022.064-1.588.2-.34.084-.777.258-1.037.558-.226.262-.286.6-.178.951.13.418.294.82.492 1.202.162.312.332.588.486.816.29.433.55.74.81.994.3.295.616.558.999.796.477.295.902.478 1.294.64.53.214 1.004.326 1.442.326.48 0 .863-.136 1.18-.416.29-.257.468-.618.566-.879.046-.122.08-.24.1-.35.02-.11.013-.208-.01-.29-.04-.142-.158-.226-.33-.296l-1.51-.6c-.17-.07-.29-.11-.398-.11-.12 0-.223.043-.31.132l-.472.49c-.048.05-.112.077-.19.077-.06 0-.128-.02-.205-.054-.23-.104-.52-.256-.845-.516a7.73 7.73 0 0 1-.987-.964c-.18-.224-.33-.44-.45-.64-.06-.1-.1-.18-.14-.25-.05-.09-.08-.16-.08-.23 0-.08.03-.15.08-.21.07-.08.128-.14.188-.2.06-.06.113-.12.177-.19.063-.07.108-.13.142-.19.046-.08.067-.16.067-.24 0-.11-.02-.19-.06-.28-.06-.13-.2-.21-.32-.26-.13-.06-.27-.11-.42-.14-.16-.04-.33-.07-.51-.09a7.73 7.73 0 0 0-.636-.03Z"/>
+            </svg>
+            <span>Share on WhatsApp</span>
+          </button>
+        </div>`;
+
+      const btnBuy = el.querySelector('[data-action="buy"]');
+      const btnAuction = el.querySelector('[data-action="auction"]');
+      const btnHeist = el.querySelector('[data-action="heist"]');
+
+      if (p.allow_cash === 0) { btnBuy.disabled = true; btnBuy.classList.add('opacity-50','cursor-not-allowed'); }
+      if (p.allow_auction === 0) { btnAuction.disabled = true; btnAuction.classList.add('opacity-50','cursor-not-allowed'); }
+      if (p.allow_heist === 0) { btnHeist.disabled = true; btnHeist.classList.add('opacity-50','cursor-not-allowed'); }
+
+      btnBuy.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'cash', { btn: btnBuy, qty: 1 }); });
+      btnAuction.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'auction', { btn: btnAuction }); });
+      btnHeist.addEventListener('click', e => { e.preventDefault(); quickCheckout(p.id, 'heist', { btn: btnHeist }); });
+
+      // Attach item "?" click → show item-specific values
+      const infoBtn = el.querySelector('.item-coin-info');
+      if (infoBtn) {
+        infoBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!perCoinNGN) {
+            toast('Coin rate not loaded yet', 'error');
+            return;
+          }
+          showCoinModal({
+            cash: infoBtn.dataset.cash,
+            auction: infoBtn.dataset.auction,
+            heist: infoBtn.dataset.heist
+          });
+        });
+      }
+
+      const shareBtn = el.querySelector('.share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          shareToWhatsApp(p);
+        });
+      }
+
+      return el;
+    };
+
+    const productCardAll = (p) => {
+      const cats = p.categories || p.category_name || '';
+      const el = document.createElement('div');
+      el.className = 'rounded-2xl glass ring-glow ring-glow-hover overflow-hidden flex flex-col group';
+      el.innerHTML = `
+        <div class="product-image aspect-video bg-gradient-to-br from-black/40 to-black/60 overflow-hidden">
+          <img src="${p.image_url || ''}" alt="${p.name}" class="w-full h-full object-cover"/>
+        </div>
+        <div class="p-6 flex-1 flex flex-col">
+          <h3 class="font-bold text-lg line-clamp-2 group-hover:text-cop-cyan transition">${p.name}</h3>
+          <p class="text-white/60 text-sm mt-2">${cats || '—'}</p>
+          <div class="mt-4 flex gap-2 flex-wrap">
+            <span class="chip px-3 py-1.5 rounded-lg text-sm status-cash font-medium">
+              💰 <span class="font-semibold">${fmtCoin(p.cash_price)}</span> CopupCoins
+              <button type="button"
+                class="ml-2 inline-flex items-center justify-center text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 hover:bg-cop-cyan/20 item-coin-info"
+                data-cash="${p.cash_price || 0}"
+                data-auction="${p.auction_price || 0}"
+                data-heist="${p.heist_price || 0}">
+                ?
+              </button>
+            </span>
+          </div>
+          <div class="mt-5 flex items-center gap-2">
+            <a href="./product.html?id=${p.id}" class="flex-1 px-3 py-2.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-bold text-sm text-center hover:shadow-lg hover:shadow-cop-cyan/40 transition-all duration-300 hover:scale-105 active:scale-95">
+              Details
+            </a>
+            <button
+              class="px-3 py-2.5 rounded-lg border border-green-500/40 hover:border-green-400 hover:bg-green-500/10 flex items-center justify-center share-btn"
+              type="button"
+              aria-label="Share on WhatsApp"
+            >
+              <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.486 2 2 6.028 2 11.012c0 1.784.486 3.446 1.338 4.9L2 22l6.305-1.291A10.4 10.4 0 0 0 12 20.024C17.514 20.024 22 15.996 22 11.012 22 6.028 17.514 2 12 2Zm0 2c4.067 0 8 3.172 8 7.012 0 3.868-3.226 7.012-8 7.012-1.07 0-2.137-.21-3.137-.62l-.447-.184-3.57.731.73-3.313-.23-.359C4.76 14.064 4 12.58 4 11.012 4 7.172 7.933 4 12 4Z"/>
+              </svg>
+            </button>
+            <button class="heart-btn px-3 py-2.5 rounded-lg border border-white/30 hover:border-red-500/50 hover:bg-red-500/5 transition-all duration-300" aria-label="Favorite" data-id="${p.id}">
+              <svg class="w-5 h-5 text-white hover:text-red-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </button>
+          </div>
+        </div>`;
+
+      const favBtn = el.querySelector('.heart-btn');
+      favBtn.addEventListener('click', async e => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          const res = await toggleFavorite(p.id);
+          const wasAdded = res.toggled === 'added';
+          favBtn.classList.toggle('filled', wasAdded);
+          
+          const svg = favBtn.querySelector('svg');
+          if (svg) {
+            svg.style.animation = 'none';
+            setTimeout(() => {
+              svg.style.animation = 'heartPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            }, 10);
+          }
+          
+          toast(wasAdded ? '❤️ Added to favorites' : '💔 Removed from favorites');
+          const n = Number(localStorage.getItem('favCount') || '0') + (wasAdded ? 1 : -1);
+          localStorage.setItem('favCount', Math.max(0,n));
+          refreshBadges();
+        } catch (err) {
+          if (err?.response?.status === 401) toast('Please login','error');
+          else toast(err?.response?.data?.message || 'Failed','error');
+        }
+      });
+
+      const infoBtn = el.querySelector('.item-coin-info');
+      if (infoBtn) {
+        infoBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!perCoinNGN) {
+            toast('Coin rate not loaded yet', 'error');
+            return;
+          }
+          showCoinModal({
+            cash: infoBtn.dataset.cash,
+            auction: infoBtn.dataset.auction,
+            heist: infoBtn.dataset.heist
+          });
+        });
+      }
+
+      const shareBtn = el.querySelector('.share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          shareToWhatsApp(p);
+        });
+      }
+
+      return el;
+    };
+
+    const skeletonInto = (containerId, n=6) => {
+      const grid = document.getElementById(containerId);
+      grid.innerHTML = '';
+      for (let i=0;i<n;i++) {
+        const card = document.createElement('div');
+        card.className = 'rounded-2xl glass ring-glow overflow-hidden';
+        card.innerHTML = `<div class="aspect-video skeleton"></div><div class="p-6"><div class="h-5 w-2/3 skeleton rounded mb-4"></div><div class="flex gap-2"><div class="h-8 w-20 skeleton rounded"></div><div class="h-8 w-24 skeleton rounded"></div></div></div>`;
+        grid.appendChild(card);
+      }
+    };
+
+    function renderCategoryList(list, activeId){
+      const wrap = document.getElementById('categoryList'); wrap.innerHTML='';
+      list.forEach(c=>{
+        const btn = document.createElement('button');
+        const isActive = String(activeId)===String(c.id);
+        btn.className = 'category-btn w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 border border-white/10 ' + (isActive ? 'active bg-cop-cyan/15 border-cop-cyan/50' : 'hover:bg-white/5');
+        btn.textContent = c.name;
+        btn.onclick = ()=>{
+          const url = new URL(location.href);
+          url.searchParams.set('categoryId', c.id);
+          history.replaceState({},'',url);
+          document.getElementById('allWrap').classList.add('hidden');
+          document.getElementById('btnViewMore').classList.remove('hidden');
+          loadFeaturedThenCounts();
+        };
+        wrap.appendChild(btn);
+      });
+    }
+
+    async function loadFeaturedThenCounts(){
+      showAuthBanner();
+      const catId = qs('categoryId');
+      try {
+        const cats = await fetchCategories();
+        renderCategoryList(cats, catId);
+      } catch {}
+      skeletonInto('featuredGrid', 3);
+      try {
+        const featured = await fetchFeatured(catId);
+        const featGrid = document.getElementById('featuredGrid');
+        featGrid.innerHTML = '';
+        featured.forEach(p => featGrid.appendChild(productCardFeatured(p)));
+        document.getElementById('featCount').textContent = `${featured.length} featured`;
+      } catch (err) {
+        document.getElementById('featuredGrid').innerHTML = '';
+        toast(err?.response?.data?.message || 'Failed to load featured','error');
+      }
+    }
+
+    async function revealAll(){
+      const catId = qs('categoryId');
+      document.getElementById('btnViewMore').classList.add('hidden');
+      const allWrap = document.getElementById('allWrap');
+      allWrap.classList.remove('hidden');
+      skeletonInto('grid', 6);
+      try{
+        let items = await fetchProducts(catId);
+        const q = (document.getElementById('q')?.value || '').toLowerCase().trim();
+        if (q) items = items.filter(p => String(p.name).toLowerCase().includes(q));
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        items.forEach(p => grid.appendChild(productCardAll(p)));
+        document.getElementById('allCount').textContent = `${items.length} products`;
+        document.getElementById('emptyState').classList.toggle('hidden', items.length !== 0);
+        allWrap.scrollIntoView({behavior:'smooth', block:'start'});
+      }catch(err){
+        document.getElementById('grid').innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
+        toast(err?.response?.data?.message || 'Failed','error');
+      }
+    }
+
+    function openDrawer(){ document.getElementById('drawerBackdrop').classList.remove('hidden'); document.getElementById('drawer').classList.remove('hidden'); requestAnimationFrame(()=> document.getElementById('drawer').classList.add('drawer-open')); }
+    function closeDrawer(){ const d = document.getElementById('drawer'); d.classList.remove('drawer-open'); setTimeout(()=>{ d.classList.add('hidden'); document.getElementById('drawerBackdrop').classList.add('hidden'); }, 200); }
+
+    document.getElementById('btnViewMore')?.addEventListener('click', revealAll);
+    document.getElementById('btnSearch')?.addEventListener('click', revealAll);
+    document.getElementById('clearCat')?.addEventListener('click', ()=>{ const url=new URL(location.href); url.searchParams.delete('categoryId'); history.replaceState({},'',url); document.getElementById('allWrap').classList.add('hidden'); document.getElementById('btnViewMore').classList.remove('hidden'); loadFeaturedThenCounts(); });
+    document.getElementById('openDrawer')?.addEventListener('click', openDrawer);
+    document.getElementById('closeDrawer')?.addEventListener('click', closeDrawer);
+    document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
+    document.getElementById('quickToken')?.addEventListener('click', ()=>{ const t = prompt('Paste token:'); if (t){ localStorage.setItem('authToken', t.trim()); location.reload(); } });
+
+    refreshBadges();
+    loadCoinRate();
+    loadFeaturedThenCounts();
+  </script>
+</body>
+</html>

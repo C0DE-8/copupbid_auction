@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Admin • Users Management</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' },
+            accent:{ 500: '#3b82f6' }
+          },
+          boxShadow: {
+            glow: '0 0 80px 0 rgba(16,185,129,0.15)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Axios (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 1rem;
+      backdrop-filter: blur(6px);
+    }
+    .ring-soft { box-shadow: 0 0 0 6px rgba(16,185,129,.12); }
+    .table-wrap { overflow-x: auto; }
+    .badge {
+      display:inline-flex; align-items:center; gap:.35rem;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:.5rem; padding:.15rem .5rem; font-size:.72rem;
+      background:rgba(255,255,255,.05)
+    }
+    .modal-backdrop {
+      backdrop-filter: blur(2px);
+      background: rgba(2,6,23,.55);
+    }
+  </style>
+</head>
+<body class="min-h-dvh bg-slate-900 text-slate-100">
+  <!-- BG -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(90%_70%_at_10%_-10%,rgba(34,211,238,.10),rgba(59,130,246,.10),rgba(0,0,0,0))]"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-10 bg-slate-900/70 backdrop-blur border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a id="backBtn"
+           class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-200 hover:bg-white/10 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Dashboard
+        </a>
+        <h1 class="text-lg font-semibold tracking-tight">
+          Admin <span class="text-brand-500">Users</span> Management
+        </h1>
+      </div>
+      <a id="logoutBtn" class="text-sm text-slate-300 hover:text-white cursor-pointer">Log out</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-8">
+    <!-- Stats -->
+    <section class="glass p-5 md:p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <div class="text-2xl font-bold text-brand-400" id="statTotalUsers">—</div>
+          <div class="text-sm text-slate-400">Total Users</div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <div class="text-2xl font-bold text-emerald-300" id="statTotalPoints">—</div>
+          <div class="text-sm text-slate-400">Total Bid Points</div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <div class="text-2xl font-bold text-accent-300" id="statPageInfo">—</div>
+          <div class="text-sm text-slate-400">Page</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="glass p-5 md:p-6">
+      <form id="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="q">Search</label>
+          <input id="q" type="text" placeholder="email / username / full name"
+                 class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/30" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="role">Role</label>
+          <select id="role"
+                  class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+            <option value="">All</option>
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="verified">Verified</label>
+            <select id="verified"
+                    class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="">All</option>
+              <option value="1">Verified</option>
+              <option value="0">Unverified</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="blocked">Blocked</label>
+            <select id="blocked"
+                    class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="">All</option>
+              <option value="1">Blocked</option>
+              <option value="0">Not blocked</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="from">From</label>
+            <input id="from" type="date"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="to">To</label>
+            <input id="to" type="date"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+        </div>
+
+        <div class="md:col-span-4 flex flex-wrap items-center gap-3 justify-between pt-2">
+          <div class="flex items-center gap-3">
+            <button class="rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950"
+                    type="submit">Apply</button>
+            <button id="clearBtn" type="button"
+                    class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-slate-100 hover:bg-white/10">Clear</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="limit" class="text-sm text-slate-300">Per page</label>
+            <select id="limit"
+                    class="rounded-xl bg-white/5 border border-white/10 px-2 py-1 outline-none">
+              <option>10</option>
+              <option selected>50</option>
+              <option>100</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Table -->
+    <section class="glass p-5 md:p-6">
+      <div class="table-wrap">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-300">
+            <tr class="border-b border-white/10">
+              <th class="text-left py-2 px-2">ID</th>
+              <th class="text-left py-2 px-2">Email</th>
+              <th class="text-left py-2 px-2">Username</th>
+              <th class="text-left py-2 px-2">Name</th>
+              <th class="text-left py-2 px-2">Role</th>
+              <th class="text-left py-2 px-2">Verified</th>
+              <th class="text-left py-2 px-2">Blocked</th>
+              <th class="text-left py-2 px-2">Bid Points</th>
+              <th class="text-left py-2 px-2">Created</th>
+              <th class="text-left py-2 px-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="divide-y divide-white/10"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-4 flex items-center justify-between">
+        <div id="resultInfo" class="text-sm text-slate-400">—</div>
+        <div class="flex items-center gap-2">
+          <button id="prevBtn"
+                  class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">Prev</button>
+          <span id="pageLabel" class="text-sm text-slate-300">—</span>
+          <button id="nextBtn"
+                  class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="errBox" class="hidden mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+      <div id="okBox"  class="hidden mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200"></div>
+    </section>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="modal" class="fixed inset-0 hidden place-items-center modal-backdrop">
+    <div class="w-full max-w-2xl glass p-6 md:p-7">
+      <div class="flex items-start justify-between">
+        <h3 class="text-lg font-semibold">Edit User <span id="mUserId" class="text-slate-400"></span></h3>
+        <button id="mClose" class="rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 hover:bg-white/10">✕</button>
+      </div>
+
+      <form id="mForm" class="mt-5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mEmail">Email</label>
+            <input id="mEmail" type="email"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mUsername">Username</label>
+            <input id="mUsername" type="text"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5" for="mFullName">Full name</label>
+          <input id="mFullName" type="text"
+                 class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mRole">Role</label>
+            <select id="mRole"
+                    class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5">Verified</label>
+            <select id="mVerified"
+                    class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5">Blocked</label>
+            <select id="mBlocked"
+                    class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mBidPoints">Bid points</label>
+            <input id="mBidPoints" type="number" min="0"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mWallet">Wallet address</label>
+            <input id="mWallet" type="text"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mGameId">Game ID</label>
+            <input id="mGameId" type="text"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1.5" for="mRef">Referral code</label>
+            <input id="mRef" type="text"
+                   class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button id="mSave" type="submit"
+                  class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg id="mSpinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="4"></circle>
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="4"></path>
+            </svg>
+            <span>Save</span>
+          </button>
+          <button id="mCancel" type="button"
+                  class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-slate-100 hover:bg-white/10">Cancel</button>
+        </div>
+
+        <div id="mErr" class="hidden mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+        <div id="mOk"  class="hidden mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const API_BASE = "https://api.copup.copupbid.com/api/admin";
+    const LOGIN_URL = "../auth/login.html";
+    const DASHBOARD_URL = "./admin-dashboard.html";
+
+    // ===== STATE =====
+    let page = 1;
+    let limit = 50;
+    let total = 0;
+    let users = [];
+    let filters = { q: "", role: "", verified: "", blocked: "", from: "", to: "" };
+
+    // Modal state
+    let mInitial = null; // snapshot for diff
+    let mUserIdVal = null;
+
+    // ===== UTILS =====
+    const $ = (id) => document.getElementById(id);
+    const show = (el) => el.classList.remove("hidden");
+    const hide = (el) => el.classList.add("hidden");
+    const setErr = (msg) => { $("errBox").textContent = msg; show($("errBox")); hide($("okBox")); };
+    const setOk  = (msg) => { $("okBox").textContent  = msg; show($("okBox")); hide($("errBox")); };
+    const clearMsgs = () => { hide($("okBox")); hide($("errBox")); };
+
+    const setModalErr = (msg) => { $("mErr").textContent = msg; show($("mErr")); hide($("mOk")); };
+    const setModalOk  = (msg) => { $("mOk").textContent  = msg; show($("mOk")); hide($("mErr")); };
+    const clearModalMsgs = () => { hide($("mErr")); hide($("mOk")); };
+
+    function ensureAuth() {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        window.location.href = LOGIN_URL;
+        return null;
+      }
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token.replace(/^"(.+)"$/, "$1");
+      axios.defaults.headers.common["Content-Type"] = "application/json";
+      return token;
+    }
+
+    axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem("authToken");
+          window.location.href = LOGIN_URL;
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    function fmtNum(n) { return Number(n || 0).toLocaleString(); }
+
+    function buildQuery() {
+      const params = new URLSearchParams();
+      if (filters.q) params.set("q", filters.q);
+      if (filters.role) params.set("role", filters.role);
+      if (filters.verified !== "") params.set("verified", filters.verified);
+      if (filters.blocked !== "") params.set("blocked", filters.blocked);
+      if (filters.from) params.set("from", filters.from);
+      if (filters.to) params.set("to", filters.to);
+      params.set("page", page);
+      params.set("limit", limit);
+      return params.toString();
+    }
+
+    function renderTable() {
+      const tbody = $("tbody");
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="10" class="px-2 py-4 text-center text-slate-400">No users found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td class="py-2 px-2">${u.id}</td>
+          <td class="py-2 px-2">${u.email ?? ""}</td>
+          <td class="py-2 px-2">${u.username ?? ""}</td>
+          <td class="py-2 px-2">${u.full_name ?? ""}</td>
+          <td class="py-2 px-2"><span class="badge ${u.role === 'admin' ? 'text-amber-300' : 'text-slate-200'}">${u.role}</span></td>
+          <td class="py-2 px-2">${u.is_verified ? '<span class="badge text-emerald-300">yes</span>' : '<span class="badge text-slate-300">no</span>'}</td>
+          <td class="py-2 px-2">${u.is_blocked ? '<span class="badge text-rose-300">yes</span>' : '<span class="badge text-slate-300">no</span>'}</td>
+          <td class="py-2 px-2 text-slate-200">${fmtNum(u.bid_points ?? 0)}</td>
+          <td class="py-2 px-2 text-slate-300">${u.created_at_fmt ?? ""}</td>
+          <td class="py-2 px-2 flex flex-wrap gap-2">
+            <button class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+                    data-edit="${u.id}">Edit</button>
+            <button class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/20"
+                    data-delete="${u.id}">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+
+      // bind edit buttons
+      [...tbody.querySelectorAll("[data-edit]")].forEach(btn => {
+        btn.addEventListener("click", () => openEditModal(Number(btn.dataset.edit)));
+      });
+
+      // bind delete buttons
+      [...tbody.querySelectorAll("[data-delete]")].forEach(btn => {
+        btn.addEventListener("click", () => onDeleteUser(Number(btn.dataset.delete)));
+      });
+    }
+
+    function updatePagingUI() {
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      $("pageLabel").textContent = `Page ${page} of ${totalPages}`;
+      $("prevBtn").disabled = page <= 1;
+      $("nextBtn").disabled = page >= totalPages;
+
+      $("resultInfo").textContent = `${fmtNum(total)} result(s) • showing up to ${limit} per page`;
+      $("statPageInfo").textContent = `${page} / ${totalPages}`;
+    }
+
+    async function loadStats() {
+      try {
+        const { data } = await axios.get("/users-copupcoin", { params: { ts: Date.now() } });
+        $("statTotalUsers").textContent = fmtNum(data?.totalUsers ?? 0);
+        $("statTotalPoints").textContent = fmtNum(data?.totalBidPoints ?? 0);
+      } catch (err) {
+        $("statTotalUsers").textContent = "—";
+        $("statTotalPoints").textContent = "—";
+      }
+    }
+
+    async function loadUsers() {
+      clearMsgs();
+      try {
+        const qs = buildQuery();
+        const { data } = await axios.get(`/users?${qs}`);
+        users = data?.data ?? [];
+        page = data?.page ?? page;
+        limit = data?.limit ?? limit;
+        total = data?.total ?? 0;
+
+        renderTable();
+        updatePagingUI();
+      } catch (err) {
+        console.error("loadUsers error:", err);
+        setErr(err?.response?.data?.message || "Error fetching users");
+      }
+    }
+
+    // ===== DELETE USER =====
+    async function onDeleteUser(id) {
+      const user = users.find(u => u.id === id);
+      const label = user
+        ? `User #${id}${user.email ? ' (' + user.email + ')' : ''}`
+        : `User #${id}`;
+
+      if (!confirm(`Are you sure you want to DELETE ${label}? This cannot be undone.`)) {
+        return;
+      }
+
+      clearMsgs();
+      try {
+        const { data } = await axios.delete(`/users/${id}`);
+        setOk(data?.message || "User deleted.");
+        await loadStats();
+        await loadUsers();
+      } catch (err) {
+        console.error("delete user error:", err);
+        setErr(err?.response?.data?.message || "Error deleting user");
+      }
+    }
+
+    // ===== EDIT MODAL =====
+    function openModal() { $("modal").classList.remove("hidden"); }
+    function closeModal() { $("modal").classList.add("hidden"); }
+
+    function fillModal(u) {
+      $("mUserId").textContent = `#${u.id}`;
+      $("mEmail").value = u.email ?? "";
+      $("mUsername").value = u.username ?? "";
+      $("mFullName").value = u.full_name ?? "";
+      $("mRole").value = u.role ?? "user";
+      $("mVerified").value = String(u.is_verified ?? 0);
+      $("mBlocked").value = String(u.is_blocked ?? 0);
+      $("mWallet").value = u.wallet_address ?? "";
+      $("mGameId").value = u.game_id ?? "";
+      $("mRef").value = u.referral_code ?? "";
+      $("mBidPoints").value = u.bid_points != null ? String(u.bid_points) : "0";
+
+      // snapshot
+      mInitial = {
+        email: $("mEmail").value.trim().toLowerCase(),
+        username: $("mUsername").value.trim(),
+        full_name: $("mFullName").value.trim(),
+        role: $("mRole").value,
+        is_verified: Number($("mVerified").value),
+        is_blocked: Number($("mBlocked").value),
+        wallet_address: $("mWallet").value.trim(),
+        game_id: $("mGameId").value.trim(),
+        referral_code: $("mRef").value.trim(),
+        bid_points: Number($("mBidPoints").value || 0)
+      };
+    }
+
+    function diffModalPayload() {
+      const body = {};
+      const email = $("mEmail").value.trim().toLowerCase();
+      const username = $("mUsername").value.trim();
+      const full_name = $("mFullName").value.trim();
+      const role = $("mRole").value;
+      const is_verified = Number($("mVerified").value);
+      const is_blocked = Number($("mBlocked").value);
+      const wallet_address = $("mWallet").value.trim();
+      const game_id = $("mGameId").value.trim();
+      const referral_code = $("mRef").value.trim();
+      const bid_points = Number($("mBidPoints").value || 0);
+
+      if (email !== mInitial.email) body.email = email;
+      if (username !== mInitial.username) body.username = username;
+      if (full_name !== mInitial.full_name) body.full_name = full_name;
+      if (role !== mInitial.role) body.role = role;
+      if (is_verified !== mInitial.is_verified) body.is_verified = is_verified;
+      if (is_blocked !== mInitial.is_blocked) body.is_blocked = is_blocked;
+      if (wallet_address !== mInitial.wallet_address) body.wallet_address = wallet_address || null;
+      if (game_id !== mInitial.game_id) body.game_id = game_id || null;
+      if (referral_code !== mInitial.referral_code) body.referral_code = referral_code || null;
+      if (bid_points !== mInitial.bid_points) body.bid_points = bid_points;
+
+      return body;
+    }
+
+    function startModalSaving() { $("mSave").disabled = true; $("mSpinner").classList.remove("hidden"); }
+    function stopModalSaving()  { $("mSave").disabled = false; $("mSpinner").classList.add("hidden"); }
+
+    async function openEditModal(id) {
+      clearModalMsgs();
+      try {
+        const { data } = await axios.get(`/users/${id}`, { params: { ts: Date.now() } });
+        mUserIdVal = id;
+        fillModal(data);
+        openModal();
+      } catch (err) {
+        setErr(err?.response?.data?.message || "Error loading user");
+      }
+    }
+
+    function validateEmail(e) { return !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+    function validateUsername(u){ return !u || /^[a-zA-Z0-9._-]{3,20}$/.test(u); }
+
+    async function onModalSave(e) {
+      e.preventDefault();
+      clearModalMsgs();
+
+      const body = diffModalPayload();
+      if (!Object.keys(body).length) {
+        setModalOk("No changes.");
+        return;
+      }
+      if (body.email && !validateEmail(body.email)) {
+        setModalErr("Invalid email format.");
+        return;
+      }
+      if (body.username && !validateUsername(body.username)) {
+        setModalErr("Invalid username. Use 3–20 letters, numbers, dot, underscore or hyphen.");
+        return;
+      }
+      if (body.full_name !== undefined && (!body.full_name || body.full_name.length > 80)) {
+        setModalErr("Full name is required and must be ≤ 80 chars.");
+        return;
+      }
+      if (body.bid_points !== undefined) {
+        const bp = Number(body.bid_points);
+        if (!Number.isFinite(bp) || !Number.isInteger(bp) || bp < 0) {
+          setModalErr("Bid points must be a non-negative integer.");
+          return;
+        }
+      }
+
+      try {
+        startModalSaving();
+        const { data } = await axios.patch(`/users/${mUserIdVal}`, body);
+        setModalOk(data?.message || "User updated.");
+
+        // refresh list row + stats (bid_points might change totals)
+        await loadStats();
+        await loadUsers();
+
+        // refresh modal snapshot
+        const { data: fresh } = await axios.get(`/users/${mUserIdVal}`, { params: { ts: Date.now() } });
+        fillModal(fresh);
+      } catch (err) {
+        console.error("update user error:", err);
+        setModalErr(err?.response?.data?.message || "Error updating user");
+      } finally {
+        stopModalSaving();
+      }
+    }
+
+    // ===== EVENTS =====
+    function onApply(e) {
+      e.preventDefault();
+      page = 1;
+      filters.q = $("q").value.trim();
+      filters.role = $("role").value;
+      filters.verified = $("verified").value;
+      filters.blocked = $("blocked").value;
+      filters.from = $("from").value;
+      filters.to = $("to").value;
+      limit = Number($("limit").value) || 50;
+      loadUsers();
+    }
+
+    function onClear() {
+      $("q").value = "";
+      $("role").value = "";
+      $("verified").value = "";
+      $("blocked").value = "";
+      $("from").value = "";
+      $("to").value = "";
+      $("limit").value = "50";
+      page = 1; limit = 50;
+      filters = { q: "", role: "", verified: "", blocked: "", from: "", to: "" };
+      loadUsers();
+    }
+
+    function goPrev(){ if (page > 1) { page--; loadUsers(); } }
+    function goNext(){
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      if (page < totalPages) { page++; loadUsers(); }
+    }
+
+    function logout() { localStorage.removeItem("authToken"); window.location.href = LOGIN_URL; }
+    function goDashboard() { window.location.href = DASHBOARD_URL; }
+
+    // ===== INIT =====
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!ensureAuth()) return;
+
+      // Bind filter controls
+      $("filterForm").addEventListener("submit", onApply);
+      $("clearBtn").addEventListener("click", onClear);
+      $("prevBtn").addEventListener("click", goPrev);
+      $("nextBtn").addEventListener("click", goNext);
+      $("logoutBtn").addEventListener("click", logout);
+      $("backBtn").addEventListener("click", goDashboard);
+
+      // Modal events
+      $("mForm").addEventListener("submit", onModalSave);
+      $("mCancel").addEventListener("click", closeModal);
+      $("mClose").addEventListener("click", closeModal);
+      $("modal").addEventListener("click", (e) => {
+        if (e.target.id === "modal") closeModal();
+      });
+
+      // First load
+      await loadStats();
+      await loadUsers();
+    });
+  </script>
+</body>
+</html>

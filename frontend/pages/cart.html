@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choose Your Path - Cart Selection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    .medieval-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    }
+    .glass {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .cart-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+    }
+    .cart-card:hover {
+      border-color: rgba(16, 185, 129, 0.6);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+    }
+    .medieval-button {
+      background: linear-gradient(145deg, #10b981, #059669);
+      border: 2px solid rgba(16, 185, 129, 0.5);
+      transition: all 0.3s ease;
+    }
+    .medieval-button:hover {
+      background: linear-gradient(145deg, #059669, #047857);
+      border-color: rgba(16, 185, 129, 0.8);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+    .auction-theme {
+      background: linear-gradient(145deg, rgba(168, 85, 247, 0.1), rgba(139, 69, 19, 0.1));
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+    .auction-theme:hover {
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 20px 40px rgba(168, 85, 247, 0.2);
+    }
+    .heist-theme {
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(6, 78, 59, 0.1));
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .heist-theme:hover {
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+    }
+    /* New theme for Shopping Cart */
+    .shop-theme {
+      background: linear-gradient(145deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+    .shop-theme:hover {
+      border-color: rgba(34, 197, 94, 0.6);
+      box-shadow: 0 20px 40px rgba(34, 197, 94, 0.2);
+    }
+    .divider {
+      background: linear-gradient(to bottom, transparent, rgba(16, 185, 129, 0.5), transparent);
+    }
+  </style>
+</head>
+<body class="medieval-bg min-h-screen text-white font-['Crimson_Text']">
+  <!-- Header -->
+  <header class="glass border-b border-emerald-500/20 p-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <button onclick="goBack()" class="medieval-button text-white px-4 py-2 rounded-lg font-semibold hover:scale-105 transition-transform">
+        ← Back
+      </button>
+      <h1 class="text-2xl md:text-3xl font-['Cinzel'] font-bold text-center flex-1">
+        ⚔️ Choose Your Path ⚔️
+      </h1>
+      <div class="w-20"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto p-4 md:p-8">
+    <!-- Title Section -->
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-['Cinzel'] font-bold mb-4 bg-gradient-to-r from-emerald-400 to-purple-400 bg-clip-text text-transparent">
+        Select Your Adventure
+      </h2>
+      <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+        Two paths await, brave adventurer. Choose wisely between the thrill of the auction house or the mystery of ancient heists.
+      </p>
+    </div>
+
+    <!-- Selection Grid (now 3 columns on desktop) -->
+    <div class="grid md:grid-cols-3 gap-8 md:gap-12 items-stretch">
+      <!-- Auction Cart -->
+      <div class="cart-card auction-theme rounded-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10"><div class="text-8xl">🏛️</div></div>
+        <div class="relative z-10">
+          <div class="text-6xl mb-6">🏺</div>
+          <h3 class="text-3xl font-['Cinzel'] font-bold mb-4 text-purple-300">Auction House</h3>
+          <p class="text-gray-300 mb-6 leading-relaxed">
+            Enter the grand auction hall where rare artifacts and legendary treasures await the highest bidder.
+            Compete with fellow collectors in thrilling bidding wars.
+          </p>
+          <div class="space-y-2 mb-8 text-sm text-gray-400">
+            <div class="flex items-center justify-center gap-2"><span class="text-purple-400">⭐</span><span>Live Bidding System</span></div>
+            <div class="flex items-center justify-center gap-2"><span class="text-purple-400">💎</span><span>Rare Artifacts</span></div>
+            <div class="flex items-center justify-center gap-2"><span class="text-purple-400">🏆</span><span>Competitive Bidding</span></div>
+          </div>
+          <button onclick="goToAuctionCart()" class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-xl border-2 border-purple-500/50 hover:border-purple-400 transition-all duration-300 hover:scale-105">
+            Enter Auction House →
+          </button>
+        </div>
+      </div>
+
+      <!-- Heist Cart -->
+      <div class="cart-card heist-theme rounded-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10"><div class="text-8xl">⚔️</div></div>
+        <div class="relative z-10">
+          <div class="text-6xl mb-6">🗝️</div>
+          <h3 class="text-3xl font-['Cinzel'] font-bold mb-4 text-emerald-300">Heist Vault</h3>
+          <p class="text-gray-300 mb-6 leading-relaxed">
+            Embark on daring quests to unlock ancient vaults and solve mysterious riddles.
+            Join fellow adventurers in collaborative treasure hunts.
+          </p>
+          <div class="space-y-2 mb-8 text-sm text-gray-400">
+            <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">🧩</span><span>Mystery Riddles</span></div>
+            <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">👥</span><span>Team Adventures</span></div>
+            <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">💰</span><span>Hidden Treasures</span></div>
+          </div>
+          <button onclick="goToHeistCart()" class="w-full medieval-button text-white font-semibold py-4 px-6 rounded-xl hover:scale-105 transition-all duration-300">
+            Enter Heist Vault →
+          </button>
+        </div>
+      </div>
+
+      <!-- Shopping Cart (NEW) -->
+      <div class="cart-card shop-theme rounded-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10"><div class="text-8xl">🛒</div></div>
+        <div class="relative z-10">
+          <div class="text-6xl mb-6">🛍️</div>
+          <h3 class="text-3xl font-['Cinzel'] font-bold mb-4 text-emerald-300">Shopping Cart</h3>
+          <p class="text-gray-300 mb-6 leading-relaxed">
+            Review your chosen items, adjust quantities, apply coupons, and proceed to a secure checkout.
+            Your treasures await.
+          </p>
+          <div class="space-y-2 mb-8 text-sm text-gray-400">
+            <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">🧾</span><span>Item Summary</span></div>
+            <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">🎟️</span><span>Coupons & Discounts</span></div>
+            <div class="flex items-center justify-center gap-2"><span class="text-emerald-400">🔒</span><span>Secure Checkout</span></div>
+          </div>
+          <button onclick="goToShoppingCart()" class="w-full bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-semibold py-4 px-6 rounded-xl border-2 border-emerald-400/50 hover:border-emerald-300 transition-all duration-300 hover:scale-105">
+            Open Shopping Cart →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Info -->
+    <div class="text-center mt-12">
+      <div class="glass rounded-xl p-6 max-w-2xl mx-auto">
+        <p class="text-gray-300 text-sm">
+          💡 <strong>Tip:</strong> You can switch between paths at any time. Each adventure offers unique rewards and experiences.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function goBack() { window.history.back(); }
+    function goToAuctionCart() { window.location.href = 'auction-cart.html'; }
+    function goToHeistCart() { window.location.href = 'heist-cart.html'; }
+    function goToShoppingCart() { window.location.href = 'shopping-cart.html'; } // NEW
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.cart-card');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          // (optional) hover SFX hook
+        });
+      });
+    });
+  </script>
+</body>
+</html>

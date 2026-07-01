@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Admin • Auction Management</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' },
+            accent:{ 500: '#3b82f6' },
+            warn:  { 500: '#f59e0b' },
+            danger:{ 500: '#ef4444' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); border-radius: 1rem; backdrop-filter: blur(6px); }
+    .ring-soft { box-shadow: 0 0 0 6px rgba(16,185,129,.12); }
+    .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(2,6,23,.6); z-index: 50; }
+    .modal.open { display: flex; }
+    /* Added tab styling */
+    .tab-button.active { border-color: rgb(16 185 129) !important; color: rgb(52 211 153) !important; }
+    .tab-content.hidden { display: none !important; }
+  </style>
+</head>
+<body class="min-h-dvh bg-slate-900 text-slate-100">
+  <!-- BG -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(90%_70%_at_10%_-10%,rgba(34,211,238,.10),rgba(59,130,246,.10),rgba(0,0,0,0))]"></div>
+  </div>
+
+  <header class="sticky top-0 z-10 bg-slate-900/70 backdrop-blur border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="./admin-dashboard.html" class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10">
+          ← Dashboard
+        </a>
+        <h1 class="text-lg font-semibold tracking-tight">Auction <span class="text-brand-500">Management</span></h1>
+      </div>
+      <button id="logoutBtn" class="text-sm text-slate-300 hover:text-white">Log out</button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6 space-y-6">
+    <!-- Controls -->
+    <section class="glass p-4 md:p-6">
+      <div class="flex border-b border-white/10 mb-6">
+        <button id="auctionsTab" class="tab-button active px-4 py-2 font-semibold border-b-2 border-brand-500 text-brand-400">
+          Auctions
+        </button>
+        <button id="ordersTab" class="tab-button px-4 py-2 font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          Orders
+        </button>
+      </div>
+
+      <!-- Auctions Controls -->
+      <div id="auctionControls" class="tab-content">
+        <div class="flex flex-col md:flex-row md:items-end gap-3">
+          <div class="flex-1">
+            <label class="block text-sm text-slate-300 mb-1" for="q">Search</label>
+            <input id="q" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-accent-500/40 focus:ring-2 focus:ring-accent-500/30" placeholder="name or description…" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="cat">Category</label>
+            <select id="cat" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="">Any</option>
+              <option value="cash">Cash</option>
+              <option value="product">Product</option>
+              <option value="coupon">Coupon</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="st">Status</label>
+            <select id="st" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="">Any</option>
+              <option value="pending">Pending</option>
+              <option value="hold">Hold</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="limit">Page size</label>
+            <select id="limit" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option>10</option><option>20</option><option selected>50</option><option>100</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button id="filterBtn" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Apply</button>
+            <button id="resetBtn" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Reset</button>
+            <button id="newBtn" class="rounded-xl border border-brand-500/20 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950">+ New</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Controls -->
+      <div id="orderControls" class="tab-content hidden">
+        <div class="flex flex-col md:flex-row md:items-end gap-3">
+          <div class="flex-1">
+            <label class="block text-sm text-slate-300 mb-1" for="orderQ">Search</label>
+            <input id="orderQ" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none focus:border-accent-500/40 focus:ring-2 focus:ring-accent-500/30" placeholder="order ID, email, or username…" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="orderStatus">Status</label>
+            <select id="orderStatus" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="">Any</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="in_transit">In Transit</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="orderLimit">Page size</label>
+            <select id="orderLimit" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option>10</option><option>20</option><option selected>50</option><option>100</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button id="orderFilterBtn" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Apply</button>
+            <button id="orderResetBtn" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Auctions Table -->
+    <section id="auctionsTable" class="tab-content glass p-0">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-white/5 border-b border-white/10">
+            <tr class="text-left">
+              <th class="px-4 py-3">ID</th>
+              <th class="px-4 py-3">Image</th>
+              <th class="px-4 py-3">Name</th>
+              <th class="px-4 py-3">Category</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Entry</th>
+              <th class="px-4 py-3">Min Users</th>
+              <th class="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between gap-3 p-4 border-t border-white/10">
+        <div id="pagerInfo" class="text-sm text-slate-300">—</div>
+        <div class="flex items-center gap-2">
+          <button id="prevBtn" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10">Prev</button>
+          <button id="nextBtn" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders Table -->
+    <section id="ordersTable" class="tab-content hidden glass p-0">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-white/5 border-b border-white/10">
+            <tr class="text-left">
+              <th class="px-4 py-3">Order ID</th>
+              <th class="px-4 py-3">User</th>
+              <th class="px-4 py-3">Items</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Tracking</th>
+              <th class="px-4 py-3">Created</th>
+              <th class="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orderRows"></tbody>
+        </table>
+      </div>
+
+      <!-- Orders Pagination -->
+      <div class="flex items-center justify-between gap-3 p-4 border-t border-white/10">
+        <div id="orderPagerInfo" class="text-sm text-slate-300">—</div>
+        <div class="flex items-center gap-2">
+          <button id="orderPrevBtn" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10">Prev</button>
+          <button id="orderNextBtn" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Messages -->
+    <div id="okBox"  class="hidden rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-200"></div>
+    <div id="errBox" class="hidden rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div id="auctionModal" class="modal">
+    <div class="glass w-full max-w-2xl p-6 md:p-8">
+      <div class="flex items-start justify-between">
+        <h3 id="modalTitle" class="text-xl font-bold">New Auction</h3>
+        <button id="closeModal" class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 hover:bg-white/10">✕</button>
+      </div>
+
+      <form id="auctionForm" class="mt-6 space-y-4">
+        <input type="hidden" id="auctionId" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="name">Name *</label>
+            <input id="name" required class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="category">Category *</label>
+            <select id="category" required class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+              <option value="cash">Cash</option>
+              <option value="product">Product</option>
+              <option value="coupon">Coupon</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-300 mb-1" for="description">Description</label>
+          <textarea id="description" rows="3" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="entry">Entry Bid Points *</label>
+            <input id="entry" type="number" min="0" required class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="minUsers">Minimum Users *</label>
+            <input id="minUsers" type="number" min="1" required class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1" for="image">Image</label>
+            <input id="image" type="file" accept="image/*" class="w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-slate-100 hover:file:bg-white/20" />
+            <p class="text-xs text-slate-400 mt-1">Optional. JPG/PNG/WebP recommended.</p>
+          </div>
+          <div class="justify-self-end">
+            <img id="preview" src="/placeholder.svg" alt="" class="hidden w-24 h-24 object-cover rounded-lg border border-white/10" />
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center gap-3">
+          <button id="saveBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950 transition">
+            <svg id="saveSpin" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="4"></circle>
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="4"></path>
+            </svg>
+            <span>Save</span>
+          </button>
+          <button type="button" id="cancelBtn" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Order Update Modal -->
+  <div id="orderModal" class="modal">
+    <div class="glass w-full max-w-lg p-6 md:p-8">
+      <div class="flex items-start justify-between">
+        <h3 id="orderModalTitle" class="text-xl font-bold">Update Order</h3>
+        <button id="closeOrderModal" class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 hover:bg-white/10">✕</button>
+      </div>
+
+      <form id="orderForm" class="mt-6 space-y-4">
+        <input type="hidden" id="updateOrderId" />
+        
+        <div>
+          <label class="block text-sm text-slate-300 mb-1" for="orderStatusUpdate">Status</label>
+          <select id="orderStatusUpdate" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none">
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="in_transit">In Transit</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-300 mb-1" for="trackingNumber">Tracking Number</label>
+          <input id="trackingNumber" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 outline-none" placeholder="Enter tracking number..." />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="notifyUser" checked class="rounded border-white/10 bg-white/5" />
+          <label for="notifyUser" class="text-sm text-slate-300">Send email notification to user</label>
+        </div>
+
+        <div class="pt-2 flex items-center gap-3">
+          <button id="updateOrderBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-brand-500/90 hover:bg-brand-600 px-4 py-2 font-semibold text-slate-950 transition">
+            <svg id="updateOrderSpin" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="4"></circle>
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="4"></path>
+            </svg>
+            <span>Update Order</span>
+          </button>
+          <button type="button" id="cancelOrderBtn" class="rounded-xl border border-white/10 bg-white/5 px-4 py-2">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ========= CONFIG =========
+    const API_BASE  = "https://api.copup.copupbid.com/api/admin";
+    const LOGIN_URL = "../auth/login.html";
+
+    // ========= STATE =========
+    let page = 1, limit = 50, total = 0;
+    let curQuery = { q: "", category: "", status: "" };
+    let editingId = null;
+
+    let orderPage = 1, orderLimit = 50, orderTotal = 0;
+    let orderQuery = { q: "", status: "" };
+    let currentTab = 'auctions';
+    let updatingOrderId = null;
+
+    // ========= UTILS =========
+    const $ = (id) => document.getElementById(id);
+    const show = (el) => el.classList.remove("hidden");
+    const hide = (el) => el.classList.add("hidden");
+    const toastOk  = (m) => { $("okBox").textContent  = m; show($("okBox")); hide($("errBox")); };
+    const toastErr = (m) => { $("errBox").textContent = m; show($("errBox")); hide($("okBox")); };
+
+    function ensureAuth() {
+      const token = localStorage.getItem("authToken");
+      if (!token) { window.location.href = LOGIN_URL; return null; }
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token.replace(/^"(.+)"$/, "$1");
+      return token;
+    }
+    axios.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        const s = err?.response?.status;
+        if (s === 401 || s === 403) {
+          localStorage.removeItem("authToken");
+          window.location.href = LOGIN_URL;
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    function imgTag(url) {
+      if (!url) return `<div class="w-12 h-12 rounded bg-white/5 border border-white/10"></div>`;
+      return `<img src="${url}" class="w-12 h-12 object-cover rounded border border-white/10" alt="">`;
+    }
+    function statusBadge(st) {
+      const map = { pending: "bg-slate-700/60", hold: "bg-amber-500/20 text-amber-200", active: "bg-emerald-500/20 text-emerald-200", completed: "bg-blue-500/20 text-blue-200", cancelled: "bg-red-500/20 text-red-200" };
+      return `<span class="px-2 py-0.5 rounded-lg text-xs ${map[st] || 'bg-white/10'}">${st}</span>`;
+    }
+
+    function startSaving(btnId="saveBtn", spinId="saveSpin") { $(btnId).disabled = true; $(spinId).classList.remove("hidden"); }
+    function stopSaving(btnId="saveBtn", spinId="saveSpin")  { $(btnId).disabled = false; $(spinId).classList.add("hidden"); }
+
+    // ========= LIST / FETCH =========
+    async function loadAuctions() {
+      try {
+        const params = {
+          q: curQuery.q || undefined,
+          category: curQuery.category || undefined,
+          status: curQuery.status || undefined,
+          page, limit
+        };
+        const { data } = await axios.get("/auctions", { params });
+        total = data.total || 0;
+        renderRows(data.data || []);
+        renderPager();
+      } catch (err) {
+        console.error("loadAuctions", err);
+        toastErr(err?.response?.data?.message || "Error fetching auctions");
+      }
+    }
+    function renderRows(rows) {
+      const tbody = $("rows");
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-slate-400">No auctions found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr class="border-b border-white/10">
+          <td class="px-4 py-3 align-top">${r.id}</td>
+          <td class="px-4 py-3 align-top">${imgTag(r.image_url)}</td>
+          <td class="px-4 py-3 align-top">
+            <div class="font-semibold">${r.name}</div>
+            <div class="text-xs text-slate-400 line-clamp-2 max-w-[420px]">${(r.description||"")}</div>
+          </td>
+          <td class="px-4 py-3 align-top">${r.category}</td>
+          <td class="px-4 py-3 align-top">${statusBadge(r.status)}</td>
+          <td class="px-4 py-3 align-top">${r.entry_bid_points}</td>
+          <td class="px-4 py-3 align-top">${r.minimum_users}</td>
+          <td class="px-4 py-3 align-top">
+            <div class="flex flex-wrap gap-2">
+              <button class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10" onclick="onView(${r.id})">View</button>
+              <button class="rounded-lg border border-accent-500/30 bg-accent-500/20 px-2 py-1 text-xs hover:bg-accent-500/30" onclick="onEdit(${r.id})">Edit</button>
+              <button class="rounded-lg border border-warn-500/30 bg-warn-500/20 px-2 py-1 text-xs hover:bg-warn-500/30" onclick="onStart(${r.id})">Start</button>
+              <button class="rounded-lg border border-danger-500/30 bg-danger-500/20 px-2 py-1 text-xs hover:bg-danger-500/30" onclick="onDelete(${r.id})">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+    function renderPager() {
+      const from = (page-1)*limit + 1;
+      const to   = Math.min(page*limit, total);
+      $("pagerInfo").textContent = total ? `Showing ${from}-${to} of ${total}` : `No results`;
+      $("prevBtn").disabled = page <= 1;
+      $("nextBtn").disabled = page * limit >= total;
+    }
+
+    async function loadOrders() {
+      try {
+        const params = {
+          q: orderQuery.q || undefined,
+          status: orderQuery.status || undefined,
+          page: orderPage,
+          limit: orderLimit
+        };
+        const { data } = await axios.get("/auction/orders", { params });
+        orderTotal = data.total || 0;
+        renderOrderRows(data.data || []);
+        renderOrderPager();
+      } catch (err) {
+        console.error("loadOrders", err);
+        toastErr(err?.response?.data?.message || "Error fetching orders");
+      }
+    }
+
+    function renderOrderRows(rows) {
+      const tbody = $("orderRows");
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No orders found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr class="border-b border-white/10">
+          <td class="px-4 py-3 align-top font-mono">#${r.orderId}</td>
+          <td class="px-4 py-3 align-top">
+            <div class="font-semibold">${r.username || 'N/A'}</div>
+            <div class="text-xs text-slate-400">${r.email}</div>
+          </td>
+          <td class="px-4 py-3 align-top">
+            <div class="text-xs text-slate-400">${r.items.length} item(s)</div>
+            ${r.items.slice(0,2).map(item => `<div class="text-xs">${item.name}</div>`).join('')}
+            ${r.items.length > 2 ? `<div class="text-xs text-slate-500">+${r.items.length - 2} more</div>` : ''}
+          </td>
+          <td class="px-4 py-3 align-top">${orderStatusBadge(r.status)}</td>
+          <td class="px-4 py-3 align-top">
+            <div class="text-xs font-mono">${r.trackingNumber || 'N/A'}</div>
+          </td>
+          <td class="px-4 py-3 align-top">
+            <div class="text-xs">${new Date(r.createdAt).toLocaleDateString()}</div>
+          </td>
+          <td class="px-4 py-3 align-top">
+            <div class="flex flex-wrap gap-2">
+              <button class="rounded-lg border border-accent-500/30 bg-accent-500/20 px-2 py-1 text-xs hover:bg-accent-500/30" onclick="onUpdateOrder(${r.orderId})">Update</button>
+              <button class="rounded-lg border border-danger-500/30 bg-danger-500/20 px-2 py-1 text-xs hover:bg-danger-500/30" onclick="onDeleteOrder(${r.orderId})">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function renderOrderPager() {
+      const from = (orderPage-1)*orderLimit + 1;
+      const to   = Math.min(orderPage*orderLimit, orderTotal);
+      $("orderPagerInfo").textContent = orderTotal ? `Showing ${from}-${to} of ${orderTotal}` : `No results`;
+      $("orderPrevBtn").disabled = orderPage <= 1;
+      $("orderNextBtn").disabled = orderPage * orderLimit >= orderTotal;
+    }
+
+    function orderStatusBadge(st) {
+      const map = { 
+        pending: "bg-slate-700/60", 
+        processing: "bg-amber-500/20 text-amber-200", 
+        shipped: "bg-blue-500/20 text-blue-200", 
+        in_transit: "bg-purple-500/20 text-purple-200",
+        delivered: "bg-emerald-500/20 text-emerald-200", 
+        cancelled: "bg-red-500/20 text-red-200" 
+      };
+      return `<span class="px-2 py-0.5 rounded-lg text-xs ${map[st] || 'bg-white/10'}">${st.replace('_', ' ')}</span>`;
+    }
+
+    async function onUpdateOrder(orderId) {
+      updatingOrderId = orderId;
+      $("orderModalTitle").textContent = `Update Order #${orderId}`;
+      $("updateOrderId").value = orderId;
+      openOrderModal();
+    }
+
+    async function onDeleteOrder(orderId) {
+      if (!confirm(`Delete order #${orderId}? This cannot be undone.`)) return;
+      try {
+        const { data } = await axios.delete(`/auction/orders/${orderId}`);
+        toastOk(data?.message || "Order deleted");
+        await loadOrders();
+      } catch (err) {
+        console.error("delete order", err);
+        toastErr(err?.response?.data?.message || "Error deleting order");
+      }
+    }
+
+    async function updateOrder(e) {
+      e.preventDefault();
+      const orderId = $("updateOrderId").value;
+      const status = $("orderStatusUpdate").value;
+      const trackingNumber = $("trackingNumber").value.trim();
+      const notify = $("notifyUser").checked;
+
+      try {
+        startSaving("updateOrderBtn", "updateOrderSpin");
+        const payload = { status, notify };
+        if (trackingNumber) payload.trackingNumber = trackingNumber;
+        
+        const { data } = await axios.patch(`/auction/orders/${orderId}`, payload);
+        toastOk("Order updated successfully");
+        closeOrderModal();
+        await loadOrders();
+      } catch (err) {
+        console.error("update order", err);
+        toastErr(err?.response?.data?.message || "Error updating order");
+      } finally {
+        stopSaving("updateOrderBtn", "updateOrderSpin");
+      }
+    }
+
+    function openOrderModal(){ $("orderModal").classList.add("open"); }
+    function closeOrderModal(){ $("orderModal").classList.remove("open"); }
+
+    async function applyOrderFilters() {
+      orderQuery.q = $("orderQ").value.trim();
+      orderQuery.status = $("orderStatus").value;
+      orderLimit = Number($("orderLimit").value) || 50;
+      orderPage = 1;
+      await loadOrders();
+    }
+
+    function resetOrderFilters() {
+      $("orderQ").value = ""; $("orderStatus").value = ""; $("orderLimit").value = "50";
+      orderQuery = { q:"", status:"" }; orderPage = 1; orderLimit = 50;
+      loadOrders();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      // Update tab buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active', 'border-brand-500', 'text-brand-400');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      
+      // Update content visibility
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      if (tab === 'auctions') {
+        $("auctionsTab").classList.add('active', 'border-brand-500', 'text-brand-400');
+        $("auctionsTab").classList.remove('border-transparent', 'text-slate-400');
+        $("auctionControls").classList.remove('hidden');
+        $("auctionsTable").classList.remove('hidden');
+      } else if (tab === 'orders') {
+        $("ordersTab").classList.add('active', 'border-brand-500', 'text-brand-400');
+        $("ordersTab").classList.remove('border-transparent', 'text-slate-400');
+        $("orderControls").classList.remove('hidden');
+        $("ordersTable").classList.remove('hidden');
+        if (orderTotal === 0) loadOrders(); // Load orders if not loaded yet
+      }
+    }
+
+    // ========= VIEW / EDIT =========
+    async function onView(id) {
+      try {
+        const { data } = await axios.get(`/auctions/${id}`);
+        alert(
+          `#${data.id} ${data.name}\n` +
+          `Category: ${data.category}\nStatus: ${data.status}\n` +
+          `Entry: ${data.entry_bid_points}\nMin Users: ${data.minimum_users}\n\n` +
+          (data.description || "")
+        );
+      } catch (err) {
+        console.error("view", err);
+        toastErr(err?.response?.data?.message || "Error fetching auction");
+      }
+    }
+    async function onEdit(id) {
+      editingId = id;
+      $("modalTitle").textContent = "Edit Auction";
+      resetForm();
+      try {
+        const { data } = await axios.get(`/auctions/${id}`);
+        $("auctionId").value  = data.id;
+        $("name").value       = data.name || "";
+        $("description").value= data.description || "";
+        $("entry").value      = data.entry_bid_points ?? 0;
+        $("minUsers").value   = data.minimum_users ?? 1;
+        $("category").value   = data.category || "product";
+        if (data.image_url) {
+          $("preview").src = data.image_url; $("preview").classList.remove("hidden");
+        } else { $("preview").classList.add("hidden"); }
+        openModal();
+      } catch (err) {
+        console.error("edit", err);
+        toastErr(err?.response?.data?.message || "Error fetching auction");
+      }
+    }
+
+    // ========= CREATE =========
+    function onNew() {
+      editingId = null;
+      $("modalTitle").textContent = "New Auction";
+      resetForm();
+      openModal();
+    }
+
+    // ========= START =========
+    async function onStart(id) {
+      const force = confirm("Force start if minimum users not reached? Click OK = Force, Cancel = Normal.");
+      try {
+        const { data } = await axios.patch(`/auctions/${id}/start`, null, { params: { force } });
+        toastOk(data?.message || "Auction started");
+        await loadAuctions();
+      } catch (err) {
+        console.error("start", err);
+        toastErr(err?.response?.data?.message || "Error starting auction");
+      }
+    }
+
+    // ========= DELETE =========
+    async function onDelete(id) {
+      if (!confirm(`Delete auction #${id}? This cannot be undone.`)) return;
+      try {
+        const { data } = await axios.delete(`/auctions/${id}`);
+        toastOk(data?.message || "Auction deleted");
+        await loadAuctions();
+      } catch (err) {
+        console.error("delete", err);
+        toastErr(err?.response?.data?.message || "Error deleting auction");
+      }
+    }
+
+    // ========= MODAL / FORM =========
+    function openModal(){ $("auctionModal").classList.add("open"); }
+    function closeModal(){ $("auctionModal").classList.remove("open"); }
+    function resetForm(){
+      $("auctionForm").reset();
+      $("auctionId").value = "";
+      $("preview").classList.add("hidden");
+      $("image").value = "";
+    }
+    $("image").addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        $("preview").src = url;
+        $("preview").classList.remove("hidden");
+      } else {
+        $("preview").classList.add("hidden");
+      }
+    });
+
+    async function saveAuction(e) {
+      e.preventDefault();
+      const id = $("auctionId").value || null;
+
+      // Validate minimal fields
+      const name = $("name").value.trim();
+      const category = $("category").value;
+      const entry = Number($("entry").value);
+      const minUsers = Number($("minUsers").value);
+      if (!name || !category || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(minUsers) || minUsers < 1) {
+        toastErr("Please fill required fields correctly.");
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append("name", name);
+      fd.append("description", $("description").value || "");
+      fd.append("entry_bid_points", String(entry));
+      fd.append("minimum_users", String(minUsers));
+      fd.append("category", category);
+      if ($("image").files[0]) fd.append("image", $("image").files[0]);
+
+      try {
+        startSaving();
+        let resp;
+        if (id) resp = await axios.patch(`/auctions/${id}`, fd);
+        else    resp = await axios.post(`/auctions`, fd);
+        toastOk(resp?.data?.message || "Saved");
+        closeModal();
+        await loadAuctions();
+      } catch (err) {
+        console.error("save", err);
+        toastErr(err?.response?.data?.message || "Error saving auction");
+      } finally {
+        stopSaving();
+      }
+    }
+
+    // ========= FILTERS / PAGINATION =========
+    async function applyFilters() {
+      curQuery.q = $("q").value.trim();
+      curQuery.category = $("cat").value;
+      curQuery.status = $("st").value;
+      limit = Number($("limit").value) || 50;
+      page = 1;
+      await loadAuctions();
+    }
+    function resetFilters() {
+      $("q").value = ""; $("cat").value = ""; $("st").value = ""; $("limit").value = "50";
+      curQuery = { q:"", category:"", status:"" }; page = 1; limit = 50;
+      loadAuctions();
+    }
+    $("prevBtn").addEventListener("click", async () => { if (page > 1) { page--; await loadAuctions(); }});
+    $("nextBtn").addEventListener("click", async () => { if (page * limit < total) { page++; await loadAuctions(); }});
+
+    // ========= GLOBALS for inline handlers =========
+    window.onView = onView;
+    window.onEdit = onEdit;
+    window.onStart = onStart;
+    window.onDelete = onDelete;
+    window.onUpdateOrder = onUpdateOrder;
+    window.onDeleteOrder = onDeleteOrder;
+
+    // ========= LOGOUT =========
+    function logout(){ localStorage.removeItem("authToken"); window.location.href = LOGIN_URL; }
+
+    // ========= INIT =========
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!ensureAuth()) return;
+      $("filterBtn").addEventListener("click", applyFilters);
+      $("resetBtn").addEventListener("click", resetFilters);
+      $("newBtn").addEventListener("click", onNew);
+      $("auctionForm").addEventListener("submit", saveAuction);
+      $("cancelBtn").addEventListener("click", closeModal);
+      $("closeModal").addEventListener("click", closeModal);
+      $("logoutBtn").addEventListener("click", logout);
+      
+      $("auctionsTab").addEventListener("click", () => switchTab('auctions'));
+      $("ordersTab").addEventListener("click", () => switchTab('orders'));
+      $("orderFilterBtn").addEventListener("click", applyOrderFilters);
+      $("orderResetBtn").addEventListener("click", resetOrderFilters);
+      $("orderForm").addEventListener("submit", updateOrder);
+      $("cancelOrderBtn").addEventListener("click", closeOrderModal);
+      $("closeOrderModal").addEventListener("click", closeOrderModal);
+      $("orderPrevBtn").addEventListener("click", async () => { if (orderPage > 1) { orderPage--; await loadOrders(); }});
+      $("orderNextBtn").addEventListener("click", async () => { if (orderPage * orderLimit < orderTotal) { orderPage++; await loadOrders(); }});
+      
+      await loadAuctions();
+    });
+  </script>
+</body>
+</html>

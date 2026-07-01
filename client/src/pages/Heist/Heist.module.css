@@ -1,0 +1,570 @@
+.page{
+  min-height:100vh;
+  background:#070b14;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+
+.main{
+  padding: 96px 0 46px;
+}
+
+.container{
+  width:min(1100px, calc(100% - 32px));
+  margin:0 auto;
+}
+
+/* ===== Hero ===== */
+.hero{
+  position:relative;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,0.07);
+  background: rgba(26, 31, 46, 0.52);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.25);
+  padding:16px;
+  overflow:hidden;
+  margin-bottom:14px;
+}
+
+.heroGlow{
+  position:absolute;
+  inset:-80px;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(16,185,129,.22), transparent 55%),
+    radial-gradient(circle at 85% 70%, rgba(59,130,246,.18), transparent 55%),
+    radial-gradient(circle at 62% 14%, rgba(168,85,247,.14), transparent 55%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.heroTop{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.kicker{
+  font-size:12px;
+  font-weight:950;
+  letter-spacing:0.25px;
+  color: rgba(255,255,255,0.66);
+}
+
+.heroTitle{
+  margin-top:6px;
+  font-size:26px;
+  font-weight:950;
+  letter-spacing:-0.6px;
+  background: linear-gradient(90deg,#10b981,#3b82f6);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.heroSub{
+  margin-top:8px;
+  font-size:13px;
+  color: rgba(255,255,255,0.70);
+  line-height:1.45;
+  max-width: 64ch;
+}
+
+.stats{
+  position:relative;
+  z-index:1;
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:10px;
+}
+
+.statCard{
+  border-radius:18px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: rgba(10, 15, 28, 0.38);
+}
+
+.statLabel{
+  font-size:12px;
+  font-weight:900;
+  color: rgba(255,255,255,0.62);
+}
+
+.statVal{
+  margin-top:8px;
+  font-size:18px;
+  font-weight:950;
+}
+
+.statValSmall{
+  margin-top:8px;
+  font-size:13px;
+  font-weight:950;
+  color: rgba(255,255,255,0.88);
+}
+
+/* ===== Grid ===== */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:12px;
+}
+
+/* ===== Card ===== */
+.card{
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,0.07);
+  background: rgba(26, 31, 46, 0.50);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.22);
+  padding:14px;
+  overflow:hidden;
+}
+
+.cardLive{
+  border-color: rgba(16,185,129,0.20);
+  box-shadow: 0 18px 60px rgba(16,185,129,0.08);
+}
+
+.cardHold{
+  border-color: rgba(245,158,11,0.18);
+  box-shadow: 0 18px 60px rgba(245,158,11,0.06);
+}
+
+.cardTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.cardTitle{
+  font-size:14px;
+  font-weight:950;
+  letter-spacing:0.2px;
+}
+
+.cardMeta{
+  margin-top:6px;
+  font-size:12px;
+  color: rgba(255,255,255,0.62);
+}
+
+.badgePill{
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:0.25px;
+  border:1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
+}
+
+.badgeLive{ border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.12); }
+.badgeHold{ border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.12); }
+.badgePending{ border-color: rgba(59,130,246,0.22); background: rgba(59,130,246,0.10); }
+
+.prizeRow{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  align-items:stretch;
+  justify-content:space-between;
+}
+
+.prizeLeft{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  min-width: 0;
+}
+
+.prizeImg{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  object-fit:cover;
+  border:1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+}
+
+.prizeFallback{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+}
+
+.prizeLabel{
+  font-size:11.5px;
+  font-weight:900;
+  color: rgba(255,255,255,0.62);
+}
+
+.prizeName{
+  margin-top:4px;
+  font-size:12.8px;
+  font-weight:950;
+  color: rgba(255,255,255,0.92);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 220px;
+}
+
+.prizeVal{
+  margin-top:4px;
+  font-size:12px;
+  color: rgba(255,255,255,0.70);
+}
+
+.priceBox{
+  border-radius:18px;
+  padding:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: rgba(10, 15, 28, 0.38);
+  min-width: 128px;
+  text-align:right;
+}
+
+.priceLabel{
+  font-size:11.5px;
+  font-weight:900;
+  color: rgba(255,255,255,0.62);
+}
+
+.priceVal{
+  margin-top:6px;
+  font-size:13px;
+  font-weight:950;
+}
+
+.priceSub{
+  margin-top:4px;
+  font-size:11.5px;
+  color: rgba(255,255,255,0.62);
+}
+
+/* ===== Old progress (kept but not used anymore) ===== */
+.progressWrap{
+  margin-top:12px;
+  border-radius:18px;
+  padding:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: rgba(10, 15, 28, 0.34);
+}
+
+.progressTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.progressLabel{
+  font-size:11.5px;
+  font-weight:900;
+  color: rgba(255,255,255,0.62);
+}
+
+.progressVal{
+  font-size:11.5px;
+  font-weight:950;
+  color: rgba(255,255,255,0.88);
+}
+
+.progressBar{
+  margin-top:8px;
+  height:10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  overflow:hidden;
+}
+
+.progressFill{
+  height:100%;
+  border-radius:999px;
+  background: linear-gradient(90deg,#10b981,#3b82f6);
+}
+
+.progressHint{
+  margin-top:8px;
+  font-size:12px;
+  color: rgba(255,255,255,0.62);
+  line-height:1.35;
+}
+
+/* ===== NEW: Water Fill Effect (ANIMATED WAVE) ===== */
+.fillWrap{
+  margin-top:12px;
+  border-radius:18px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: rgba(10, 15, 28, 0.34);
+  overflow:hidden;
+}
+
+.fillHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.fillTitle{
+  font-size:11.5px;
+  font-weight:950;
+  color: rgba(255,255,255,0.66);
+  letter-spacing:0.2px;
+}
+
+.fillPct{
+  font-size:11.5px;
+  font-weight:950;
+  color: rgba(255,255,255,0.88);
+}
+
+.tank{
+  position:relative;
+  height:54px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  overflow:hidden;
+}
+
+/* Base “water” fill (height reflects real percent) */
+.liquid{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height: var(--fill, 0%);
+  transition: height 420ms ease;
+
+  /* layered liquid color + soft glow */
+  background:
+    radial-gradient(circle at 18% 22%, rgba(16,185,129,0.38), transparent 55%),
+    radial-gradient(circle at 78% 68%, rgba(59,130,246,0.30), transparent 58%),
+    linear-gradient(90deg, rgba(16,185,129,0.34), rgba(59,130,246,0.30));
+
+  filter: saturate(1.15);
+  overflow:hidden;
+}
+
+/* ✅ Animated wave shimmer INSIDE the liquid */
+.liquid::before{
+  content:"";
+  position:absolute;
+  inset:-40% -60%;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(255,255,255,0.10), transparent 55%),
+    radial-gradient(circle at 60% 70%, rgba(255,255,255,0.08), transparent 55%),
+    radial-gradient(circle at 85% 30%, rgba(255,255,255,0.10), transparent 55%);
+  opacity:0.75;
+  animation: liquidDrift 4.2s linear infinite;
+}
+
+/* ✅ a second subtle moving band for “flow” */
+.liquid::after{
+  content:"";
+  position:absolute;
+  left:-60%;
+  top:0;
+  width:220%;
+  height:100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.08),
+    transparent,
+    rgba(255,255,255,0.06),
+    transparent
+  );
+  opacity:0.55;
+  animation: liquidBand 3.1s linear infinite;
+}
+
+/* The surface wave (moves even if fill is steady) */
+.surface{
+  position:absolute;
+  left:-45%;
+  width:190%;
+  height:34px;
+
+  /* Place wave at top of fill */
+  bottom: calc(var(--fill, 0%) - 17px);
+
+  opacity:0.90;
+  background:
+    radial-gradient(circle at 18% 60%, rgba(255,255,255,0.18), transparent 60%),
+    radial-gradient(circle at 52% 40%, rgba(255,255,255,0.10), transparent 60%),
+    radial-gradient(circle at 84% 65%, rgba(255,255,255,0.16), transparent 60%);
+
+  animation: waveMove 2.8s linear infinite, waveBob 1.6s ease-in-out infinite;
+  pointer-events:none;
+}
+
+/* Bubbles layer */
+.bubbles{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 12% 78%, rgba(255,255,255,0.10), transparent 16%),
+    radial-gradient(circle at 26% 58%, rgba(255,255,255,0.08), transparent 14%),
+    radial-gradient(circle at 42% 72%, rgba(255,255,255,0.09), transparent 15%),
+    radial-gradient(circle at 64% 62%, rgba(255,255,255,0.07), transparent 14%),
+    radial-gradient(circle at 82% 76%, rgba(255,255,255,0.10), transparent 16%);
+  opacity:0.55;
+  mix-blend-mode: screen;
+  animation: bubbleDrift 4.4s ease-in-out infinite;
+  pointer-events:none;
+}
+
+/* Optional “ready” glow when full */
+.fillReady .tank{
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 18px 55px rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.20);
+}
+
+/* ===== Animations ===== */
+@keyframes waveMove{
+  0%{ transform: translateX(0); }
+  100%{ transform: translateX(26%); }
+}
+
+@keyframes waveBob{
+  0%,100%{ transform: translateX(0) translateY(0); }
+  50%{ transform: translateX(10%) translateY(-2px); }
+}
+
+@keyframes bubbleDrift{
+  0%{ transform: translateY(0); opacity:0.50; }
+  50%{ transform: translateY(-6px); opacity:0.65; }
+  100%{ transform: translateY(0); opacity:0.50; }
+}
+
+@keyframes liquidDrift{
+  0%{ transform: translateX(-8%) translateY(6%); }
+  100%{ transform: translateX(8%) translateY(-6%); }
+}
+
+@keyframes liquidBand{
+  0%{ transform: translateX(0); }
+  100%{ transform: translateX(35%); }
+}
+
+.fillReady .tank{
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 18px 55px rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.20);
+}
+
+.actions{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+}
+
+.primaryBtn{
+  flex:1;
+  border:none;
+  color:#08111f;
+  background: linear-gradient(90deg,#10b981,#3b82f6);
+  border-radius:18px;
+  padding:12px 14px;
+  font-weight:950;
+  letter-spacing:0.2px;
+  cursor:pointer;
+  transition: transform 120ms ease, box-shadow 140ms ease;
+}
+.primaryBtn:hover{ box-shadow: 0 18px 45px rgba(16,185,129,0.16); }
+.primaryBtn:active{ transform: scale(0.985); }
+.primaryBtn:disabled{ opacity: 0.6; cursor:not-allowed; box-shadow:none; }
+
+.ghostBtn{
+  border-radius:18px;
+  padding:12px 14px;
+  font-weight:950;
+  letter-spacing:0.2px;
+  border:1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  cursor:pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.ghostBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.10); }
+
+/* ===== Empty ===== */
+.empty{
+  grid-column: 1 / -1;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,0.07);
+  background: rgba(26,31,46,0.50);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.22);
+  padding:18px;
+  text-align:center;
+}
+.emptyTitle{ font-size:14px; font-weight:950; }
+.emptySub{ margin-top:6px; font-size:12.5px; color: rgba(255,255,255,0.70); }
+
+/* ===== Rules ===== */
+.rules{
+  margin-top:14px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,0.07);
+  background: rgba(26,31,46,0.50);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.22);
+  padding:16px;
+}
+.rulesTitle{ font-size:13px; font-weight:950; letter-spacing:0.2px; }
+.rulesList{
+  margin:10px 0 0;
+  padding-left:18px;
+  color: rgba(255,255,255,0.72);
+  line-height:1.5;
+  font-size:12.5px;
+}
+
+/* ===== Skeleton ===== */
+.skel{ position:relative; overflow:hidden; }
+.skel::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  transform: translateX(-60%);
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer{
+  0%{ transform: translateX(-60%); }
+  100%{ transform: translateX(60%); }
+}
+.skelLineLg{ height:16px; border-radius:10px; background: rgba(255,255,255,0.08); width:72%; }
+.skelLineSm{ height:12px; border-radius:10px; background: rgba(255,255,255,0.06); width:52%; margin-top:10px; }
+.skelLineMd{ height:12px; border-radius:10px; background: rgba(255,255,255,0.06); width:88%; margin-top:12px; }
+.skelRow{ display:flex; gap:10px; margin-top:12px; }
+.skelBox{ height:58px; border-radius:16px; background: rgba(255,255,255,0.06); flex:1; }
+.skelBtnRow{ display:flex; gap:10px; margin-top:12px; }
+.skelBtn{ height:44px; border-radius:18px; background: rgba(255,255,255,0.06); flex:1; }
+
+/* ===== Responsive ===== */
+@media (max-width: 980px){
+  .grid{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px){
+  .container{ width:min(1100px, calc(100% - 24px)); }
+  .main{ padding: 86px 0 42px; }
+  .stats{ grid-template-columns: 1fr; }
+  .grid{ grid-template-columns: 1fr; }
+  .prizeRow{ flex-direction:column; align-items:stretch; }
+  .priceBox{ text-align:left; }
+}

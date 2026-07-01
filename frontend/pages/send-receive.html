@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send & Receive - CopUpBid</title>
+    <link rel="icon" href="../assets/images/copupcoin.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <img src="../assets/images/copupcoin.png" alt="CopUpBid" class="h-8 w-8 mr-3">
+                    <h1 class="text-xl font-bold text-primary">Send & Receive</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex bg-gray-800 rounded-lg p-1 mb-8">
+            <button id="sendTab" onclick="switchTab('send')" class="flex-1 py-3 px-4 rounded-md text-center font-medium transition-colors bg-primary text-white">
+                <div class="flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                    </svg>
+                    Send Coins
+                </div>
+            </button>
+            <button id="receiveTab" onclick="switchTab('receive')" class="flex-1 py-3 px-4 rounded-md text-center font-medium transition-colors text-gray-400 hover:text-white">
+                <div class="flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
+                    </svg>
+                    Receive Coins
+                </div>
+            </button>
+        </div>
+
+        <!-- Send Tab Content -->
+        <div id="sendContent" class="tab-content">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">Send CopUp Coins</h2>
+                
+                <!-- Balance Display -->
+                <div class="bg-gray-700/50 rounded-lg p-4 mb-6 text-center">
+                    <p class="text-gray-400 mb-2">Available Balance</p>
+                    <div class="flex items-center justify-center">
+                        <img src="../assets/images/copupcoin.png" alt="CopUp Coin" class="h-6 w-6 mr-2">
+                        <span id="sendBalance" class="text-2xl font-bold text-primary">0</span>
+                        <span class="text-gray-400 ml-2">coins</span>
+                    </div>
+                </div>
+
+                <!-- Send Form -->
+                <form id="sendForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Recipient Wallet Address</label>
+                        <input type="text" id="recipient" required 
+                               class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-400"
+                               placeholder="Enter recipient wallet address">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                        <div class="relative">
+                            <input type="number" id="sendAmount" required min="1" 
+                                   class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-400"
+                                   placeholder="Enter amount to send"
+                                   oninput="calculateCharge()">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <span class="text-gray-400">coins</span>
+                            </div>
+                        </div>
+                        <div id="chargeInfo" class="mt-2 text-sm text-gray-400 hidden">
+                            <p>Transaction charge: <span id="chargeAmount" class="text-yellow-400">0</span> coins</p>
+                            <p>Total deduction: <span id="totalDeduction" class="text-red-400">0</span> coins</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">PIN</label>
+                        <input type="password" id="sendPin" required maxlength="4" 
+                               class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-400"
+                               placeholder="Enter your 4-digit PIN">
+                    </div>
+
+                    <button type="submit" id="sendButton" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                        Send Coins
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Receive Tab Content -->
+        <div id="receiveContent" class="tab-content hidden">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">Receive CopUp Coins</h2>
+                
+                <!-- Wallet Address Display -->
+                <div class="bg-gray-700/50 rounded-lg p-6 mb-6 text-center">
+                    <div class="mb-4">
+                        <img src="../assets/images/copupcoin.png" alt="Profile" class="h-16 w-16 mx-auto mb-3 rounded-full">
+                        <h3 id="userName" class="text-xl font-bold text-white">Loading...</h3>
+                        <p class="text-gray-300 mb-4">Receive CopUp Coins</p>
+                        <p class="text-sm text-gray-400 mb-4">
+                            Send only CopUp coin in CopUp network to this address, or you might lose your funds
+                        </p>
+                    </div>
+                    
+                    <!-- Wallet Address Display -->
+                    <div class="bg-gray-700 rounded-lg p-4 mb-4">
+                        <p class="text-sm text-gray-400 mb-2">Wallet Address</p>
+                        <div class="flex items-center justify-between bg-gray-600 rounded-lg p-3">
+                            <span id="walletAddress" class="font-mono text-primary text-sm break-all">Loading...</span>
+                            <button onclick="copyWalletAddress()" class="ml-3 text-gray-400 hover:text-white flex-shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <button onclick="copyWalletAddress()" class="mt-3 flex items-center justify-center mx-auto text-primary hover:text-primary/80 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Copy Address
+                        </button>
+                    </div>
+                    
+                    <!-- Share Options -->
+                    <div class="space-y-3">
+                        <p class="text-gray-300 font-medium">Or share your details:</p>
+                        
+                        <div class="bg-gray-700 rounded-lg p-3">
+                            <p class="text-sm text-gray-400 mb-1">Username</p>
+                            <div class="flex items-center justify-between">
+                                <span id="shareUsername" class="font-mono text-primary">Loading...</span>
+                                <button onclick="copyToClipboard('shareUsername')" class="text-gray-400 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-700 rounded-lg p-3">
+                            <p class="text-sm text-gray-400 mb-1">Email</p>
+                            <div class="flex items-center justify-between">
+                                <span id="shareEmail" class="font-mono text-primary">Loading...</span>
+                                <button onclick="copyToClipboard('shareEmail')" class="text-gray-400 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction History -->
+                <div class="bg-gray-700/30 rounded-lg p-4">
+                    <h3 class="font-bold text-white mb-4">Transaction History</h3>
+                    <div id="recentReceived" class="space-y-3">
+                        <div class="text-center text-gray-400 py-4">
+                            <p>Loading transactions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Footer -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-30">
+        <div class="flex justify-around items-center py-2">
+            <a href="dashboard.html" class="flex flex-col items-center p-2 text-gray-400 hover:text-primary transition-colors">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-4H5a2 2 0 00-2 2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 5v4"></path>
+                </svg>
+                <span class="text-xs font-medium">Dashboard</span>
+            </a>
+            <a href="auction.html" class="flex flex-col items-center p-2 text-gray-400 hover:text-primary transition-colors">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5v4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 5v4"></path>
+                </svg>
+                <span class="text-xs font-medium">Auction</span>
+            </a>
+            <a href="game.html" class="flex flex-col items-center p-2 text-gray-400 hover:text-primary transition-colors">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                </svg>
+                <span class="text-xs font-medium">Game</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        let userProfile = null;
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            loadUserProfile();
+            loadRecentTransactions();
+        });
+
+        async function loadUserProfile() {
+            const token = localStorage.getItem('authToken');
+            
+            try {
+                const response = await fetch('https://api.copupbid.com/api/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Profile fetch failed: ${response.status}`);
+                }
+
+                userProfile = await response.json();
+                updateUI();
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                if (error.message.includes('401') || error.message.includes('403')) {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../auth/login.html';
+                }
+            }
+        }
+
+        async function loadRecentTransactions() {
+            const token = localStorage.getItem('authToken');
+            
+            try {
+                const response = await fetch('https://api.copupbid.com/api/user/transactions', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const transactions = await response.json();
+                    displayRecentReceived(transactions);
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+            }
+        }
+
+        function displayRecentReceived(transactions) {
+            const container = document.getElementById('recentReceived');
+            
+            if (!userProfile || !transactions || !Array.isArray(transactions)) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-4"><p>No recent transactions</p></div>';
+                return;
+            }
+
+            const recentTransactions = transactions.slice(0, 5);
+
+            if (recentTransactions.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-4"><p>No recent transactions</p></div>';
+                return;
+            }
+
+            container.innerHTML = recentTransactions.map(transaction => {
+                const isReceived = transaction.recipient_username === userProfile.username;
+                const isCharge = transaction.charge && transaction.charge > 0;
+                
+                return `
+                    <div class="bg-gray-700 rounded-lg p-3">
+                        <div class="flex items-center mb-2">
+                            <img src="../assets/icons/${isReceived ? 'payment-history' : 'payout'}.png" alt="Transaction" class="h-6 w-6 mr-3">
+                            <div class="flex-1">
+                                <p class="font-medium text-white">${transaction.amount || 0} coins</p>
+                                ${isCharge ? `<span class="text-sm text-yellow-400">Charge: ${transaction.charge} coin</span><br>` : ''}
+                                <span class="text-sm text-gray-300">Sender: ${transaction.sender_username || 'Unknown'}</span><br>
+                                <span class="text-sm text-gray-300">Recipient: ${transaction.recipient_username || 'Unknown'}</span><br>
+                                <span class="text-sm text-gray-400">Date: ${formatDate(transaction.timestamp)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Unknown date';
+            
+            try {
+                const date = new Date(timestamp);
+                const options = { 
+                    weekday: 'short', 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                };
+                return date.toLocaleDateString('en-US', options);
+            } catch (error) {
+                return 'Invalid date';
+            }
+        }
+
+        function updateUI() {
+            if (!userProfile) return;
+
+            // Update send balance
+            document.getElementById('sendBalance').textContent = (userProfile.bid_points || 0).toLocaleString();
+
+            document.getElementById('userName').textContent = userProfile.full_name || userProfile.username;
+            document.getElementById('walletAddress').textContent = userProfile.wallet_address || 'Not available';
+            document.getElementById('shareUsername').textContent = userProfile.username;
+            document.getElementById('shareEmail').textContent = userProfile.email;
+        }
+
+        function calculateCharge() {
+            const amount = parseFloat(document.getElementById('sendAmount').value) || 0;
+            let charge = 0;
+            
+            if (amount > 0 && amount <= 10) {
+                charge = 1;
+            } else if (amount > 10 && amount <= 50) {
+                charge = 3;
+            } else if (amount > 50 && amount <= 100) {
+                charge = 5;
+            } else if (amount > 100) {
+                charge = 10;
+            }
+            
+            const total = amount + charge;
+            const chargeInfo = document.getElementById('chargeInfo');
+            
+            if (amount > 0) {
+                document.getElementById('chargeAmount').textContent = charge;
+                document.getElementById('totalDeduction').textContent = total;
+                chargeInfo.classList.remove('hidden');
+            } else {
+                chargeInfo.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tab) {
+            const sendTab = document.getElementById('sendTab');
+            const receiveTab = document.getElementById('receiveTab');
+            const sendContent = document.getElementById('sendContent');
+            const receiveContent = document.getElementById('receiveContent');
+
+            if (tab === 'send') {
+                sendTab.classList.add('bg-primary', 'text-white');
+                sendTab.classList.remove('text-gray-400');
+                receiveTab.classList.remove('bg-primary', 'text-white');
+                receiveTab.classList.add('text-gray-400');
+                
+                sendContent.classList.remove('hidden');
+                receiveContent.classList.add('hidden');
+            } else {
+                receiveTab.classList.add('bg-primary', 'text-white');
+                receiveTab.classList.remove('text-gray-400');
+                sendTab.classList.remove('bg-primary', 'text-white');
+                sendTab.classList.add('text-gray-400');
+                
+                receiveContent.classList.remove('hidden');
+                sendContent.classList.add('hidden');
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show success feedback
+                const originalText = element.textContent;
+                element.textContent = 'Copied!';
+                element.classList.add('text-green-400');
+                
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.classList.remove('text-green-400');
+                    element.classList.add('text-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function copyWalletAddress() {
+            const walletElement = document.getElementById('walletAddress');
+            const walletAddress = walletElement.textContent;
+            
+            if (walletAddress && walletAddress !== 'Loading...' && walletAddress !== 'Not available') {
+                navigator.clipboard.writeText(walletAddress).then(() => {
+                    // Show success feedback
+                    const originalText = walletElement.textContent;
+                    walletElement.textContent = 'Copied!';
+                    walletElement.classList.add('text-green-400');
+                    
+                    setTimeout(() => {
+                        walletElement.textContent = originalText;
+                        walletElement.classList.remove('text-green-400');
+                        walletElement.classList.add('text-primary');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+            } else {
+                alert('Wallet address not available');
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        document.getElementById('sendForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const recipientWallet = document.getElementById('recipient').value;
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            const pin = document.getElementById('sendPin').value;
+            const token = localStorage.getItem('authToken');
+            
+            if (!recipientWallet || !amount || !pin) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (amount <= 0) {
+                alert('Amount must be greater than 0');
+                return;
+            }
+            
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+            
+            try {
+                const response = await fetch('https://api.copupbid.com/api/user/send-bid-points', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipientWallet,
+                        amount,
+                        pin
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Coins sent successfully!');
+                    document.getElementById('sendForm').reset();
+                    document.getElementById('chargeInfo').classList.add('hidden');
+                    loadUserProfile(); // Refresh balance
+                    loadRecentTransactions(); // Refresh transactions
+                } else {
+                    alert(result.message || 'Failed to send coins');
+                }
+            } catch (error) {
+                console.error('Error sending coins:', error);
+                alert('Network error. Please try again.');
+            } finally {
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send Coins';
+            }
+        });
+    </script>
+
+    <style>
+        body {
+            padding-bottom: 80px;
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                padding-bottom: 0;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</body>
+</html>

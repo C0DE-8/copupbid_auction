@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CopUpBid — Shopping Cart</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { cop: { bg:'#0b1022', teal:'#10b981', cyan:'#06b6d4', blue:'#2563eb' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body{
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(16,185,129,.10), transparent 60%),
+        radial-gradient(1000px 600px at 80% 20%, rgba(37,99,235,.10), transparent 65%),
+        radial-gradient(1000px 800px at 50% 100%, rgba(6,182,212,.10), transparent 60%),
+        #0b1022;
+    }
+    .glass { background: linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6)); backdrop-filter: blur(10px); }
+    .ring-glow { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03); }
+    .chip { border:1px solid rgba(255,255,255,.08); }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.12), rgba(255,255,255,.05)); background-size: 200% 100%; animation: sk 1.4s infinite; }
+    @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .icon-btn img { filter: drop-shadow(0 2px 8px rgba(0,0,0,.25)); }
+    .badge {
+      position: absolute; top:-6px; right:-6px; font-size:10px;
+      background: linear-gradient(135deg,#34d399,#06b6d4); color:#0b1022;
+      border-radius:9999px; padding:2px 6px; font-weight:700; border:1px solid rgba(255,255,255,.3)
+    }
+    .field { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); }
+    .modal-backdrop { background: rgba(2,6,23,.65); backdrop-filter: blur(4px); }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen">
+
+  <!-- Top Nav -->
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-[#0b1022]/80 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Left -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-3">
+          <span class="h-9 w-9 rounded-full bg-gradient-to-tr from-cop-teal via-cop-cyan to-cop-blue grid place-items-center ring-1 ring-white/10">🔵</span>
+          <span class="font-semibold tracking-wide">CopUpBid</span>
+        </a>
+      </div>
+
+      <!-- Center nav (desktop) -->
+      <nav class="hidden sm:flex items-center gap-4">
+        <a href="./shop.html" class="text-sm text-white/80 hover:text-white">Shop</a>
+        <a href="./categories.html" class="text-sm text-white/70 hover:text-white">Categories</a>
+        <a href="/pages/hiest" class="text-sm text-white/70 hover:text-white">Heists</a>
+      </nav>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-2">
+        <a href="./favorites.html" class="icon-btn relative p-2 rounded-xl hover:bg-white/5 border border-white/10" aria-label="Favorites">
+          <img src="icons/favorite.png" alt="favorite" class="w-5 h-5"/>
+          <span id="favBadge" class="badge hidden">0</span>
+        </a>
+        <a href="./shopping-cart.html" class="icon-btn relative p-2 rounded-xl hover:bg-white/5 border border-white/10" aria-label="Cart">
+          <img src="icons/cart.png" alt="cart" class="w-5 h-5"/>
+          <span id="cartBadge" class="badge hidden">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Auth banner -->
+  <div id="authBanner" class="hidden">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="mt-4 p-3 rounded-xl glass ring-glow text-sm flex items-center justify-between">
+        <p class="text-white/80">You’re browsing in guest mode. Cart & orders require login.</p>
+        <button id="quickToken" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold">Paste Token</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Cart list -->
+    <section class="lg:col-span-8 space-y-4">
+      <div class="p-4 md:p-5 rounded-2xl glass ring-glow">
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-2xl sm:text-3xl font-extrabold">Your Cart</h1>
+          <div id="itemsCount" class="text-white/60 text-sm">—</div>
+        </div>
+
+        <!-- Skeleton -->
+        <div id="cartSkeleton" class="space-y-3">
+          <div class="h-20 rounded-xl skeleton"></div>
+          <div class="h-20 rounded-xl skeleton"></div>
+          <div class="h-20 rounded-xl skeleton"></div>
+        </div>
+
+        <!-- Empty -->
+        <div id="emptyState" class="hidden p-8 text-center text-white/70">
+          Your cart is empty. <a href="./shop.html" class="text-cop-cyan underline">Go shopping →</a>
+        </div>
+
+        <!-- List -->
+        <div id="cartList" class="hidden divide-y divide-white/5"></div>
+      </div>
+    </section>
+
+    <!-- Summary + Checkout -->
+    <aside class="lg:col-span-4 space-y-4">
+      <div class="p-4 md:p-5 rounded-2xl glass ring-glow">
+        <h2 class="font-semibold text-lg mb-3">Summary</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-white/70">Items</span>
+            <span id="sumItems" class="font-semibold">0</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-white/70">Subtotal</span>
+            <span id="sumSubtotal" class="font-semibold">₦ 0</span>
+          </div>
+          <div class="text-xs text-white/50">* Prices are in bid points (₦ shown for clarity). No shipping applied yet.</div>
+        </div>
+      </div>
+
+      <div class="p-4 md:p-5 rounded-2xl glass ring-glow">
+        <h2 class="font-semibold text-lg mb-3">Checkout</h2>
+        <form id="checkoutForm" class="space-y-3">
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Customer Name</label>
+            <input name="customer_name" class="w-full field rounded-xl px-3 py-2 outline-none focus:border-cop-cyan" placeholder="Full name"/>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Phone Number</label>
+            <input name="phone_number" class="w-full field rounded-xl px-3 py-2 outline-none focus:border-cop-cyan" placeholder="+234…"/>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Address</label>
+            <textarea name="address" rows="3" class="w-full field rounded-xl px-3 py-2 outline-none focus:border-cop-cyan" placeholder="Delivery address"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Notes (optional)</label>
+            <textarea name="notes" rows="2" class="w-full field rounded-xl px-3 py-2 outline-none focus:border-cop-cyan" placeholder="Any delivery notes"></textarea>
+          </div>
+          <button type="submit" class="w-full px-4 py-2 rounded-xl bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold">
+            Place Order
+          </button>
+        </form>
+        <div id="checkoutHint" class="mt-2 text-xs text-white/50">After checkout, your cart becomes an order with status <span class="text-white/70">pending</span>.</div>
+      </div>
+    </aside>
+
+    <!-- Orders panel -->
+    <section class="lg:col-span-12 space-y-4">
+      <div class="p-4 md:p-5 rounded-2xl glass ring-glow">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <h2 class="font-semibold text-lg">Your Orders</h2>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-white/70">Status</label>
+            <select id="ordStatus" class="field rounded-xl px-3 py-2 text-sm outline-none focus:border-cop-cyan">
+              <option value="">All</option>
+              <option>pending</option>
+              <option>paid</option>
+              <option>processing</option>
+              <option>in_transit</option>
+              <option>delivered</option>
+              <option>cancelled</option>
+            </select>
+            <button id="ordRefresh" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Orders list / skeleton -->
+        <div id="ordersSkeleton" class="space-y-3">
+          <div class="h-16 rounded-xl skeleton"></div>
+          <div class="h-16 rounded-xl skeleton"></div>
+        </div>
+
+        <div id="ordersEmpty" class="hidden p-6 text-center text-white/70">No orders yet.</div>
+
+        <div id="ordersList" class="hidden divide-y divide-white/5"></div>
+
+        <!-- Pagination -->
+        <div class="mt-4 flex items-center justify-between text-sm">
+          <div class="text-white/60">
+            <span id="ordRange">—</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="ordPrev" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-40">Prev</button>
+            <button id="ordNext" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-40">Next</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Order Detail Modal -->
+  <div id="modalBackdrop" class="fixed inset-0 z-50 hidden modal-backdrop"></div>
+  <div id="orderModal" class="fixed inset-0 z-50 hidden grid place-items-center px-4">
+    <div class="w-full max-w-2xl rounded-2xl glass ring-glow border border-white/10 overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+        <h3 class="font-semibold">Order Detail</h3>
+        <button id="modalClose" class="px-2 py-1 rounded-lg hover:bg-white/5 border border-white/10">✕</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div id="odMeta" class="text-sm text-white/80 space-y-1">
+          <!-- filled dynamically -->
+        </div>
+        <div>
+          <h4 class="font-semibold mb-2">Items</h4>
+          <div id="odItems" class="divide-y divide-white/5"></div>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-white/10 flex items-center justify-end">
+        <button id="modalClose2" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden px-4 py-3 rounded-xl glass ring-glow text-sm"></div>
+
+  <!-- Axios + App JS -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // ===== Config
+    const API_BASE = 'https://api.copup.copupbid.com/api/users';
+    const api = axios.create({ baseURL: API_BASE.replace(/\/$/, ''), timeout: 15000 });
+    api.interceptors.request.use(cfg => {
+      const t = (localStorage.getItem('authToken') || '').trim();
+      if (t) cfg.headers.Authorization = 'Bearer ' + t;
+      return cfg;
+    });
+
+    // ===== Utils
+    const fmtN = n => (n == null ? '—' : Intl.NumberFormat('en-NG').format(Number(n)));
+    const toast = (msg, kind='info') => {
+      const el = document.getElementById('toast'); if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.border = '1px solid rgba(255,255,255,.1)';
+      el.style.background = kind === 'error'
+        ? 'rgba(220,38,38,.12)'
+        : 'linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6))';
+      setTimeout(()=> el.classList.add('hidden'), 3000);
+    };
+    const tokenExists = () => !!(localStorage.getItem('authToken') || '').trim();
+    const showAuthBanner = () => { if (!tokenExists()) document.getElementById('authBanner')?.classList.remove('hidden'); };
+
+    function setBadge(id, n){ const el = document.getElementById(id); if(!el) return; if(n>0){ el.textContent = n; el.classList.remove('hidden'); } else { el.classList.add('hidden'); } }
+    function refreshBadges(){
+      const cartN = Number(localStorage.getItem('cartCount') || '0');
+      const favN  = Number(localStorage.getItem('favCount') || '0');
+      setBadge('cartBadge', cartN);
+      setBadge('favBadge',  favN);
+    }
+
+    // ===== CART API
+    async function fetchCart(){
+      const { data } = await api.get('/shop/cart');
+      return data || [];
+    }
+    async function postCartCheckout(payload){
+      const { data } = await api.post('/shop/cart/checkout', payload);
+      return data; // { message, order: {id,...}, ...}
+    }
+
+    // ===== ORDERS API
+    async function fetchOrders({ status='', limit=10, offset=0 } = {}){
+      const { data } = await api.get('/shop/orders', { params: { status, limit, offset } });
+      return data || { limit, offset, items: [] };
+    }
+    async function fetchOrderById(id){
+      const { data } = await api.get(`/shop/orders/${id}`);
+      return data; // { order, items }
+    }
+
+    // ===== CART RENDER
+    function cartRow(item){
+      const el = document.createElement('div');
+      el.className = 'py-4 flex items-center gap-4';
+      el.innerHTML = `
+        <div class="h-16 w-16 rounded-xl bg-black/30 ring-1 ring-white/10 grid place-items-center text-white/40 text-sm">IMG</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold truncate">${item.product_name}</div>
+          <div class="text-xs text-white/60 mt-0.5">Mode: <span class="chip px-2 py-0.5 rounded">${item.mode}</span></div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm">Qty: <span class="font-semibold">${item.qty}</span></div>
+          <div class="text-sm">Unit: ₦ ${fmtN(item.price)}</div>
+          <div class="text-sm font-semibold">Subtotal: ₦ ${fmtN(item.subtotal)}</div>
+        </div>
+      `;
+      return el;
+    }
+
+    function skeletonOff(id){ document.getElementById(id).classList.add('hidden'); }
+
+    function showEmptyCart(){ document.getElementById('emptyState').classList.remove('hidden'); document.getElementById('cartList').classList.add('hidden'); }
+    function showCartList(){ document.getElementById('emptyState').classList.add('hidden'); document.getElementById('cartList').classList.remove('hidden'); }
+
+    async function loadCart(){
+      showAuthBanner();
+      try {
+        const items = await fetchCart();
+        skeletonOff('cartSkeleton');
+
+        const itemsCount = items.reduce((a,b)=> a + Number(b.qty||0), 0);
+        const subtotal   = items.reduce((a,b)=> a + Number(b.subtotal||0), 0);
+
+        document.getElementById('itemsCount').textContent = `${itemsCount} item${itemsCount===1?'':'s'}`;
+        document.getElementById('sumItems').textContent   = itemsCount;
+        document.getElementById('sumSubtotal').textContent= `₦ ${fmtN(subtotal)}`;
+
+        const listEl = document.getElementById('cartList');
+        listEl.innerHTML = '';
+        if (!items.length){ showEmptyCart(); return; }
+        showCartList();
+        items.forEach(it => listEl.appendChild(cartRow(it)));
+
+        localStorage.setItem('cartCount', String(itemsCount));
+        refreshBadges();
+      } catch (err){
+        skeletonOff('cartSkeleton');
+        showEmptyCart();
+        if (err?.response?.status === 401) {
+          toast('Please login to view your cart', 'error');
+        } else {
+          toast(err?.response?.data?.message || 'Failed to load cart', 'error');
+        }
+      }
+    }
+
+    // ===== ORDERS RENDER
+    function orderRow(o){
+      const el = document.createElement('div');
+      el.className = 'py-3 flex items-center gap-4';
+      el.innerHTML = `
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold">#${o.id} • <span class="uppercase tracking-wide text-xs chip px-2 py-0.5 rounded">${o.status}</span></div>
+          <div class="text-xs text-white/60 mt-0.5">Items: ${o.items_count} • Subtotal: ₦ ${fmtN(o.subtotal)}</div>
+          <div class="text-xs text-white/50">Placed: ${new Date(o.created_at).toLocaleString()}</div>
+        </div>
+        <div class="text-right">
+          <button class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm view-btn" data-id="${o.id}">View</button>
+        </div>
+      `;
+      // attach modal open
+      el.querySelector('.view-btn').addEventListener('click', async ()=>{
+        try {
+          const data = await fetchOrderById(o.id);
+          openOrderModal(data);
+        } catch (err){
+          if (err?.response?.status === 404) toast('Order not found', 'error');
+          else toast(err?.response?.data?.message || 'Failed to load order', 'error');
+        }
+      });
+      return el;
+    }
+
+    function showOrdersSkeleton(show){
+      document.getElementById('ordersSkeleton').classList.toggle('hidden', !show);
+      document.getElementById('ordersList').classList.toggle('hidden', show);
+      document.getElementById('ordersEmpty').classList.add('hidden');
+    }
+
+    let ORD_LIMIT = 10;
+    let ordOffset = 0;
+    async function loadOrders(reset=false){
+      if (reset) ordOffset = 0;
+      showOrdersSkeleton(true);
+      try{
+        const status = (document.getElementById('ordStatus').value || '').trim();
+        const data = await fetchOrders({ status, limit: ORD_LIMIT, offset: ordOffset });
+        showOrdersSkeleton(false);
+
+        const list = document.getElementById('ordersList');
+        list.innerHTML = '';
+        if (!data.items?.length){
+          document.getElementById('ordersEmpty').classList.remove('hidden');
+          document.getElementById('ordRange').textContent = '0–0';
+        } else {
+          data.items.forEach(o => list.appendChild(orderRow(o)));
+          const start = ordOffset + 1;
+          const end   = ordOffset + data.items.length;
+          document.getElementById('ordRange').textContent = `${start}–${end}`;
+        }
+
+        document.getElementById('ordPrev').disabled = ordOffset <= 0;
+        // If page not full, likely last page
+        document.getElementById('ordNext').disabled = (data.items?.length || 0) < ORD_LIMIT;
+
+      } catch (err){
+        showOrdersSkeleton(false);
+        document.getElementById('ordersEmpty').classList.remove('hidden');
+        toast(err?.response?.data?.message || 'Failed to fetch orders', 'error');
+      }
+    }
+
+    // ===== MODAL (Order detail)
+    function openOrderModal(data){
+      const { order, items=[] } = data || {};
+      if (!order) return;
+
+      const meta = `
+        <div><span class="text-white/60">Order:</span> <span class="font-semibold">#${order.id}</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+          <div><span class="text-white/60">Status:</span> <span class="uppercase tracking-wide chip px-2 py-0.5 rounded">${order.status}</span></div>
+          <div><span class="text-white/60">Subtotal:</span> ₦ <span class="font-semibold">${fmtN(order.subtotal)}</span></div>
+          <div><span class="text-white/60">Items:</span> <span class="font-semibold">${order.items_count}</span></div>
+          <div><span class="text-white/60">Placed:</span> ${new Date(order.created_at).toLocaleString()}</div>
+          <div><span class="text-white/60">Tracking:</span> ${order.tracking_number || '—'}</div>
+          <div><span class="text-white/60">Carrier:</span> ${order.carrier || '—'}</div>
+          <div><span class="text-white/60">ETA:</span> ${order.expected_delivery ? new Date(order.expected_delivery).toLocaleDateString() : '—'}</div>
+        </div>
+        <div class="mt-3 text-sm">
+          <div class="text-white/60">Ship To</div>
+          <div class="font-semibold">${order.customer_name || '—'}</div>
+          <div>${order.phone_number || '—'}</div>
+          <div class="text-white/80">${order.address || '—'}</div>
+          ${order.notes ? `<div class="text-white/60 mt-1">Notes: ${order.notes}</div>` : ''}
+        </div>
+      `;
+      document.getElementById('odMeta').innerHTML = meta;
+
+      const itemsWrap = document.getElementById('odItems');
+      itemsWrap.innerHTML = '';
+      if (!items.length){
+        itemsWrap.innerHTML = `<div class="py-3 text-white/70 text-sm">No items.</div>`;
+      } else {
+        items.forEach(it=>{
+          const row = document.createElement('div');
+          row.className = 'py-3 flex items-center justify-between';
+          row.innerHTML = `
+            <div class="min-w-0">
+              <div class="font-semibold truncate">${it.product_name}</div>
+              <div class="text-xs text-white/60 mt-0.5">Mode: <span class="chip px-2 py-0.5 rounded">${it.mode}</span></div>
+            </div>
+            <div class="text-right text-sm">
+              <div>Qty: <span class="font-semibold">${it.qty}</span></div>
+              <div>Unit: ₦ ${fmtN(it.price)}</div>
+              <div class="font-semibold">Subtotal: ₦ ${fmtN(it.subtotal)}</div>
+            </div>
+          `;
+          itemsWrap.appendChild(row);
+        });
+      }
+
+      document.getElementById('modalBackdrop').classList.remove('hidden');
+      document.getElementById('orderModal').classList.remove('hidden');
+    }
+    function closeOrderModal(){
+      document.getElementById('modalBackdrop').classList.add('hidden');
+      document.getElementById('orderModal').classList.add('hidden');
+    }
+
+    // ===== Checkout submit
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const form = document.getElementById('checkoutForm');
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const fd = new FormData(form);
+        const payload = {
+          customer_name: String(fd.get('customer_name')||'').trim(),
+          phone_number:  String(fd.get('phone_number')||'').trim(),
+          address:       String(fd.get('address')||'').trim(),
+          notes:         String(fd.get('notes')||'').trim(),
+        };
+        if (!payload.customer_name) return toast('Customer name is required', 'error');
+        if (!payload.phone_number)  return toast('Phone number is required', 'error');
+        if (!payload.address)       return toast('Address is required', 'error');
+
+        try {
+          const res = await postCartCheckout(payload);
+          toast(res?.message || 'Checkout successful');
+
+          // Clear cart badge & reload cart UI
+          localStorage.setItem('cartCount', '0');
+          refreshBadges();
+          await loadCart();
+
+          // If API returned the new order id, open it in the modal
+          const oid = res?.order?.id;
+          if (oid) {
+            const detail = await fetchOrderById(oid);
+            openOrderModal(detail);
+          } else {
+            // Otherwise refresh orders list
+            await loadOrders(true);
+          }
+        } catch (err) {
+          if (err?.response?.status === 401) return toast('Please login to checkout', 'error');
+          toast(err?.response?.data?.message || 'Checkout failed', 'error');
+        }
+      });
+    });
+
+    // ===== Wire orders UI
+    document.getElementById('ordRefresh')?.addEventListener('click', ()=> loadOrders(true));
+    document.getElementById('ordStatus')?.addEventListener('change', ()=> loadOrders(true));
+    document.getElementById('ordPrev')?.addEventListener('click', ()=> { ordOffset = Math.max(0, ordOffset - ORD_LIMIT); loadOrders(); });
+    document.getElementById('ordNext')?.addEventListener('click', ()=> { ordOffset = ordOffset + ORD_LIMIT; loadOrders(); });
+
+    // ===== Modal wires
+    document.getElementById('modalClose')?.addEventListener('click', closeOrderModal);
+    document.getElementById('modalClose2')?.addEventListener('click', closeOrderModal);
+    document.getElementById('modalBackdrop')?.addEventListener('click', closeOrderModal);
+
+    // ===== Token quick set + boot
+    document.getElementById('quickToken')?.addEventListener('click', ()=>{
+      const t = prompt('Paste your authToken (JWT)');
+      if (t){ localStorage.setItem('authToken', t.trim()); location.reload(); }
+    });
+    refreshBadges();
+    loadCart();
+    loadOrders(true);
+  </script>
+</body>
+</html>

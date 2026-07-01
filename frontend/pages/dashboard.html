@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choose Your Quests — Responsive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <!-- Sidebar overlay and navigation -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+  <div id="sidebar" class="fixed top-0 right-0 h-full w-80 bg-gray-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-xl font-bold">Tool bar</h2>
+        <button id="closeSidebar" class="text-gray-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+     
+      <!-- User / Profile -->
+      <div class="flex items-center gap-3 mb-4">
+        <img src="./icons/anime-emoji.png" alt="avatar" class="w-12 h-12 rounded-full border border-white/20 object-cover">
+        <div>
+          <div id="sidebarUserName" class="font-semibold text-white">CopUp User</div>
+          <a href="../pages/profile.html" class="text-sm text-white/60 hover:text-white">View profile</a>
+        </div>
+      </div>
+
+      <nav class="space-y-2">
+        <!-- Primary actions (most used) -->
+        <div class="flex flex-col gap-2 pb-3 border-b border-white/6 mb-3">
+          <a href="../pages/auctions.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M3 6h18M8 6v12a1 1 0 001 1h6a1 1 0 001-1V6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">Auctions</span>
+          </a>
+
+          <a href="../pages/heist.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2C8.134 2 5 5.134 5 9v2a7 7 0 0014 0V9c0-3.866-3.134-7-7-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">Heist</span>
+          </a>
+
+          <a href="../pages/cart.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M3 3h2l.4 2M7 13h10l4-8H5.4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10" cy="20" r="1" />
+              <circle cx="18" cy="20" r="1" />
+            </svg>
+            <span class="text-sm font-medium">Cart</span>
+          </a>
+
+          <a href="../pages/trade.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2l2.39 4.85L19 8l-3.06 2.97L16.78 15 12 12.77 7.22 15l.84-4.03L5 8l4.61-.15L12 2z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">Trade</span>
+          </a>
+
+          <a href="../pages/favorites.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 21l-7-6a5 5 0 017-7 5 5 0 017 7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">Favorites</span>
+          </a>
+        </div>
+
+        <!-- Secondary actions -->
+        <div class="flex flex-col gap-2 pb-3 border-b border-white/6 mb-3">
+          <a href="../pages/affiliate.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M7 7h10v10H7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">Affiliate</span>
+          </a>
+
+          <a href="../pages/waitlist.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 8v4l3 3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="9" stroke-width="1.5"/>
+            </svg>
+            <span class="text-sm font-medium">Waitlist</span>
+          </a>
+
+          <a href="../pages/winners.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2l2.39 4.85L19 8l-3.06 2.97L16.78 15 12 12.77 7.22 15l.84-4.03L5 8l4.61-.15L12 2z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">Winners</span>
+          </a>
+
+          <a href="../pages/how-to-play.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+            <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 20v-8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 12l6-3-6-3-6 3 6 3z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-medium">How to play</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Footer / Logout -->
+      <div class="mt-3">
+        <button id="sidebarLogout" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 17l5-5-5-5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12H9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-sm font-semibold text-white">Logout</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 min-h-screen flex flex-col">
+    <!-- Header -->
+    <div class="flex items-start justify-between">
+      <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">
+        <span id="questHeading">Choose<br />your quests</span>
+      </h1>
+      <div class="flex items-center gap-4">
+        <button id="openSidebar" class="bg-gray-800/70 hover:bg-gray-700 rounded-full p-3 transition-colors">
+          <div class="grid grid-cols-2 gap-1">
+            <div class="w-2 h-2 bg-white rounded-full"></div>
+            <div class="w-2 h-2 bg-white rounded-full"></div>
+            <div class="w-2 h-2 bg-white rounded-full"></div>
+            <div class="w-2 h-2 bg-white rounded-full"></div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid wrapper fills the remaining screen height -->
+    <div class="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 flex-1">
+      <!-- Card: Coin Vault (taller, spans 2 rows on all breakpoints) -->
+      <article
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-400 to-blue-600 p-4 sm:p-5 row-span-2 min-h-[18rem] md:min-h-[22rem] lg:min-h-[24rem] cursor-pointer hover:scale-105 transition-transform duration-200"
+        onclick="window.location.href='../pages/coin-topup.html'">
+        <!-- Stars -->
+        <div class="flex gap-1 mb-4">
+          <span class="text-white text-lg">★★★★</span>
+        </div>
+        <!-- Coin Badge -->
+        <div
+          id="coinBadgeContainer"
+          class="bg-white/20 backdrop-blur-md border border-white/30 text-white px-3 py-1 rounded-lg inline-flex items-center gap-1 mb-4 cursor-pointer hover:bg-white/30 transition-all duration-200"
+          onclick="event.stopPropagation(); toggleBalance()"
+        >
+          <img src="../assets/icons/coin-sign.png" alt="coin" class="w-6 h-6">
+          <span class="font-bold text-xl" id="coinBadge">***</span>
+        </div>
+        <!-- Character Placeholder -->
+        <img src="../assets/images/m1.png" alt="m1" class="absolute bottom-0 right-0 w-40 h-48 sm:w-44 sm:h-52 md:w-48 md:h-56 opacity-90">
+        <!-- Bottom Icon -->
+        <div class="bg-white/20 backdrop-blur-md border absolute bottom-4 left-4 bg-white text-black p-3 rounded-xl shadow">
+          <img src="../assets/icons/shopping-bag.png" alt="coin vault" class="w-8 h-8">
+        </div>
+      </article>
+
+      <!-- Card: Shop -->
+      <article
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-400 to-purple-500 p-4 sm:p-5 h-44 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:scale-105 transition-transform duration-200"
+        onclick="window.location.href='../pages/categories.html'"
+      >
+        <div class="flex gap-1 mb-3">
+          <span class="text-white text-sm">★★★★★</span>
+        </div>
+        <p class="text-white font-semibold text-sm sm:text-base leading-tight pr-8">
+          Shop for exclusive items here.
+        </p>
+        <img src="../assets/images/m2.png" alt="m1" class="absolute bottom-0 right-0 w-24 h-28 sm:w-28 sm:h-32 md:w-32 md:h-36 opacity-90">
+      </article>
+
+      <!-- Card: Cart -->
+      <article
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-400 to-green-600 p-4 sm:p-5 h-44 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:scale-105 transition-transform duration-200"
+        onclick="window.location.href='../pages/cart.html'"
+      >
+        <div class="flex gap-1 mb-3">
+          <span class="text-white text-sm">★★★★</span>
+        </div>
+        <p class="text-white font-semibold text-sm sm:text-base leading-tight pr-8">
+          View your cart.
+        </p>
+        <img src="../assets/images/m3.png" alt="m1" class="absolute bottom-0 right-0 w-24 h-28 sm:w-28 sm:h-32 md:w-32 md:h-36 opacity-90">
+      </article>
+
+      <!-- Spacer card (optional aesthetic balance on lg) -->
+      <article class="hidden lg:block rounded-3xl bg-transparent"></article>
+
+      <!-- Card: Auctions -->
+      <article
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-700 to-gray-800 p-4 sm:p-5 col-span-2 md:col-span-2 lg:col-span-4 h-44 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:scale-105 transition-transform duration-200"
+        onclick="window.location.href='../pages/auctions.html'"
+      >
+        <div class="flex gap-1 mb-4">
+          <span class="text-white text-lg">★★★</span>
+          <span class="text-gray-500 text-lg">★</span>
+        </div>
+        <div class="mb-2 sm:mb-4">
+          <h3 class="text-white font-bold text-xl sm:text-2xl mb-1">Auctions</h3>
+          <p class="text-gray-300 text-sm sm:text-base">Browse & place bids.</p>
+        </div>
+        <img src="../assets/images/m4.png" alt="m1" class="absolute bottom-0 right-0 w-40 h-32 sm:w-32 sm:h-36 md:w-36 md:h-40 opacity-90">
+      </article>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'https://api.copup.copupbid.com/api';
+
+    let balanceVisible = false;
+    let actualBalance = 0;
+
+    function toggleBalance() {
+      const coinBadge = document.getElementById('coinBadge');
+      balanceVisible = !balanceVisible;
+      
+      if (balanceVisible) {
+        coinBadge.textContent = actualBalance;
+      } else {
+        coinBadge.textContent = '***';
+      }
+    }
+
+    async function loadUserProfile() {
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authToken) {
+        window.location.href = '../auth/login.html';
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_BASE_URL}/users/profile`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const userData = response.data;
+
+        const displayName = userData.full_name || userData.username || 'CopUp User';
+
+        // Heading name
+        const questHeading = document.getElementById('questHeading');
+        if (questHeading) {
+          questHeading.innerHTML =
+            `Choose<br />your quests<br /><span class="text-2xl sm:text-3xl text-blue-400">${displayName}</span>`;
+        }
+
+        // Sidebar name
+        const sidebarUserName = document.getElementById('sidebarUserName');
+        if (sidebarUserName) {
+          sidebarUserName.textContent = displayName;
+        }
+
+        // Coin balance
+        const coinBadge = document.getElementById('coinBadge');
+        if (coinBadge && userData.bid_points !== undefined) {
+          actualBalance = userData.bid_points || 0;
+          coinBadge.textContent = '***';
+        }
+
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        
+        if (error.response && error.response.status === 401) {
+          localStorage.removeItem('authToken');
+          window.location.href = '../auth/login.html';
+        } else {
+          // Fallback name if something breaks
+          const sidebarUserName = document.getElementById('sidebarUserName');
+          if (sidebarUserName) {
+            sidebarUserName.textContent = 'CopUp User';
+          }
+        }
+      }
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      // Load user profile + names
+      loadUserProfile();
+
+      // Sidebar controls
+      const openSidebar = document.getElementById('openSidebar');
+      const closeSidebar = document.getElementById('closeSidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const sidebar = document.getElementById('sidebar');
+      const sidebarLogout = document.getElementById('sidebarLogout');
+
+      if (openSidebar) {
+        openSidebar.addEventListener('click', () => {
+          sidebar.classList.remove('translate-x-full');
+          sidebarOverlay.classList.remove('hidden');
+        });
+      }
+
+      if (closeSidebar) {
+        closeSidebar.addEventListener('click', () => {
+          sidebar.classList.add('translate-x-full');
+          sidebarOverlay.classList.add('hidden');
+        });
+      }
+
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+          sidebar.classList.add('translate-x-full');
+          sidebarOverlay.classList.add('hidden');
+        });
+      }
+
+      if (sidebarLogout) {
+        sidebarLogout.addEventListener('click', () => {
+          localStorage.removeItem('authToken');
+          window.location.href = '../auth/login.html';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

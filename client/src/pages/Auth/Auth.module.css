@@ -1,0 +1,362 @@
+/* src/pages/Auth/Auth.module.css */
+
+/* ✅ Fix input overflow globally */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+  background: #070b14;
+  color: #fff;
+  overflow-x: hidden;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+.page {
+  min-height: 100vh;
+  background: #070b14;
+  position: relative;
+  overflow: hidden;
+  padding: 90px 0 60px;
+  display: grid;
+  place-items: center;
+}
+
+/* ✅ keep your background glow */
+.bgGlow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bgSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pulse1,
+.pulse2,
+.pulse3 {
+  animation: pulse 2.8s ease-in-out infinite;
+}
+.pulse2 {
+  animation-delay: 1s;
+}
+.pulse3 {
+  animation-delay: 2s;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* =========================
+   ✅ Screenshot-style layout
+   ========================= */
+
+.container {
+  width: min(460px, calc(100% - 28px));
+  position: relative;
+  z-index: 2;
+}
+
+.card {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(22, 31, 46, 0.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+/* header */
+.cardHead {
+  padding: 22px 22px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ✅ center logo + title like screenshot */
+.brandRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.brandText {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  min-width: 0;
+}
+
+/* optional small site name (subtle) */
+.siteName {
+  display: none; /* set to block if you want it visible */
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.brandLogo {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.brandLogoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ✅ screenshot-like title */
+.brandTitle {
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  font-size: 22px;
+  margin: 0;
+  color: #39d98a;
+}
+
+/* subtitle under the title */
+.brandSub {
+  margin-top: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.cardBody {
+  padding: 22px;
+}
+
+/* form */
+.row {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 800;
+}
+
+/* ✅ fixed overflow + clean input */
+.input {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 10px;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.input:focus {
+  border-color: rgba(56, 189, 248, 0.85);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 2-col grid stays */
+.grid2 {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 520px) {
+  .grid2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* buttons */
+.actions {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* ✅ gradient button */
+.btnPrimary {
+  border: none;
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-weight: 900;
+  color: #ffffff;
+  background: linear-gradient(90deg, #39d98a, #2d7dff);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.btnPrimary:hover {
+  box-shadow: 0 14px 40px rgba(45, 125, 255, 0.18);
+}
+
+.btnPrimary:active {
+  transform: scale(0.99);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease,
+    border-color 120ms ease;
+}
+
+.btnGhost:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.btnGhost:active {
+  transform: scale(0.99);
+}
+
+.btnGhost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.hr {
+  margin: 14px 0 10px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ✅ footer links centered like screenshot */
+.miniRow {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+}
+
+.link {
+  color: rgba(57, 217, 138, 0.95);
+  font-weight: 900;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.helper {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* messages */
+.msgOk {
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.12);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: rgba(209, 250, 229, 0.98);
+}
+
+.msgErr {
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.26);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: rgba(254, 202, 202, 0.96);
+}
+
+/* ✅ Show/Hide password wrapper */
+.passwordWrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrap .input {
+  padding-right: 78px; /* room for Show/Hide */
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #39d98a;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.eyeBtn:hover {
+  opacity: 0.85;
+}
+
+/* responsiveness */
+@media (max-width: 420px) {
+  .page {
+    padding: 70px 0 40px;
+  }
+  .cardHead {
+    padding: 18px 18px 10px;
+  }
+  .cardBody {
+    padding: 18px;
+  }
+  .brandTitle {
+    font-size: 20px;
+  }
+}

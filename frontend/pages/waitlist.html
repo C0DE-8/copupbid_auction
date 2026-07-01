@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CopUpBid — My Waitlist</title>
+
+  <!-- Tailwind (quick CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cop: { bg:'#0b1022', teal:'#10b981', cyan:'#06b6d4', blue:'#2563eb' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body{
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(16,185,129,.10), transparent 60%),
+        radial-gradient(1000px 600px at 80% 20%, rgba(37,99,235,.10), transparent 65%),
+        radial-gradient(1000px 800px at 50% 100%, rgba(6,182,212,.10), transparent 60%),
+        #0b1022;
+    }
+    .glass { background: linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6)); backdrop-filter: blur(10px); }
+    .ring-glow { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03); }
+    .chip { border:1px solid rgba(255,255,255,.08); }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.12), rgba(255,255,255,.05)); background-size: 200% 100%; animation: sk 1.4s infinite; }
+    @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .tab { border:1px solid rgba(255,255,255,.10); }
+    .tab.active { background: linear-gradient(135deg, rgba(16,185,129,.2), rgba(6,182,212,.2)); border-color: rgba(255,255,255,.25); }
+    .status { font-size: 11px; padding: 3px 8px; border-radius: 999px; border:1px solid rgba(255,255,255,.15); }
+    .st-queued     { background: rgba(59,130,246,.15); }
+    .st-inprogress { background: rgba(234,179,8,.18); }
+    .st-won        { background: rgba(16,185,129,.22); color:#052; }
+    .st-fulfilled  { background: rgba(99,102,241,.18); }
+    .st-cancelled  { background: rgba(239,68,68,.18); }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen">
+  <!-- Topbar -->
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-[#0b1022]/80 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="./shop.html" class="text-white/80 hover:text-white">← Back to Shop</a>
+      <div class="font-semibold tracking-wide">CopUpBid</div>
+      <button id="quickToken" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold hidden">Paste Token</button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Head -->
+    <div class="mb-5 flex items-center justify-between">
+      <h1 class="text-2xl sm:text-3xl font-extrabold">My Waitlist</h1>
+      <div class="text-white/70 text-sm" id="metaCount">—</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mb-6 flex items-center gap-2">
+      <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="">All</button>
+      <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="auction">Auction</button>
+      <button class="tab rounded-xl px-3 py-1.5 text-sm" data-mode="heist">Heist</button>
+      <div class="ml-auto text-xs text-white/70">Auto-refresh: <span id="refreshEvery">15s</span></div>
+    </div>
+
+    <!-- Totals -->
+    <div class="grid sm:grid-cols-3 gap-3 mb-6">
+      <div class="glass ring-glow rounded-xl p-4">
+        <div class="text-xs text-white/60">Total Locked</div>
+        <div id="totLocked" class="text-xl font-semibold">—</div>
+      </div>
+      <div class="glass ring-glow rounded-xl p-4">
+        <div class="text-xs text-white/60">Auction Locked</div>
+        <div id="totLockedAuction" class="text-xl font-semibold">—</div>
+      </div>
+      <div class="glass ring-glow rounded-xl p-4">
+        <div class="text-xs text-white/60">Heist Locked</div>
+        <div id="totLockedHeist" class="text-xl font-semibold">—</div>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div id="list" class="space-y-3"></div>
+    <div id="empty" class="hidden text-center text-white/70 mt-10">No entries here yet.</div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden px-4 py-3 rounded-xl glass ring-glow text-sm"></div>
+
+  <!-- Axios + App JS -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // ===== Config
+    const API_BASE = 'https://api.copup.copupbid.com/api/users';
+    const http = axios.create({ baseURL: API_BASE.replace(/\/$/, ''), timeout: 15000 });
+    const token = () => (localStorage.getItem('authToken') || '').trim();
+    http.interceptors.request.use(cfg => { const t = token(); if (t) cfg.headers.Authorization = 'Bearer ' + t; return cfg; });
+
+    // ===== Utils
+    const qs = (k) => new URLSearchParams(location.search).get(k);
+    const setQS = (kv) => {
+      const url = new URL(location.href);
+      Object.entries(kv).forEach(([k,v]) => v==null ? url.searchParams.delete(k) : url.searchParams.set(k, v));
+      history.replaceState({}, '', url);
+    };
+    const fmtN = (n) => (n == null ? '—' : Intl.NumberFormat('en-NG').format(Number(n)));
+    const toast = (msg, kind='info') => {
+      const el = document.getElementById('toast'); if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.border = '1px solid rgba(255,255,255,.1)';
+      el.style.background = kind === 'error'
+        ? 'rgba(220,38,38,.12)'
+        : 'linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6))';
+      setTimeout(()=> el.classList.add('hidden'), 3000);
+    };
+
+    // ===== UI helpers
+    function skeleton(n=4){
+      const wrap = document.getElementById('list');
+      wrap.innerHTML = '';
+      for (let i=0;i<n;i++){
+        const card = document.createElement('div');
+        card.className = 'glass ring-glow rounded-2xl p-4';
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="h-5 w-40 skeleton rounded"></div>
+            <div class="h-5 w-16 skeleton rounded"></div>
+          </div>
+          <div class="mt-3 grid sm:grid-cols-4 gap-2">
+            <div class="h-6 w-full skeleton rounded"></div>
+            <div class="h-6 w-full skeleton rounded"></div>
+            <div class="h-6 w-full skeleton rounded"></div>
+            <div class="h-6 w-full skeleton rounded"></div>
+          </div>`;
+        wrap.appendChild(card);
+      }
+      document.getElementById('empty').classList.add('hidden');
+    }
+
+    function statusClass(s){
+      if (!s) return 'status';
+      const k = String(s).toLowerCase();
+      if (k==='queued') return 'status st-queued';
+      if (k==='in_progress' || k==='inprogress') return 'status st-inprogress';
+      if (k==='won') return 'status st-won';
+      if (k==='fulfilled') return 'status st-fulfilled';
+      if (k==='cancelled') return 'status st-cancelled';
+      return 'status';
+    }
+
+    function entryCard(r){
+      const el = document.createElement('div');
+      el.className = 'glass ring-glow rounded-2xl p-4';
+      const dt = new Date(r.created_at).toLocaleString();
+      const modeEmoji = r.mode === 'auction' ? '🏁' : (r.mode === 'heist' ? '⚔️' : '•');
+      el.innerHTML = `
+        <div class="flex items-center justify-between gap-3">
+          <div class="text-lg font-semibold line-clamp-1"><a href="./product.html?id=${r.product_id}" class="hover:underline">${r.product_name}</a></div>
+          <div class="${statusClass(r.status)}">${r.status}</div>
+        </div>
+        <div class="mt-3 grid sm:grid-cols-4 gap-2 text-sm">
+          <div class="chip rounded px-2 py-1">Mode: <span class="ml-1 font-semibold">${modeEmoji} ${r.mode}</span></div>
+          <div class="chip rounded px-2 py-1">Qty: <span class="ml-1 font-semibold">${r.qty}</span></div>
+          <div class="chip rounded px-2 py-1">Bid Locked: <span class="ml-1 font-semibold">${fmtN(r.bid_locked)} CP</span></div>
+          <div class="chip rounded px-2 py-1">Created: <span class="ml-1 font-semibold">${dt}</span></div>
+        </div>`;
+      return el;
+    }
+
+    function activateTabs(activeMode){
+      document.querySelectorAll('.tab').forEach(btn=>{
+        const m = btn.getAttribute('data-mode') || '';
+        btn.classList.toggle('active', String(m) === String(activeMode || ''));
+        btn.onclick = () => {
+          setQS({ mode: m || null });
+          loadWaitlist(); // reload with new filter
+        };
+      });
+    }
+
+    function summarize(rows){
+      const tot = rows.reduce((s,r)=> s + Number(r.bid_locked||0), 0);
+      const a = rows.filter(r=> r.mode==='auction').reduce((s,r)=> s + Number(r.bid_locked||0), 0);
+      const h = rows.filter(r=> r.mode==='heist').reduce((s,r)=> s + Number(r.bid_locked||0), 0);
+      document.getElementById('totLocked').textContent = fmtN(tot) + ' CP';
+      document.getElementById('totLockedAuction').textContent = fmtN(a) + ' CP';
+      document.getElementById('totLockedHeist').textContent = fmtN(h) + ' CP';
+      document.getElementById('metaCount').textContent = `${rows.length} entr${rows.length===1?'y':'ies'}`;
+    }
+
+    // ===== Data
+    async function getWaitlist(mode){
+      const params = {};
+      if (mode) params.mode = mode;
+      const { data } = await http.get('/shop/waitlist', { params });
+      return data || [];
+    }
+
+    // ===== Page flow
+    let timer = null;
+    const REFRESH_MS = 15000;
+
+    async function loadWaitlist(){
+      const mode = (qs('mode') || '').toLowerCase();
+      activateTabs(mode);
+
+      // auth helper
+      if (!token()) document.getElementById('quickToken')?.classList.remove('hidden');
+
+      skeleton(4);
+      try{
+        const rows = await getWaitlist(mode);
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        rows.forEach(r => list.appendChild(entryCard(r)));
+        document.getElementById('empty').classList.toggle('hidden', rows.length !== 0);
+        summarize(rows);
+      }catch(err){
+        document.getElementById('list').innerHTML = '';
+        document.getElementById('empty').classList.remove('hidden');
+        toast(err?.response?.data?.message || 'Failed to fetch waitlist','error');
+      }
+
+      // reset poller
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(loadWaitlist, REFRESH_MS);
+    }
+
+    // quick JWT paste
+    document.getElementById('quickToken')?.addEventListener('click', ()=>{
+      const t = prompt('Paste your authToken (JWT)');
+      if (t){ localStorage.setItem('authToken', t.trim()); location.reload(); }
+    });
+
+    // boot
+    document.getElementById('refreshEvery').textContent = (REFRESH_MS/1000)+'s';
+    loadWaitlist();
+  </script>
+</body>
+</html>

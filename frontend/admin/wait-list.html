@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <title>Admin • Waitlist Management</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: "#10b981", 600: "#059669" },
+            accent: { 500: "#3b82f6" }
+          },
+          boxShadow: {
+            glow: "0 0 80px rgba(16,185,129,.18)"
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    .glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1rem;
+      backdrop-filter: blur(6px);
+    }
+    .modal-backdrop {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-900 text-slate-100">
+
+<!-- Background -->
+<div class="fixed inset-0 -z-10 pointer-events-none">
+  <div class="absolute inset-0 bg-[radial-gradient(1000px_450px_at_30%_0%,rgba(16,185,129,.08),transparent)]"></div>
+  <div class="absolute inset-0 bg-[radial-gradient(900px_500px_at_80%_90%,rgba(59,130,246,.12),transparent)]"></div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 bg-slate-900/80 backdrop-blur border-b border-white/10 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <button id="backBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+      ← Dashboard
+    </button>
+    <h1 class="text-lg font-semibold">Waitlist <span class="text-brand-500">Management</span></h1>
+    <button id="logoutBtn" class="text-sm text-slate-300 hover:text-white">Logout</button>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+  <!-- SUMMARY -->
+  <section class="glass p-6 space-y-6">
+    <!-- Global totals cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumQueued" class="text-3xl font-bold text-amber-300">—</div>
+        <div class="text-sm text-slate-400">Queued</div>
+      </div>
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumWon" class="text-3xl font-bold text-blue-300">—</div>
+        <div class="text-sm text-slate-400">Won</div>
+      </div>
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumFulfilled" class="text-3xl font-bold text-emerald-300">—</div>
+        <div class="text-sm text-slate-400">Fulfilled</div>
+      </div>
+      <div class="p-4 text-center rounded-xl bg-white/5 border border-white/10">
+        <div id="sumCancelled" class="text-3xl font-bold text-red-300">—</div>
+        <div class="text-sm text-slate-400">Cancelled</div>
+      </div>
+    </div>
+
+    <!-- Detailed summary by product + mode -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">
+            Waitlist Summary <span class="text-brand-500">by Product &amp; Mode</span>
+          </h2>
+          <p class="text-xs text-slate-400">
+            Data from
+            <code class="text-[10px] bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
+              GET /waitlist/summary
+            </code>
+          </p>
+        </div>
+        <p class="text-[11px] text-slate-500">
+          Honors current <span class="text-brand-400">Mode</span> / <span class="text-brand-400">Status</span> filters.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto border border-white/10 rounded-xl bg-black/10">
+        <table class="min-w-full text-xs sm:text-sm">
+          <thead class="bg-white/5 text-slate-300">
+            <tr>
+              <th class="px-3 py-2 text-left">Product</th>
+              <th class="px-3 py-2 text-left">Mode</th>
+              <th class="px-3 py-2 text-right">Entries</th>
+              <th class="px-3 py-2 text-right">Total Locked</th>
+              <th class="px-3 py-2 text-right">Queued</th>
+              <th class="px-3 py-2 text-right">Won</th>
+              <th class="px-3 py-2 text-right">Fulfilled</th>
+              <th class="px-3 py-2 text-right">Cancelled</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTbody" class="divide-y divide-white/5"></tbody>
+        </table>
+      </div>
+
+      <div id="summaryEmpty" class="hidden text-xs text-slate-500">
+        No summary data yet. Adjust filters or wait for users to join the waitlist.
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT QUICK LOOKUP -->
+  <section class="glass p-6 space-y-4">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">
+        Product <span class="text-brand-500">Quick Lookup</span>
+      </h2>
+      <p class="text-xs text-slate-400">
+        Pick a product to auto-fill the filter and see its prices / categories.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="space-y-1">
+        <label class="text-xs text-slate-300">Select Product</label>
+        <select id="productSelect" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm">
+          <option value="">Loading products...</option>
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs text-slate-300">Product ID (sync with filters)</label>
+        <input
+          id="productIdQuick"
+          type="number"
+          class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+          placeholder="Enter product id"
+        >
+      </div>
+      <div class="flex items-end gap-3">
+        <button
+          id="btnLoadProduct"
+          class="w-full md:w-auto px-4 py-2 rounded-lg bg-brand-500 text-slate-900 font-semibold text-sm hover:bg-brand-600">
+          Load Product Details
+        </button>
+      </div>
+    </div>
+
+    <div id="productInfo" class="mt-4 hidden">
+      <div class="flex flex-col md:flex-row gap-4 items-start">
+        <div class="w-full md:w-auto">
+          <div class="aspect-square w-24 h-24 rounded-xl bg-slate-800 flex items-center justify-center overflow-hidden border border-white/10">
+            <img id="productImg" src="" alt="Product image" class="w-full h-full object-cover hidden">
+            <span id="productImgFallback" class="text-xs text-slate-500">No image</span>
+          </div>
+        </div>
+        <div class="flex-1 space-y-1 text-sm">
+          <div class="flex items-center gap-2">
+            <span id="productName" class="font-semibold text-slate-100"></span>
+            <span id="productIdLabel" class="text-xs text-slate-400"></span>
+          </div>
+          <div id="productCategories" class="text-xs text-slate-400"></div>
+          <div class="flex flex-wrap gap-3 text-xs mt-2">
+            <span id="productCash" class="px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-200"></span>
+            <span id="productAuction" class="px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/40 text-blue-200"></span>
+            <span id="productHeist" class="px-2 py-1 rounded-full bg-purple-500/10 border border-purple-500/40 text-purple-200"></span>
+          </div>
+          <div id="productCreated" class="text-xs text-slate-500 mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="productInfoEmpty" class="mt-2 text-xs text-slate-500">
+      Select a product or type an ID, then click “Load Product Details”.
+    </div>
+
+    <div id="productError" class="hidden mt-3 text-xs text-red-300 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2"></div>
+  </section>
+
+  <!-- FILTERS -->
+  <section class="glass p-6">
+    <form id="filterForm" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+
+      <div>
+        <label class="text-xs mb-1 block">Product ID</label>
+        <input id="fProduct" type="number" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">User ID</label>
+        <input id="fUser" type="number" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Mode</label>
+        <select id="fMode" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+          <option value="">All</option>
+          <option value="auction">Auction</option>
+          <option value="heist">Heist</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Status</label>
+        <select id="fStatus" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+          <option value="">All</option>
+          <option value="queued">Queued</option>
+          <option value="won">Won</option>
+          <option value="fulfilled">Fulfilled</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs mb-1 block">Order</label>
+        <select id="fOrder" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+        </select>
+      </div>
+
+      <div class="flex items-end">
+        <button class="px-4 py-2 rounded-lg bg-brand-500 text-slate-900 font-semibold w-full">
+          Apply
+        </button>
+      </div>
+
+    </form>
+
+    <div class="mt-3 text-right">
+      <button id="clearFilters" class="text-xs text-slate-300 hover:text-white">
+        Clear Filters
+      </button>
+    </div>
+  </section>
+
+  <!-- ACTION BUTTONS -->
+  <section class="glass p-6">
+    <div class="flex flex-wrap gap-3">
+      <button id="btnCreateAuction" class="px-4 py-2 text-sm rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-200 hover:bg-blue-500/30">
+        Create Auction from Waitlist
+      </button>
+      <button id="btnCreateHeist" class="px-4 py-2 text-sm rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-200 hover:bg-purple-500/30">
+        Create Heist from Waitlist
+      </button>
+      <button id="btnCancelWaitlist" class="px-4 py-2 text-sm rounded-lg bg-red-500/20 border border-red-500/40 text-red-200 hover:bg-red-500/30">
+        Cancel & Refund Waitlist
+      </button>
+    </div>
+    <p class="mt-3 text-xs text-slate-400">
+      These actions use the currently selected <span class="text-brand-400 font-medium">Product ID</span> (from top section / filters).  
+      Make sure you’ve chosen the right product before running them.
+    </p>
+  </section>
+
+  <!-- WAITLIST TABLE -->
+  <section class="glass p-6">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-slate-400 border-b border-white/10">
+            <th class="px-3 py-2 text-left">ID</th>
+            <th class="px-3 py-2 text-left">User</th>
+            <th class="px-3 py-2 text-left">Product</th>
+            <th class="px-3 py-2 text-left">Qty</th>
+            <th class="px-3 py-2 text-left">Mode</th>
+            <th class="px-3 py-2 text-left">Locked</th>
+            <th class="px-3 py-2 text-left">Status</th>
+            <th class="px-3 py-2 text-left">Date</th>
+          </tr>
+        </thead>
+        <tbody id="waitTbody" class="divide-y divide-white/10"></tbody>
+      </table>
+    </div>
+
+    <div id="pagination" class="mt-4 flex items-center justify-between text-sm text-slate-400"></div>
+
+    <div id="errorBox" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/40 rounded-lg text-red-200 text-sm"></div>
+    <div id="okBox" class="hidden mt-4 p-3 bg-emerald-500/10 border border-emerald-500/40 rounded-lg text-emerald-200 text-sm"></div>
+  </section>
+
+</main>
+
+<!-- ========== MODALS ========== -->
+
+<!-- Auction Modal -->
+<div id="auctionModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
+  <div class="glass w-full max-w-lg p-6 relative">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-base font-semibold text-slate-100">Create Auction from Waitlist</h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Creates an auction for the selected product and seeds participants from <span class="font-semibold text-blue-300">auction</span> waitlist rows.
+        </p>
+      </div>
+      <button id="auctionClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+
+    <form id="auctionForm" class="mt-4 space-y-3 text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs mb-1">Product ID</label>
+          <input id="auctionProductId" type="number"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+                 required>
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Entry Bid Points</label>
+          <input id="auctionEntry" type="number" min="0"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+                 required>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs mb-1">Auction Name</label>
+        <input id="auctionName" type="text"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+               placeholder="Ex: iPhone 15 Pro Flash Auction" required>
+      </div>
+
+      <div>
+        <label class="block text-xs mb-1">Description (optional)</label>
+        <textarea id="auctionDesc" rows="2"
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 resize-none"
+                  placeholder="Short description shown to users"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs mb-1">Minimum Users</label>
+          <input id="auctionMinUsers" type="number" min="1"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+                 required>
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Payout Category</label>
+          <select id="auctionCategory"
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+            <option value="cash">Cash</option>
+            <option value="product">Product</option>
+            <option value="coupon">Coupon</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 mt-1">
+        <input id="auctionUpdateWaitlist" type="checkbox"
+               class="rounded border-white/20 bg-white/5">
+        <label for="auctionUpdateWaitlist" class="text-xs text-slate-300">
+          Mark used waitlist rows as <span class="font-semibold text-amber-300">in_progress</span>
+        </label>
+      </div>
+
+      <div id="auctionErr" class="hidden mt-2 text-xs text-red-200 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2"></div>
+      <div id="auctionOk" class="hidden mt-2 text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/40 rounded-lg px-3 py-2"></div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" id="auctionCancel"
+                class="px-3 py-2 text-xs rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+          Cancel
+        </button>
+        <button type="submit" id="auctionSubmit"
+                class="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-500 text-slate-900 hover:bg-blue-600 flex items-center gap-2">
+          <span id="auctionSpinner" class="hidden h-4 w-4 border-2 border-white/40 border-t-transparent rounded-full animate-spin"></span>
+          <span>Create Auction</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Heist Modal -->
+<div id="heistModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
+  <div class="glass w-full max-w-lg p-6 relative">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-base font-semibold text-slate-100">Create Heist from Waitlist</h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Creates a heist for the selected product and seeds participants from <span class="font-semibold text-purple-300">heist</span> waitlist rows.
+        </p>
+      </div>
+      <button id="heistClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+
+    <form id="heistForm" class="mt-4 space-y-3 text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs mb-1">Product ID</label>
+          <input id="heistProductId" type="number"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+                 required>
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Min Users</label>
+          <input id="heistMinUsers" type="number" min="1"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+                 required>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs mb-1">Heist Name</label>
+        <input id="heistName" type="text"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+               placeholder="Ex: PS5 Midnight Heist" required>
+      </div>
+
+      <div>
+        <label class="block text-xs mb-1">Story (optional, shown in heist)</label>
+        <textarea id="heistStory" rows="2"
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 resize-none"
+                  placeholder="Short narrative for the heist"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs mb-1">Question (optional)</label>
+          <input id="heistQuestion" type="text"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Answer (optional)</label>
+          <input id="heistAnswer" type="text"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs mb-1">Ticket Price (pts)</label>
+          <input id="heistTicket" type="number" min="0"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2" required>
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Prize (pts)</label>
+          <input id="heistPrize" type="number" min="0"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2" required>
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Prize Category</label>
+          <select id="heistCategory"
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+            <option value="cash">Cash</option>
+            <option value="product">Product</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs mb-1">Prize Name (optional)</label>
+        <input id="heistPrizeName" type="text"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+               placeholder="Ex: ₦250,000 cash or PS5 Bundle">
+      </div>
+
+      <div class="flex items-center gap-2 mt-1">
+        <input id="heistUpdateWaitlist" type="checkbox"
+               class="rounded border-white/20 bg-white/5">
+        <label for="heistUpdateWaitlist" class="text-xs text-slate-300">
+          Mark used waitlist rows as <span class="font-semibold text-amber-300">in_progress</span>
+        </label>
+      </div>
+
+      <div id="heistErr" class="hidden mt-2 text-xs text-red-200 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2"></div>
+      <div id="heistOk" class="hidden mt-2 text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/40 rounded-lg px-3 py-2"></div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" id="heistCancel"
+                class="px-3 py-2 text-xs rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+          Cancel
+        </button>
+        <button type="submit" id="heistSubmit"
+                class="px-4 py-2 text-xs font-semibold rounded-lg bg-purple-500 text-slate-900 hover:bg-purple-600 flex items-center gap-2">
+          <span id="heistSpinner" class="hidden h-4 w-4 border-2 border-white/40 border-t-transparent rounded-full animate-spin"></span>
+          <span>Create Heist</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cancel Waitlist Modal -->
+<div id="cancelModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
+  <div class="glass w-full max-w-md p-6 relative">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-base font-semibold text-slate-100">Cancel & Refund Waitlist</h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Cancels <span class="text-red-300 font-semibold">queued / in_progress</span> waitlist rows for a product & mode and refunds <span class="text-emerald-300 font-semibold">bid_points</span> to users.
+        </p>
+      </div>
+      <button id="cancelClose" class="text-slate-400 hover:text-white text-xl leading-none">×</button>
+    </div>
+
+    <form id="cancelForm" class="mt-4 space-y-3 text-sm">
+      <div>
+        <label class="block text-xs mb-1">Product ID</label>
+        <input id="cancelProductId" type="number"
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+               required>
+      </div>
+
+      <div>
+        <label class="block text-xs mb-1">Mode</label>
+        <select id="cancelMode"
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+          <option value="auction">Auction</option>
+          <option value="heist">Heist</option>
+        </select>
+      </div>
+
+      <div class="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/40 rounded-lg px-3 py-2">
+        This will:
+        <ul class="list-disc list-inside mt-1 space-y-0.5">
+          <li>Lock all eligible waitlist rows for that product & mode.</li>
+          <li>Refund <span class="font-semibold">bid_points</span> per user.</li>
+          <li>Mark those rows as <span class="font-semibold">cancelled</span>.</li>
+        </ul>
+      </div>
+
+      <div id="cancelErr" class="hidden mt-2 text-xs text-red-200 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2"></div>
+      <div id="cancelOk" class="hidden mt-2 text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/40 rounded-lg px-3 py-2"></div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" id="cancelCancel"
+                class="px-3 py-2 text-xs rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+          Close
+        </button>
+        <button type="submit" id="cancelSubmit"
+                class="px-4 py-2 text-xs font-semibold rounded-lg bg-red-500 text-slate-900 hover:bg-red-600 flex items-center gap-2">
+          <span id="cancelSpinner" class="hidden h-4 w-4 border-2 border-white/40 border-t-transparent rounded-full animate-spin"></span>
+          <span>Cancel & Refund</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API = "https://api.copup.copupbid.com/api/admin";
+const LOGIN_URL = "../auth/login.html";
+axios.defaults.baseURL = API;
+
+// Ensure Auth
+(function ensureAuth() {
+  const raw = localStorage.getItem("authToken");
+  if (!raw) return location.href = LOGIN_URL;
+  axios.defaults.headers.common["Authorization"] = "Bearer " + raw.replace(/^"(.+)"$/, "$1");
+})();
+
+// DOM helpers
+const $ = id => document.getElementById(id);
+const show = el => el && el.classList.remove("hidden");
+const hide = el => el && el.classList.add("hidden");
+
+// Nav buttons
+$("logoutBtn").onclick = () => { localStorage.removeItem("authToken"); location.href = LOGIN_URL };
+$("backBtn").onclick = () => location.href = "./admin-dashboard.html";
+
+// Pagination state
+let limit = 50;
+let offset = 0;
+let totalRows = 0;
+
+// Products cache
+let productsCache = [];
+
+/* ========= GLOBAL MESSAGES ========= */
+function setOk(msg) {
+  const box = $("okBox");
+  if (!box) return;
+  box.textContent = msg;
+  show(box);
+  hide($("errorBox"));
+}
+function setErr(msg) {
+  const box = $("errorBox");
+  if (!box) return;
+  box.textContent = msg;
+  show(box);
+  hide($("okBox"));
+}
+function clearMainMsgs() {
+  hide($("okBox"));
+  hide($("errorBox"));
+}
+
+/* ========= PRODUCT HELPERS ========= */
+
+async function loadProductsList() {
+  try {
+    const { data } = await axios.get("/products");
+    productsCache = data || [];
+
+    const select = $("productSelect");
+    if (!productsCache.length) {
+      select.innerHTML = '<option value="">No products found</option>';
+      return;
+    }
+
+    select.innerHTML = '<option value="">Select product…</option>' +
+      productsCache.map(p => {
+        const cats = p.categories ? ` (${p.categories})` : "";
+        return `<option value="${p.id}">#${p.id} - ${escapeHtml(p.name)}${cats}</option>`;
+      }).join("");
+  } catch (err) {
+    console.error("loadProductsList error", err);
+    const select = $("productSelect");
+    select.innerHTML = '<option value="">Error loading products</option>';
+  }
+}
+
+async function loadSingleProduct(id) {
+  if (!id) {
+    showProductError("Please provide a valid product id.");
+    return;
+  }
+  clearProductError();
+  try {
+    const { data } = await axios.get(`/products/${id}`);
+    renderProductInfo(data);
+    // sync filter Product ID
+    $("fProduct").value = id;
+    $("productIdQuick").value = id;
+  } catch (err) {
+    console.error("loadSingleProduct error", err);
+    showProductError(err?.response?.data?.message || "Failed to load product.");
+    hideProductInfo();
+  }
+}
+
+function renderProductInfo(p) {
+  if (!p) {
+    hideProductInfo();
+    return;
+  }
+
+  $("productInfo").classList.remove("hidden");
+  $("productInfoEmpty").classList.add("hidden");
+
+  $("productName").textContent = p.name || "Unnamed product";
+  $("productIdLabel").textContent = p.id ? `#${p.id}` : "";
+  $("productCategories").textContent = Array.isArray(p.categories)
+    ? ("Categories: " + p.categories.map(c => c.name).join(", "))
+    : (p.categories ? ("Categories: " + p.categories) : "Categories: —");
+
+  $("productCash").textContent = `Cash: ${p.cash_price ?? 0}`;
+  $("productAuction").textContent = `Auction: ${p.auction_price ?? 0}`;
+  $("productHeist").textContent = `Heist: ${p.heist_price ?? 0}`;
+  $("productCreated").textContent = p.created_at ? ("Created: " + p.created_at) : "";
+
+  const img = $("productImg");
+  const fallback = $("productImgFallback");
+  if (p.image_url) {
+    img.src = p.image_url;
+    show(img);
+    hide(fallback);
+  } else {
+    img.src = "";
+    hide(img);
+    show(fallback);
+  }
+}
+
+function hideProductInfo() {
+  $("productInfo").classList.add("hidden");
+  $("productInfoEmpty").classList.remove("hidden");
+}
+
+function showProductError(msg) {
+  const box = $("productError");
+  box.textContent = msg;
+  show(box);
+}
+
+function clearProductError() {
+  const box = $("productError");
+  box.textContent = "";
+  hide(box);
+}
+
+// Simple escape
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ========= SUMMARY ========= */
+
+async function loadSummary() {
+  try {
+    const mode   = $("fMode")?.value?.trim()   || "";
+    const status = $("fStatus")?.value?.trim() || "";
+
+    const { data } = await axios.get("/waitlist/summary", {
+      params: {
+        mode:   mode   || undefined,
+        status: status || undefined
+      }
+    });
+
+    const rows = data || [];
+
+    let q = 0, w = 0, f = 0, c = 0;
+    rows.forEach(r => {
+      q += Number(r.queued || 0);
+      w += Number(r.won || 0);
+      f += Number(r.fulfilled || 0);
+      c += Number(r.cancelled || 0);
+    });
+
+    $("sumQueued").textContent    = q;
+    $("sumWon").textContent       = w;
+    $("sumFulfilled").textContent = f;
+    $("sumCancelled").textContent = c;
+
+    renderSummaryTable(rows);
+  } catch (err) {
+    console.error("summary error", err);
+    $("sumQueued").textContent    = "—";
+    $("sumWon").textContent       = "—";
+    $("sumFulfilled").textContent = "—";
+    $("sumCancelled").textContent = "—";
+    renderSummaryTable([]);
+  }
+}
+
+function renderSummaryTable(rows) {
+  const tbody = $("summaryTbody");
+  const empty = $("summaryEmpty");
+  if (!tbody) return;
+
+  if (!rows.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="px-3 py-4 text-center text-slate-400">
+          No waitlist summary available for the current filters.
+        </td>
+      </tr>
+    `;
+    if (empty) show(empty);
+    return;
+  }
+
+  if (empty) hide(empty);
+
+  tbody.innerHTML = rows.map(r => {
+    const modeLabel = r.mode === "auction"
+      ? '<span class="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/40 text-[11px] text-blue-200">Auction</span>'
+      : '<span class="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/40 text-[11px] text-purple-200 capitalize">'
+        + (r.mode || "heist") + "</span>";
+
+    return `
+      <tr class="hover:bg-white/5">
+        <td class="px-3 py-2 align-top">
+          <div class="font-medium text-slate-100">${escapeHtml(r.product_name || "Unknown product")}</div>
+          <div class="text-[11px] text-slate-500">ID: ${r.product_id}</div>
+        </td>
+        <td class="px-3 py-2 align-top">
+          ${modeLabel}
+        </td>
+        <td class="px-3 py-2 text-right">${r.entries ?? 0}</td>
+        <td class="px-3 py-2 text-right">${r.total_locked ?? 0}</td>
+        <td class="px-3 py-2 text-right text-amber-200">${r.queued ?? 0}</td>
+        <td class="px-3 py-2 text-right text-blue-200">${r.won ?? 0}</td>
+        <td class="px-3 py-2 text-right text-emerald-200">${r.fulfilled ?? 0}</td>
+        <td class="px-3 py-2 text-right text-red-200">${r.cancelled ?? 0}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* ========= WAITLIST LIST ========= */
+
+async function loadWaitlist() {
+  clearMainMsgs();
+
+  const productId = $("fProduct").value.trim();
+  const userId = $("fUser").value.trim();
+  const mode = $("fMode").value.trim();
+  const status = $("fStatus").value.trim();
+  const order = $("fOrder").value;
+
+  try {
+    const { data } = await axios.get("/waitlist", {
+      params: {
+        productId: productId || undefined,
+        userId: userId || undefined,
+        mode: mode || undefined,
+        status: status || undefined,
+        order,
+        limit,
+        offset
+      }
+    });
+
+    totalRows = data.total;
+    renderTable(data.items);
+    renderPagination();
+
+  } catch (err) {
+    setErr(err?.response?.data?.message || "Failed to load waitlist.");
+  }
+}
+
+function renderTable(rows) {
+  $("waitTbody").innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td class="px-3 py-2">${r.id}</td>
+      <td class="px-3 py-2">
+        ${escapeHtml(r.user_name)} 
+        <div class="text-xs text-slate-400">ID: ${r.user_id}${r.user_username ? ' • @' + escapeHtml(r.user_username) : ''}</div>
+      </td>
+      <td class="px-3 py-2">
+        ${escapeHtml(r.product_name)}
+        <div class="text-xs text-slate-400">ID: ${r.product_id}</div>
+      </td>
+      <td class="px-3 py-2">${r.qty}</td>
+      <td class="px-3 py-2 capitalize">${r.mode}</td>
+      <td class="px-3 py-2">${r.bid_locked}</td>
+      <td class="px-3 py-2 capitalize">${r.status}</td>
+      <td class="px-3 py-2">${r.created_at}</td>
+    </tr>
+  `).join("") : `
+    <tr>
+      <td colspan="8" class="px-3 py-4 text-center text-slate-400">
+        No waitlist entries match your filters.
+      </td>
+    </tr>
+  `;
+}
+
+function renderPagination() {
+  if (!totalRows) {
+    $("pagination").innerHTML = `<div>0 of 0</div><div></div>`;
+    return;
+  }
+
+  const start = offset + 1;
+  const end = Math.min(offset + limit, totalRows);
+  $("pagination").innerHTML = `
+    <div>${start}-${end} of ${totalRows}</div>
+    <div class="flex gap-3">
+      <button id="prevBtn" class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg disabled:opacity-40"
+        ${offset === 0 ? "disabled" : ""}>Prev</button>
+      <button id="nextBtn" class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg disabled:opacity-40"
+        ${(offset + limit >= totalRows) ? "disabled" : ""}>Next</button>
+    </div>
+  `;
+
+  if ($("prevBtn"))
+    $("prevBtn").onclick = () => { offset = Math.max(0, offset - limit); loadWaitlist(); };
+  if ($("nextBtn"))
+    $("nextBtn").onclick = () => { offset += limit; loadWaitlist(); };
+}
+
+/* ========= FILTER EVENTS ========= */
+
+$("filterForm").onsubmit = e => {
+  e.preventDefault();
+  offset = 0;
+  loadWaitlist();
+  loadSummary();
+};
+
+$("clearFilters").onclick = () => {
+  $("fProduct").value = "";
+  $("fUser").value = "";
+  $("fMode").value = "";
+  $("fStatus").value = "";
+  $("fOrder").value = "newest";
+  offset = 0;
+  loadWaitlist();
+  loadSummary();
+};
+
+/* ========= PRODUCT UI EVENTS ========= */
+
+$("productSelect").addEventListener("change", () => {
+  clearProductError();
+  const val = $("productSelect").value;
+  if (!val) return;
+  $("productIdQuick").value = val;
+  $("fProduct").value = val; // sync main filter
+});
+
+$("btnLoadProduct").addEventListener("click", () => {
+  const idFromQuick = Number($("productIdQuick").value || $("productSelect").value || $("fProduct").value);
+  if (!idFromQuick || !Number.isFinite(idFromQuick)) {
+    showProductError("Please select or enter a valid product id.");
+    return;
+  }
+  loadSingleProduct(idFromQuick);
+});
+
+$("productIdQuick").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    $("btnLoadProduct").click();
+  }
+});
+
+/* ========= MODAL HELPERS ========= */
+
+function getCurrentProductId() {
+  const fromQuick = Number($("productIdQuick").value || 0);
+  const fromFilter = Number($("fProduct").value || 0);
+  const fromSelect = Number($("productSelect").value || 0);
+  return fromQuick || fromFilter || fromSelect || null;
+}
+
+function openModal(el) { show(el); }
+function closeModal(el) { hide(el); }
+
+// Auction modal open
+$("btnCreateAuction").addEventListener("click", () => {
+  const pid = getCurrentProductId();
+  $("auctionProductId").value = pid || "";
+  $("auctionEntry").value = "";
+  $("auctionName").value = "";
+  $("auctionDesc").value = "";
+  $("auctionMinUsers").value = "";
+  $("auctionCategory").value = "cash";
+  $("auctionUpdateWaitlist").checked = true;
+  hide($("auctionErr"));
+  hide($("auctionOk"));
+  closeModal($("heistModal"));
+  closeModal($("cancelModal"));
+  openModal($("auctionModal"));
+});
+
+// Heist modal open
+$("btnCreateHeist").addEventListener("click", () => {
+  const pid = getCurrentProductId();
+  $("heistProductId").value = pid || "";
+  $("heistMinUsers").value = "";
+  $("heistName").value = "";
+  $("heistStory").value = "";
+  $("heistQuestion").value = "";
+  $("heistAnswer").value = "";
+  $("heistTicket").value = "";
+  $("heistPrize").value = "";
+  $("heistCategory").value = "cash";
+  $("heistPrizeName").value = "";
+  $("heistUpdateWaitlist").checked = true;
+  hide($("heistErr"));
+  hide($("heistOk"));
+  closeModal($("auctionModal"));
+  closeModal($("cancelModal"));
+  openModal($("heistModal"));
+});
+
+// Cancel modal open
+$("btnCancelWaitlist").addEventListener("click", () => {
+  const pid = getCurrentProductId();
+  $("cancelProductId").value = pid || "";
+  $("cancelMode").value = "auction";
+  hide($("cancelErr"));
+  hide($("cancelOk"));
+  closeModal($("auctionModal"));
+  closeModal($("heistModal"));
+  openModal($("cancelModal"));
+});
+
+// Close / cancel buttons
+$("auctionClose").onclick = () => closeModal($("auctionModal"));
+$("auctionCancel").onclick = () => closeModal($("auctionModal"));
+$("heistClose").onclick = () => closeModal($("heistModal"));
+$("heistCancel").onclick = () => closeModal($("heistModal"));
+$("cancelClose").onclick = () => closeModal($("cancelModal"));
+$("cancelCancel").onclick = () => closeModal($("cancelModal"));
+
+/* ========= AUCTION SUBMIT ========= */
+
+$("auctionForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hide($("auctionErr"));
+  hide($("auctionOk"));
+
+  const product_id = Number($("auctionProductId").value);
+  const entry_bid_points = Number($("auctionEntry").value);
+  const minimum_users = Number($("auctionMinUsers").value);
+  const name = $("auctionName").value.trim();
+  const description = $("auctionDesc").value.trim();
+  const category = $("auctionCategory").value;
+  const update_waitlist = $("auctionUpdateWaitlist").checked;
+
+  if (!product_id || !Number.isFinite(product_id)) {
+    $("auctionErr").textContent = "Valid product id is required.";
+    show($("auctionErr"));
+    return;
+  }
+
+  $("auctionSubmit").disabled = true;
+  show($("auctionSpinner"));
+
+  try {
+    const { data } = await axios.post("/auctions/from-waitlist", {
+      product_id,
+      name,
+      description,
+      entry_bid_points,
+      minimum_users,
+      category,
+      update_waitlist
+    });
+
+    $("auctionOk").textContent = data?.message || "Auction created successfully.";
+    show($("auctionOk"));
+    setOk(data?.message || "Auction created from waitlist.");
+    await loadSummary();
+    await loadWaitlist();
+    setTimeout(() => closeModal($("auctionModal")), 900);
+  } catch (err) {
+    console.error("auction submit error", err);
+    $("auctionErr").textContent = err?.response?.data?.message || "Failed to create auction.";
+    show($("auctionErr"));
+  } finally {
+    $("auctionSubmit").disabled = false;
+    hide($("auctionSpinner"));
+  }
+});
+
+/* ========= HEIST SUBMIT ========= */
+
+$("heistForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hide($("heistErr"));
+  hide($("heistOk"));
+
+  const product_id = Number($("heistProductId").value);
+  const min_users = Number($("heistMinUsers").value);
+  const name = $("heistName").value.trim();
+  const story = $("heistStory").value.trim();
+  const question = $("heistQuestion").value.trim();
+  const answer = $("heistAnswer").value.trim();
+  const ticket_price = Number($("heistTicket").value);
+  const prize = Number($("heistPrize").value);
+  const category = $("heistCategory").value;
+  const prize_name = $("heistPrizeName").value.trim();
+  const update_waitlist = $("heistUpdateWaitlist").checked;
+
+  if (!product_id || !Number.isFinite(product_id)) {
+    $("heistErr").textContent = "Valid product id is required.";
+    show($("heistErr"));
+    return;
+  }
+
+  $("heistSubmit").disabled = true;
+  show($("heistSpinner"));
+
+  try {
+    const { data } = await axios.post("/heists/from-waitlist", {
+      product_id,
+      name,
+      story,
+      question,
+      answer,
+      min_users,
+      ticket_price,
+      prize,
+      category,
+      prize_name,
+      update_waitlist
+    });
+
+    $("heistOk").textContent = data?.message || "Heist created successfully.";
+    show($("heistOk"));
+    setOk(data?.message || "Heist created from waitlist.");
+    await loadSummary();
+    await loadWaitlist();
+    setTimeout(() => closeModal($("heistModal")), 900);
+  } catch (err) {
+    console.error("heist submit error", err);
+    $("heistErr").textContent = err?.response?.data?.message || "Failed to create heist.";
+    show($("heistErr"));
+  } finally {
+    $("heistSubmit").disabled = false;
+    hide($("heistSpinner"));
+  }
+});
+
+/* ========= CANCEL WAITLIST SUBMIT ========= */
+
+$("cancelForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hide($("cancelErr"));
+  hide($("cancelOk"));
+
+  const product_id = Number($("cancelProductId").value);
+  const mode = $("cancelMode").value;
+
+  if (!product_id || !Number.isFinite(product_id)) {
+    $("cancelErr").textContent = "Valid product id is required.";
+    show($("cancelErr"));
+    return;
+  }
+
+  $("cancelSubmit").disabled = true;
+  show($("cancelSpinner"));
+
+  try {
+    const { data } = await axios.post("/waitlist/cancel", {
+      product_id,
+      mode
+    });
+
+    const msg = data?.message || "Waitlist cancelled and refunded.";
+    $("cancelOk").textContent = `${msg} Cancelled entries: ${data.cancelled_entries ?? 0}, total refunded: ${data.total_refunded ?? 0}.`;
+    show($("cancelOk"));
+    setOk(msg);
+    await loadSummary();
+    await loadWaitlist();
+    setTimeout(() => closeModal($("cancelModal")), 1000);
+  } catch (err) {
+    console.error("cancel waitlist error", err);
+    $("cancelErr").textContent = err?.response?.data?.message || "Failed to cancel waitlist.";
+    show($("cancelErr"));
+  } finally {
+    $("cancelSubmit").disabled = false;
+    hide($("cancelSpinner"));
+  }
+});
+
+/* ========= INITIAL LOAD ========= */
+
+loadProductsList();
+loadSummary();
+loadWaitlist();
+
+</script>
+
+</body>
+</html>

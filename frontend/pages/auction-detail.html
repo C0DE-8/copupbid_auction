@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Details - copupbid Treasures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+
+        .medieval-title {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, rgb(52 211 153), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .medieval-button {
+            background: linear-gradient(135deg, rgb(52 211 153 / 0.8), rgb(52 211 153 / 0.6));
+            border: 2px solid rgb(52 211 153 / 0.5);
+            transition: all 0.3s ease;
+            font-family: 'Cinzel', serif;
+        }
+
+        .medieval-button:hover {
+            background: linear-gradient(135deg, rgb(52 211 153), rgb(52 211 153 / 0.8));
+            border-color: rgb(52 211 153);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .auction-image {
+            border: 2px solid rgba(52, 211, 153, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .fallback-image {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05));
+            border: 2px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .status-badge {
+            font-family: 'Cinzel', serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Header -->
+    <header class="glass border-b border-emerald-400/20 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between gap-3">
+                <!-- Left: CopUpBid brand with logo -->
+                <div class="flex items-center gap-3 min-w-0">
+                    <a href="javascript:history.back()" class="flex items-center gap-3 min-w-0">
+                        <img src="./icons/copupcoin.png" alt="CopUpBid Logo" class="h-9 w-9 rounded-full ring-1 ring-white/10 flex-shrink-0" />
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-semibold tracking-wide truncate">CopUpBid</span>
+                            <span class="text-emerald-300 text-[11px] sm:text-xs truncate">CopUpBid Auction House</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Right: Coin badge + toolbar trigger -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="glass rounded-full px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2">
+                        <img src="./icons/copupcoin.png" alt="CopupCoin" class="w-6 h-6 rounded-full ring-1 ring-emerald-400/60" />
+                        <span id="coinBadge" class="font-bold cursor-pointer tracking-wide text-sm sm:text-base">***</span>
+                    </div>
+
+                    <!-- Toolbar / Sidebar opener -->
+                    <button
+                        id="openSidebar"
+                        class="glass rounded-full p-2 sm:p-2.5 flex items-center justify-center hover:bg-emerald-500/10 hover:border-emerald-400/60 border border-white/10 transition"
+                        aria-label="Open toolbar"
+                    >
+                        <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                  d="M4 6h16M4 12h10M4 18h8"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="space-y-6">
+            <div class="glass rounded-xl p-6 sm:p-8">
+                <div class="grid md:grid-cols-2 gap-6 sm:gap-8">
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 h-64 rounded-xl shimmer relative overflow-hidden"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 h-8 rounded w-3/4 shimmer relative overflow-hidden"></div>
+                        <div class="bg-gray-700 h-6 rounded w-1/2 shimmer relative overflow-hidden"></div>
+                        <div class="bg-gray-700 h-20 rounded shimmer relative overflow-hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auction Content -->
+        <div id="auctionContent" style="display: none;">
+            <div class="glass rounded-xl p-6 sm:p-8 mb-6">
+                <div class="grid md:grid-cols-2 gap-6 sm:gap-8">
+                    <!-- Auction Image -->
+                    <div class="space-y-4">
+                        <div class="image-container">
+                            <img id="auctionImage" 
+                                 class="w-full h-72 sm:h-80 object-contain rounded-xl auction-image"
+                                 crossorigin="anonymous"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="fallback-image w-full h-72 sm:h-80 rounded-xl flex flex-col items-center justify-center text-center" style="display: none;">
+                                <div class="text-6xl mb-4">💎</div>
+                                <div class="text-emerald-300 font-bold text-2xl">LEGENDARY TREASURE</div>
+                                <div class="text-emerald-400/60 text-lg">Auction Item</div>
+                                <div class="text-emerald-400/40 text-sm mt-2">• • •</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auction Details -->
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                                <h1 id="auctionName" class="medieval-title text-2xl sm:text-3xl font-bold"></h1>
+                                <span id="statusBadge" class="status-badge px-3 py-1 rounded-full border text-sm"></span>
+                            </div>
+                            <p id="auctionDescription" class="text-gray-300 text-sm sm:text-base"></p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="glass rounded-lg p-4 text-center">
+                                <div class="text-emerald-400 text-xs sm:text-sm mb-1">Entry Fee</div>
+                                <div id="entryFee" class="font-bold text-lg"></div>
+                            </div>
+                            <div class="glass rounded-lg p-4 text-center">
+                                <div class="text-emerald-400 text-xs sm:text-sm mb-1">Category</div>
+                                <div id="category" class="font-bold text-lg capitalize"></div>
+                            </div>
+                        </div>
+
+                        <!-- Bidding Info (for active auctions) -->
+                        <div id="biddingInfo" class="space-y-4" style="display: none;">
+                            <div class="glass rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-emerald-400 text-xs sm:text-sm">Current Bid</span>
+                                    <span id="timerDisplay" class="text-yellow-400 text-xs sm:text-sm font-bold"></span>
+                                </div>
+                                <div id="currentBidAmount" class="font-bold text-2xl text-emerald-300">0 💰</div>
+                                <div id="currentBidder" class="text-xs sm:text-sm text-gray-400 mt-1"></div>
+                            </div>
+                            
+                            <div class="glass rounded-lg p-4 text-center">
+                                <div class="text-emerald-400 text-xs sm:text-sm mb-2">Next Bid Amount</div>
+                                <div id="nextBidAmount" class="font-bold text-xl text-yellow-300">5 💰</div>
+                                <div class="text-[11px] sm:text-xs text-gray-400 mt-1">Fixed increment: +5 points</div>
+                            </div>
+                        </div>
+
+                        <!-- Highest Bidder Info -->
+                        <div id="bidderInfo" class="glass rounded-lg p-4" style="display: none;">
+                            <h3 class="medieval-title text-lg font-bold mb-3">🏹 Current Highest Bidder</h3>
+                            <div class="flex items-center gap-3">
+                                <img id="bidderProfile" class="w-12 h-12 rounded-full border-2 border-emerald-400/50 object-cover" crossorigin="anonymous">
+                                <div>
+                                    <div id="bidderName" class="font-bold text-emerald-300"></div>
+                                    <div class="text-sm text-gray-400">Leading Champion</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div id="actionButtons" class="space-y-3">
+                            <!-- Buttons will be inserted here based on auction status -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="grid md:grid-cols-2 gap-4 sm:gap-6">
+                <div class="glass rounded-xl p-5 sm:p-6">
+                    <h3 class="medieval-title text-xl font-bold mb-4">📜 Auction Timeline</h3>
+                    <div class="space-y-3 text-sm sm:text-base">
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-400">Created:</span>
+                            <span id="createdAt" class="text-right"></span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-400">Last Updated:</span>
+                            <span id="updatedAt" class="text-right"></span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-400">Minimum Users:</span>
+                            <span id="minimumUsers" class="text-right"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-5 sm:p-6">
+                    <h3 class="medieval-title text-xl font-bold mb-4">⚔️ Auction Rules</h3>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li>• Pay entry fee to participate.</li>
+                        <li>• Auction starts when minimum users join.</li>
+                        <li>• Highest bidder wins the treasure.</li>
+                        <li>• All bids are final and binding.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="text-center py-12" style="display: none;">
+            <div class="glass rounded-xl p-8 max-w-md mx-auto">
+                <div class="text-6xl mb-4">⚠️</div>
+                <h3 class="medieval-title text-xl font-bold mb-2">Auction Not Found</h3>
+                <p class="text-gray-400 mb-4">This auction may have been removed or doesn't exist.</p>
+                <button onclick="history.back()" class="medieval-button px-6 py-2 rounded-lg">
+                    Return to Auctions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nice Alert Modal (for entry fee / errors) -->
+    <div id="alertModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur">
+        <div class="bg-slate-900/95 border border-emerald-400/40 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <div class="flex items-start gap-3">
+                <div id="alertIcon" class="text-2xl">✅</div>
+                <div>
+                    <h3 id="alertTitle" class="medieval-title text-lg font-bold mb-1">Alert Title</h3>
+                    <p id="alertMessage" class="text-sm text-gray-200 leading-relaxed">Alert message goes here.</p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end">
+                <button onclick="closeAlertModal()" class="medieval-button px-5 py-2 rounded-lg text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar overlay and navigation (Toolbar) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="sidebar" class="fixed top-0 right-0 h-full w-80 max-w-full bg-gray-900 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">Tool bar</h2>
+                <button id="closeSidebar" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        
+            <!-- User / Profile -->
+            <div class="flex items-center gap-3 mb-5">
+                <img src="./icons/anime-emoji.png" alt="avatar" class="w-12 h-12 rounded-full border border-white/20 object-cover">
+                <div>
+                    <div id="sidebarUserName" class="font-semibold text-white truncate">User</div>
+                    <a href="../pages/profile.html" class="text-sm text-white/60 hover:text-white">View profile</a>
+                </div>
+            </div>
+
+            <nav class="space-y-2 flex-1 overflow-y-auto pb-4">
+                <!-- Primary actions (most used) -->
+                <div class="flex flex-col gap-2 pb-3 border-b border-white/10 mb-3">
+                    <a href="../pages/auctions.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M3 6h18M8 6v12a1 1 0 001 1h6a1 1 0 001-1V6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">Auctions</span>
+                    </a>
+
+                    <a href="../pages/heist.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2C8.134 2 5 5.134 5 9v2a7 7 0 0014 0V9c0-3.866-3.134-7-7-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">Heist</span>
+                    </a>
+
+                    <a href="../pages/cart.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="10" cy="20" r="1"></circle>
+                            <circle cx="18" cy="20" r="1"></circle>
+                        </svg>
+                        <span class="text-sm font-medium">Cart</span>
+                    </a>
+
+                    <a href="../pages/trade.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2l2.39 4.85L19 8l-3.06 2.97L16.78 15 12 12.77 7.22 15l.84-4.03L5 8l4.61-.15L12 2z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">Trade</span>
+                    </a>
+
+                    <a href="../pages/favorites.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 21l-7-6a5 5 0 017-7 5 5 0 017 7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">Favorites</span>
+                    </a>
+                </div>
+
+                <!-- Secondary actions -->
+                <div class="flex flex-col gap-2 pb-3 border-b border-white/10 mb-3">
+                    <a href="../pages/affiliate.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M7 7h10v10H7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">Affiliate</span>
+                    </a>
+
+                    <a href="../pages/waitlist.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 8v4l3 3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="9" stroke-width="1.5"></circle>
+                        </svg>
+                        <span class="text-sm font-medium">Waitlist</span>
+                    </a>
+
+                    <a href="../pages/winners.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2l2.39 4.85L19 8l-3.06 2.97L16.78 15 12 12.77 7.22 15l.84-4.03L5 8l4.61-.15L12 2z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">Winners</span>
+                    </a>
+
+                    <a href="../pages/how-to-play.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <svg class="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 20v-8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 12l6-3-6-3-6 3 6 3z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-sm font-medium">How to play</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Footer / Logout -->
+            <div class="mt-3">
+                <button
+                    id="sidebarLogout"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors"
+                >
+                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 17l5-5-5-5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12H9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="text-sm font-semibold text-white">Logout</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api/users';
+        const IMAGE_BASE = 'https://api.copup.copupbid.com';
+        
+        // Authentication check
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            // adjust this path if your auth folder is different
+            window.location.href = '../auth/login.html';
+        }
+
+        // Get auction ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const auctionId = urlParams.get('id');
+
+        if (!auctionId) {
+            showErrorState();
+        } else {
+            loadUserBalance();
+            setupToolbar();
+            loadAuctionDetails();
+        }
+
+        // Setup toolbar / sidebar
+        function setupToolbar() {
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
+            const openSidebarBtn = document.getElementById('openSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const sidebarLogout = document.getElementById('sidebarLogout');
+
+            function openSidebar() {
+                sidebarOverlay.classList.remove('hidden');
+                sidebar.classList.remove('translate-x-full');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.add('translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+
+            openSidebarBtn?.addEventListener('click', openSidebar);
+            closeSidebarBtn?.addEventListener('click', closeSidebar);
+            sidebarOverlay?.addEventListener('click', closeSidebar);
+
+            sidebarLogout?.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                window.location.href = '../auth/login.html';
+            });
+        }
+
+        // Nice alert modal helpers
+        function showAlertModal(title, message, type = 'info') {
+            const modal = document.getElementById('alertModal');
+            const titleEl = document.getElementById('alertTitle');
+            const msgEl = document.getElementById('alertMessage');
+            const iconEl = document.getElementById('alertIcon');
+
+            titleEl.textContent = title || '';
+            msgEl.textContent = message || '';
+
+            if (type === 'success') {
+                iconEl.textContent = '✅';
+            } else if (type === 'error') {
+                iconEl.textContent = '⚠️';
+            } else {
+                iconEl.textContent = 'ℹ️';
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAlertModal() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Load user balance & sidebar name
+        async function loadUserBalance() {
+            try {
+                const response = await fetch(`${API_BASE}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    const coinBadge = document.getElementById('coinBadge');
+                    const sidebarUserName = document.getElementById('sidebarUserName');
+                    let actualBalance = userData.bid_points || 0;
+                    const displayName = userData.full_name || userData.name || userData.username || 'User';
+
+                    if (sidebarUserName) {
+                        sidebarUserName.textContent = displayName;
+                    }
+                    
+                    coinBadge.onclick = function() {
+                        if (coinBadge.textContent === '***') {
+                            coinBadge.textContent = actualBalance;
+                        } else {
+                            coinBadge.textContent = '***';
+                        }
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading user balance:', error);
+            }
+        }
+
+        // Load auction details
+        async function loadAuctionDetails() {
+            try {
+                const response = await fetch(`${API_BASE}/auction/${auctionId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const auction = await response.json();
+                    displayAuctionDetails(auction);
+                } else if (response.status === 404) {
+                    showErrorState();
+                } else {
+                    throw new Error('Failed to load auction details');
+                }
+            } catch (error) {
+                console.error('Error loading auction details:', error);
+                showErrorState();
+            }
+        }
+
+        // Display auction details
+        function displayAuctionDetails(auction) {
+            // Hide loading, show content
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('auctionContent').style.display = 'block';
+
+            // Set basic info
+            document.getElementById('auctionName').textContent = auction.name;
+            document.getElementById('auctionDescription').textContent = auction.description || 'Legendary auction item awaiting a worthy champion.';
+            document.getElementById('entryFee').textContent = `${auction.entry_bid_points} 💰`;
+            document.getElementById('category').textContent = auction.category;
+            document.getElementById('minimumUsers').textContent = auction.minimum_users;
+
+            // Set image
+            const imageUrl = auction.image;
+            const fullImageUrl = imageUrl && !imageUrl.startsWith('http') ? `${IMAGE_BASE}${imageUrl}` : imageUrl;
+            const imgEl = document.getElementById('auctionImage');
+            if (fullImageUrl) {
+                imgEl.src = fullImageUrl;
+            } else {
+                imgEl.style.display = 'none';
+                imgEl.nextElementSibling.style.display = 'flex';
+            }
+
+            // Set status badge
+            const statusColors = {
+                pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+                active: 'bg-green-500/20 text-green-300 border-green-500/30',
+                completed: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+                cancelled: 'bg-red-500/20 text-red-300 border-red-500/30'
+            };
+            const statusBadge = document.getElementById('statusBadge');
+            const statusKey = String(auction.status || 'pending').toLowerCase();
+            statusBadge.textContent = String(auction.status || 'PENDING').toUpperCase();
+            statusBadge.className = `status-badge px-3 py-1 rounded-full border text-sm ${statusColors[statusKey] || statusColors.pending}`;
+
+            // Set dates
+            if (auction.created_at) {
+                document.getElementById('createdAt').textContent = new Date(auction.created_at).toLocaleString();
+            }
+            if (auction.updated_at) {
+                document.getElementById('updatedAt').textContent = new Date(auction.updated_at).toLocaleString();
+            }
+
+            if (statusKey === 'active') {
+                const biddingInfo = document.getElementById('biddingInfo');
+                const currentBidAmount = auction.current_bid_amount || 0;
+                const nextBidAmount = currentBidAmount + 5;
+                
+                document.getElementById('currentBidAmount').textContent = `${currentBidAmount} 💰`;
+                document.getElementById('nextBidAmount').textContent = `${nextBidAmount} 💰`;
+                
+                if (auction.current_bidder) {
+                    document.getElementById('currentBidder').textContent = `Current leader: ${auction.current_bidder}`;
+                } else {
+                    document.getElementById('currentBidder').textContent = 'No bids yet - be the first!';
+                }
+                
+                biddingInfo.style.display = 'block';
+                
+                // Start timer if auction has end date
+                if (auction.end_date) {
+                    startAuctionTimer(auction.end_date);
+                }
+            }
+
+            // Show highest bidder if exists
+            if (auction.highestBidderName) {
+                const bidderInfo = document.getElementById('bidderInfo');
+                document.getElementById('bidderName').textContent = auction.highestBidderName;
+                
+                if (auction.highestBidderProfile) {
+                    const profileUrl = auction.highestBidderProfile.startsWith('http') ? 
+                        auction.highestBidderProfile : `${IMAGE_BASE}${auction.highestBidderProfile}`;
+                    document.getElementById('bidderProfile').src = profileUrl;
+                } else {
+                    // fallback avatar
+                    document.getElementById('bidderProfile').src =
+                        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMzNGQzOTkiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCAxMiA0czQgMS43OSA0IDQtMS43OSA0LTQgNFpNMTIgMTRDOS4zMyAxNCA0IDE1LjM0IDQgMjBWMjJIMjBWMjBDMTYgMTUuMzQgMTQuNjcgMTQgMTIgMTRaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+';
+                }
+                
+                bidderInfo.style.display = 'block';
+            }
+
+            // Set action buttons based on status
+            setActionButtons(auction);
+        }
+
+        // Set action buttons based on auction status
+        function setActionButtons(auction) {
+            const actionButtons = document.getElementById('actionButtons');
+            const statusKey = String(auction.status || '').toLowerCase();
+            
+            if (statusKey === 'pending') {
+                actionButtons.innerHTML = `
+                    <button onclick="payEntryFee()" class="medieval-button w-full py-3 rounded-lg text-sm sm:text-base">
+                        Pay Entry Fee (${auction.entry_bid_points} 💰)
+                    </button>
+                    <p class="text-xs sm:text-sm text-gray-400 text-center">
+                        Pay the entry fee to participate when this auction becomes active.
+                    </p>
+                `;
+            } else if (statusKey === 'active') {
+                actionButtons.innerHTML = `
+                    <button id="bidButton" onclick="placeBid()" class="medieval-button w-full py-3 rounded-lg text-sm sm:text-base">
+                        Place Bid (+5 💰)
+                    </button>
+                    <p class="text-xs sm:text-sm text-gray-400 text-center">
+                        Auction is live! Place your bid to win this legendary treasure.
+                    </p>
+                `;
+            } else if (statusKey === 'completed') {
+                actionButtons.innerHTML = `
+                    <div class="text-center p-4 glass rounded-lg">
+                        <div class="text-emerald-300 font-bold mb-2 text-sm sm:text-base">🏆 Auction Completed</div>
+                        <p class="text-xs sm:text-sm text-gray-400">
+                            This auction has ended. ${auction.highestBidderName ? `Won by ${auction.highestBidderName}` : 'No winner.'}
+                        </p>
+                    </div>
+                `;
+            } else {
+                actionButtons.innerHTML = `
+                    <div class="text-center p-4 glass rounded-lg">
+                        <div class="text-red-300 font-bold mb-2 text-sm sm:text-base">❌ Auction Cancelled</div>
+                        <p class="text-xs sm:text-sm text-gray-400">This auction has been cancelled.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function placeBid() {
+            const bidButton = document.getElementById('bidButton');
+            if (!bidButton) return;
+            const originalText = bidButton.textContent;
+            
+            try {
+                bidButton.disabled = true;
+                bidButton.textContent = 'Placing Bid...';
+                
+                const response = await fetch(`${API_BASE}/bid/${auctionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Update UI with new bid information
+                    document.getElementById('currentBidAmount').textContent = `${result.currentBidAmount} 💰`;
+                    document.getElementById('currentBidder').textContent = `Current leader: ${result.currentBidder}`;
+                    document.getElementById('nextBidAmount').textContent = `${result.currentBidAmount + 5} 💰`;
+                    
+                    // Start new timer
+                    if (result.endDate) {
+                        startAuctionTimer(result.endDate);
+                    }
+                    
+                    // Update user balance
+                    loadUserBalance();
+                    
+                    // Show success message
+                    showBidSuccess(result.currentBidAmount);
+                } else {
+                    showAlertModal(
+                        'Bid Failed',
+                        result.message || 'Failed to place bid.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error placing bid:', error);
+                showAlertModal(
+                    'Error',
+                    'Error placing bid. Please try again.',
+                    'error'
+                );
+            } finally {
+                bidButton.disabled = false;
+                bidButton.textContent = originalText;
+            }
+        }
+
+        let timerInterval;
+        
+        function startAuctionTimer(endDate) {
+            // Clear existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            const timerDisplay = document.getElementById('timerDisplay');
+            const endTime = new Date(endDate).getTime();
+            
+            timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const timeLeft = endTime - now;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = 'Auction Ended';
+                    timerDisplay.className = 'text-red-400 text-xs sm:text-sm font-bold';
+                    // Reload auction details to get final status
+                    setTimeout(() => loadAuctionDetails(), 1000);
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                if (minutes > 0) {
+                    timerDisplay.textContent = `${minutes}m ${seconds}s remaining`;
+                } else {
+                    timerDisplay.textContent = `${seconds}s remaining`;
+                }
+                
+                // Change color based on time left
+                if (timeLeft < 30000) { // Less than 30 seconds
+                    timerDisplay.className = 'text-red-400 text-xs sm:text-sm font-bold animate-pulse';
+                } else if (timeLeft < 60000) { // Less than 1 minute
+                    timerDisplay.className = 'text-yellow-400 text-xs sm:text-sm font-bold';
+                } else {
+                    timerDisplay.className = 'text-emerald-400 text-xs sm:text-sm font-bold';
+                }
+            }, 1000);
+        }
+
+        function showBidSuccess(bidAmount) {
+            // Create temporary success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            successDiv.innerHTML = `
+                <div class="flex items-center gap-2 text-sm sm:text-base">
+                    <span>🎯</span>
+                    <span>Bid placed successfully! New bid: ${bidAmount} 💰</span>
+                </div>
+            `;
+            
+            document.body.appendChild(successDiv);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        // Pay entry fee
+        async function payEntryFee() {
+            try {
+                const response = await fetch(`${API_BASE}/pay-entry/${auctionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlertModal(
+                        'Entry Fee Paid',
+                        'Entry fee paid successfully! You can now participate in this auction when it becomes active.',
+                        'success'
+                    );
+                    loadUserBalance();
+                    loadAuctionDetails();
+                } else {
+                    showAlertModal(
+                        'Payment Failed',
+                        result.message || 'Failed to pay entry fee.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error paying entry fee:', error);
+                showAlertModal(
+                    'Error',
+                    'Error paying entry fee. Please try again.',
+                    'error'
+                );
+            }
+        }
+
+        // Show error state
+        function showErrorState() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('auctionContent').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

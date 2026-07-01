@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CopUpBid — Categories</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { cop: { bg:'#0b1022', teal:'#10b981', cyan:'#06b6d4', blue:'#2563eb', purple:'#7c3aed' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body{
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(16,185,129,.10), transparent 60%),
+        radial-gradient(1000px 600px at 80% 20%, rgba(37,99,235,.10), transparent 65%),
+        radial-gradient(1000px 800px at 50% 100%, rgba(6,182,212,.10), transparent 60%),
+        #0b1022;
+    }
+    .glass { background: linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6)); backdrop-filter: blur(10px); }
+    .ring-glow { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03); }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.12), rgba(255,255,255,.05)); background-size: 200% 100%; animation: sk 1.4s infinite; }
+    @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .btn-ghost{background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22);}
+    .pill{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.28);}
+
+    /* Taller/stronger overlay with soft top gleam and deeper bottom fade */
+    .card-grad{
+      position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+      background:
+        radial-gradient(120% 60% at 10% 0%, rgba(16,185,129,.20), transparent 55%),
+        radial-gradient(120% 60% at 90% 0%, rgba(37,99,235,.18), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 18%),
+        linear-gradient(180deg, rgba(0,0,0,.15) 28%, rgba(0,0,0,.45) 60%, rgba(0,0,0,.78) 100%);
+    }
+
+    /* 3D POP EFFECT */
+    .stage-3d { perspective: 1000px; }
+    .card-3d { transform-style: preserve-3d; transition: transform .18s ease; }
+    .card-3d:hover { transition: transform .06s ease; }
+    .card-img-3d {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      transform: translateZ(0); transition: transform .25s ease, filter .25s ease, opacity .25s ease;
+      filter: saturate(1.05) brightness(.95); pointer-events: none;
+    }
+    .card-3d:hover .card-img-3d { transform: translateZ(34px) scale(1.06); filter: saturate(1.12) brightness(1); }
+    .card-glow::after{
+      content:""; position:absolute; inset:-1px; border-radius:inherit; mix-blend-mode:screen; opacity:.38; pointer-events:none;
+      background:
+        radial-gradient(700px 220px at 25% 8%, rgba(16,185,129,.28), transparent 60%),
+        radial-gradient(700px 220px at 80% 12%, rgba(37,99,235,.24), transparent 60%);
+      transform: translateZ(40px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card-3d, .card-img-3d { transition: none !important; }
+    }
+
+    /* Pager */
+    .pager-btn { border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); }
+    .pager-btn[aria-current="page"] { background: linear-gradient(135deg,#10b981,#06b6d4); color:#0b1022; border-color: transparent; font-weight: 700; }
+
+    /* Drawer */
+    .icon-btn img { filter: drop-shadow(0 2px 8px rgba(0,0,0,.25)); }
+    .badge {
+      position: absolute; top:-6px; right:-6px; font-size:10px;
+      background: linear-gradient(135deg,#34d399,#06b6d4); color:#0b1022;
+      border-radius:9999px; padding:2px 6px; font-weight:700; border:1px solid rgba(255,255,255,.3)
+    }
+    .drawer-enter { transform: translateX(-100%); opacity:.6; }
+    .drawer-open { transform: translateX(0); opacity:1; transition: transform .25s ease, opacity .25s ease; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen">
+  <!-- Top Nav (same style as shop.html) -->
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-[#0b1022]/80 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Left: Brand + Mobile Menu -->
+      <div class="flex items-center gap-3">
+        <button id="openDrawer" class="sm:hidden icon-btn relative p-2 rounded-xl hover:bg-white/5 border border-white/10" aria-label="Open menu">
+          <img src="./icons/menu.png" alt="menu" class="w-5 h-5" />
+        </button>
+        <a href="javascript:history.back()" class="flex items-center gap-3">
+          <img src="./icons/copupcoin.png" alt="CopUpBid Logo" class="h-9 w-9 rounded-full ring-1 ring-white/10" />
+          <span class="font-semibold tracking-wide">CopUpBid</span>
+        </a>
+      </div>
+
+      <!-- Center: Primary nav (desktop) -->
+      <nav class="hidden sm:flex items-center gap-4">
+        <a href="./shop.html" class="text-sm text-white/80 hover:text-white">Shop</a>
+        <a href="./categories.html" class="text-sm text-white px-2 py-1.5 rounded-lg bg-white/5 border border-white/10">Categories</a>
+        <a href="./dashboard.html" class="text-sm text-white/70 hover:text-white">Dashboard</a>
+      </nav>
+
+      <!-- Right: Icon actions -->
+      <div class="flex items-center gap-2">
+        <a href="./favorites.html" class="icon-btn relative p-2 rounded-xl hover:bg-white/5 border border-white/10" aria-label="Favorites">
+          <img src="./icons/favorite.png" alt="favorite" class="w-5 h-5"/>
+          <span id="favBadge" class="badge hidden">0</span>
+        </a>
+        <a href="./cart.html" class="icon-btn relative p-2 rounded-xl hover:bg-white/5 border border-white/10" aria-label="Cart">
+          <img src="../assets/icons/cart.png" alt="cart" class="w-5 h-5"/>
+          <span id="cartBadge" class="badge hidden">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slide-over Drawer (mobile) -->
+  <div id="drawerBackdrop" class="fixed inset-0 z-40 bg-black/40 hidden" aria-hidden="true"></div>
+  <aside id="drawer" class="fixed z-50 top-0 left-0 h-full w-72 p-4 glass ring-glow border border-white/10 drawer-enter hidden" aria-label="Mobile menu">
+    <div class="flex items-center justify-between mb-2">
+      <span class="font-semibold">Menu</span>
+      <button id="closeDrawer" class="icon-btn p-2 rounded-lg hover:bg-white/5 border border-white/10" aria-label="Close menu">✕</button>
+    </div>
+    <nav class="space-y-1">
+      <a class="block px-3 py-2 rounded-lg hover:bg-white/5 border border-white/10" href="./shop.html">Shop</a>
+      <a class="block px-3 py-2 rounded-lg hover:bg-white/5 border border-white/10" href="./categories.html">Categories</a>
+      <a class="block px-3 py-2 rounded-lg hover:bg-white/5 border border-white/10" href="/pages/hiest">Heists</a>
+      <a class="block px-3 py-2 rounded-lg hover:bg-white/5 border border-white/10" href="./favorites.html">Favorites</a>
+      <a class="block px-3 py-2 rounded-lg hover:bg-white/5 border border-white/10" href="./cart.html">Cart</a>
+       <a class="block px-3 py-2 rounded-lg hover:bg-white/5 border border-white/10" href="./dashboard.html">Dashboard</a>
+    </nav>
+  </aside>
+
+  <!-- Auth banner (same behavior as shop) -->
+  <div id="authBanner" class="hidden">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="mt-4 p-3 rounded-xl glass ring-glow text-sm flex items-center justify-between">
+        <p class="text-white/80">You’re browsing in guest mode. Endpoints may require login.</p>
+        <button id="quickToken" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold">Paste Token</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="max-w-7xl mx-auto px-4 pt-8">
+    <div class="rounded-3xl glass ring-glow p-6 md:p-8">
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-extrabold">Browse by <span class="text-cop-teal">Category</span></h1>
+        </div>
+        <button id="allBtn" class="px-4 py-3 rounded-2xl bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold whitespace-nowrap">
+          View All Products
+        </button>
+      </div>
+
+      <div class="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="relative">
+          <input id="search" placeholder="Search categories…" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 pr-12 outline-none focus:border-cop-cyan">
+          <img src="../assets/icons/coin-sign.png" class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-60" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Grid -->
+  <main class="max-w-7xl mx-auto px-4 pb-12">
+    <div id="grid" class="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+    <div id="empty" class="hidden text-center text-white/70 mt-10">No matching categories.</div>
+
+    <!-- Pager -->
+    <div id="pagerWrap" class="mt-8 hidden">
+      <div class="glass ring-glow rounded-2xl p-3 flex items-center justify-between gap-3">
+        <div class="text-white/70 text-sm" id="pagerInfo">—</div>
+        <div class="flex items-center gap-2" id="pagerBtns"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden px-4 py-3 rounded-xl glass ring-glow text-sm"></div>
+
+  <!-- Axios + Inline JS -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    /* ===== Config ===== */
+    var API_BASE = 'https://api.copup.copupbid.com/api/users';
+    var api = axios.create({ baseURL: API_BASE.replace(/\/$/, ''), timeout: 15000 });
+    api.interceptors.request.use(function(cfg){
+      var t = (localStorage.getItem('authToken') || '').trim();
+      if (t) cfg.headers.Authorization = 'Bearer ' + t;
+      return cfg;
+    });
+
+    /* ===== Assets ===== */
+    var BG_IMAGES = [
+      '../assets/images/m1-clothing.png',
+      '../assets/images/m2-foods.png',
+      '../assets/images/m3-gabget.png',
+      '../assets/images/m4-others.png'
+    ];
+    var ICON_BAG = '../assets/icons/shopping-bag.png';
+    var ICON_COIN = '../assets/icons/coin-sign.png';
+
+    function imgForIndex(i){ return BG_IMAGES[i % BG_IMAGES.length]; }
+
+    /* ===== Utils / UI ===== */
+    function tokenExists(){ return !!(localStorage.getItem('authToken') || '').trim(); }
+    function showAuthBanner(){ if (!tokenExists()) document.getElementById('authBanner')?.classList.remove('hidden'); }
+    function toast(msg, kind){
+      var el = document.getElementById('toast'); if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.border = '1px solid rgba(255,255,255,.1)';
+      el.style.background = (kind === 'error')
+        ? 'rgba(220,38,38,.12)'
+        : 'linear-gradient(to bottom right, rgba(22,33,62,.7), rgba(14,23,46,.6))';
+      setTimeout(function(){ el.classList.add('hidden'); }, 2800);
+    }
+    function setBadge(id, n){
+      var el = document.getElementById(id); if(!el) return;
+      if(n>0){ el.textContent = n; el.classList.remove('hidden'); } else { el.classList.add('hidden'); }
+    }
+    function refreshBadges(){
+      var cartN = Number(localStorage.getItem('cartCount') || '0');
+      var favN  = Number(localStorage.getItem('favCount') || '0');
+      setBadge('cartBadge', cartN);
+      setBadge('favBadge',  favN);
+    }
+
+    function skeleton(n){
+      if (!Number.isFinite(n)) n = 12;
+      var g = document.getElementById('grid'); g.innerHTML = '';
+      for(var i=0;i<n;i++){
+        var c = document.createElement('div');
+        c.className = 'relative overflow-hidden rounded-3xl glass ring-glow h-44 sm:h-52 md:h-56';
+        c.innerHTML = '<div class="absolute inset-0 skeleton"></div>'
+                    + '<div class="absolute bottom-4 left-4 right-4 h-6 skeleton rounded"></div>';
+        g.appendChild(c);
+      }
+    }
+
+    /* ===== 3D hover/tilt ===== */
+    function attachTilt(card){
+      var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (isTouch) return;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) return;
+
+      var rect, w, h, cx, cy;
+      function measure(){ rect = card.getBoundingClientRect(); w = rect.width; h = rect.height; cx = rect.left + w/2; cy = rect.top + h/2; }
+
+      function onMove(e){
+        var x = e.clientX, y = e.clientY;
+        var dx = (x - cx) / (w/2);
+        var dy = (y - cy) / (h/2);
+        var rotX = dy * -9;
+        var rotY = dx * 12;
+        card.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) translateZ(0)';
+      }
+      function onLeave(){
+        card.style.transition = 'transform .3s cubic-bezier(.2,.8,.2,1)';
+        card.style.transform = 'rotateX(0) rotateY(0) translateZ(0)';
+        setTimeout(function(){ card.style.transition = 'transform .18s ease'; }, 320);
+      }
+
+      measure();
+      window.addEventListener('resize', measure);
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('mouseleave', onLeave);
+    }
+
+    /* ===== Cards ===== */
+    function categoryCard(cat, count, idx){
+      var el = document.createElement('article');
+      el.className = 'stage-3d relative overflow-hidden rounded-3xl h-44 sm:h-52 md:h-56 cursor-pointer ring-1 ring-white/10';
+
+      var inner = document.createElement('div');
+      inner.className = 'card-3d card-glow w-full h-full relative';
+      inner.setAttribute('aria-label', 'Open ' + cat.name);
+
+      var img = document.createElement('img');
+      img.src = imgForIndex(idx);
+      img.alt = cat.name;
+      img.className = 'card-img-3d';
+      inner.appendChild(img);
+
+      var grad = document.createElement('div');
+      grad.className = 'card-grad';
+      inner.appendChild(grad);
+
+      var pill = document.createElement('div');
+      pill.className = 'absolute top-3 left-3 text-xs pill px-2.5 py-1 rounded-full inline-flex items-center gap-1';
+      pill.innerHTML = '<img src="'+ ICON_BAG +'" class="w-4 h-4 opacity-80" alt=""><span>Category</span>';
+      inner.appendChild(pill);
+
+      var text = document.createElement('div');
+      text.className = 'absolute bottom-4 left-4 right-4';
+      text.innerHTML =
+          '<div class="text-white font-bold text-lg sm:text-xl leading-tight line-clamp-2 drop-shadow">' + cat.name + '</div>'
+        + '<div class="mt-1 text-white/90 text-sm inline-flex items-center gap-2">'
+        +   '<img src="'+ ICON_COIN +'" class="w-4 h-4 opacity-80" alt="">'
+        +   '<span>Items: ' + (Number.isFinite(count) ? count : '—') + '</span>'
+        + '</div>'
+        + '<button class="mt-3 px-3 py-2 rounded-xl btn-ghost hover:bg-white/25 text-sm">Shop now →</button>';
+      inner.appendChild(text);
+
+      el.appendChild(inner);
+      el.addEventListener('click', function(){ window.location.href = './shop.html?categoryId=' + encodeURIComponent(cat.id); });
+      attachTilt(inner);
+      return el;
+    }
+
+    function heroCard(cat, count, idx){
+      var el = document.createElement('article');
+      el.className = 'stage-3d relative overflow-hidden rounded-3xl min-h-[18rem] md:min-h-[22rem] lg:min-h-[24rem] col-span-2 md:col-span-1 md:row-span-2 cursor-pointer ring-1 ring-white/10';
+
+      var inner = document.createElement('div');
+      inner.className = 'card-3d card-glow w-full h-full relative';
+
+      var img = document.createElement('img');
+      img.src = imgForIndex(idx);
+      img.alt = cat.name;
+      img.className = 'card-img-3d';
+      inner.appendChild(img);
+
+      var grad = document.createElement('div');
+      grad.className = 'card-grad';
+      inner.appendChild(grad);
+
+      var pill = document.createElement('div');
+      pill.className = 'absolute top-4 left-4 text-xs pill px-2.5 py-1 rounded-full inline-flex items-center gap-1';
+      pill.innerHTML = '<img src="'+ ICON_BAG +'" class="w-4 h-4 opacity-80" alt=""><span>Featured</span>';
+      inner.appendChild(pill);
+
+      var text = document.createElement('div');
+      text.className = 'absolute bottom-5 left-5 right-5';
+      text.innerHTML =
+          '<div class="text-2xl font-extrabold drop-shadow">' + cat.name + '</div>'
+        + '<div class="mt-1 text-white/90 inline-flex items-center gap-2">'
+        +   '<img src="'+ ICON_COIN +'" class="w-4 h-4 opacity-80" alt="">'
+        +   '<span>Items: ' + (Number.isFinite(count) ? count : '—') + '</span>'
+        + '</div>'
+        + '<button class="mt-4 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cop-teal to-cop-cyan text-slate-900 font-semibold">Shop now →</button>';
+      inner.appendChild(text);
+
+      el.appendChild(inner);
+      el.addEventListener('click', function(){ window.location.href = './shop.html?categoryId=' + encodeURIComponent(cat.id); });
+      attachTilt(inner);
+      return el;
+    }
+
+    /* ===== Data + paging ===== */
+    var CATS = [];     // [{id,name}]
+    var COUNTS = {};   // {id: count}
+    var FILTERED = [];
+    var PAGE_INDEX = 1;        // 1-based
+    var PAGE_SIZE = 12;
+
+    function dedupeCategories(list){
+      var seen = new Set(), out = [];
+      for (var i=0;i<list.length;i++){
+        var c = list[i];
+        var key = String(c.id != null ? c.id : (c.name || '')).trim();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        out.push({ id: c.id, name: String(c.name || '').trim() });
+      }
+      return out;
+    }
+
+    function pickHeroIndex(arr){
+      if (!arr || !arr.length) return -1;
+      var bestIdx = 0, bestCount = -1;
+      for (var i=0;i<arr.length;i++){
+        var c = arr[i], cnt = Number(COUNTS[c.id] || 0);
+        if (cnt > bestCount){ bestCount = cnt; bestIdx = i; }
+      }
+      return bestIdx;
+    }
+
+    function pageSlice(list){
+      var start = (PAGE_INDEX - 1) * PAGE_SIZE;
+      return list.slice(start, start + PAGE_SIZE);
+    }
+
+    function renderPager(total){
+      var wrap = document.getElementById('pagerWrap');
+      var info = document.getElementById('pagerInfo');
+      var btns = document.getElementById('pagerBtns');
+      var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+      if (total <= PAGE_SIZE){ wrap.classList.add('hidden'); return; }
+      wrap.classList.remove('hidden');
+
+      var start = (PAGE_INDEX - 1) * PAGE_SIZE + 1;
+      var end = Math.min(PAGE_INDEX * PAGE_SIZE, total);
+      info.textContent = 'Showing ' + start + '–' + end + ' of ' + total;
+
+      btns.innerHTML = '';
+
+      function mk(text, page, disabled, current){
+        var b = document.createElement('button');
+        b.className = 'pager-btn rounded-xl px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50';
+        b.textContent = text;
+        if (disabled) b.disabled = true;
+        if (current) b.setAttribute('aria-current', 'page');
+        b.addEventListener('click', function(){ PAGE_INDEX = page; renderGrid(); window.scrollTo({top:0, behavior:'smooth'}); });
+        btns.appendChild(b);
+      }
+
+      mk('«', 1, PAGE_INDEX === 1, false);
+      mk('‹', Math.max(1, PAGE_INDEX - 1), PAGE_INDEX === 1, false);
+
+      var win = 2;
+      var from = Math.max(1, PAGE_INDEX - win);
+      var to = Math.min(pages, PAGE_INDEX + win);
+      if (from > 1){ mk('1', 1, false, PAGE_INDEX === 1); if (from > 2){ mk('…', PAGE_INDEX, true, false); } }
+      for (var p = from; p <= to; p++){ mk(String(p), p, false, PAGE_INDEX === p); }
+      if (to < pages){ if (to < pages - 1){ mk('…', PAGE_INDEX, true, false); } mk(String(pages), pages, false, PAGE_INDEX === pages); }
+
+      mk('›', Math.min(pages, PAGE_INDEX + 1), PAGE_INDEX === pages, false);
+      mk('»', pages, PAGE_INDEX === pages, false);
+    }
+
+    function renderGrid(){
+      var grid = document.getElementById('grid');
+      var empty = document.getElementById('empty');
+      grid.innerHTML = '';
+
+      var total = FILTERED.length;
+      if (!total){ empty.classList.remove('hidden'); renderPager(0); return; }
+      empty.classList.add('hidden');
+
+      var heroIdx = pickHeroIndex(FILTERED);
+      var view = pageSlice(FILTERED);
+
+      // If hero falls out of the current page slice, just render normal cards for this page
+      var showHero = (FILTERED.length >= 6 && heroIdx >= 0);
+      if (showHero){
+        var heroObj = FILTERED[heroIdx];
+        var heroOnPage = view.indexOf(heroObj) !== -1;
+        if (heroOnPage){
+          grid.appendChild(heroCard(heroObj, COUNTS[heroObj.id], heroIdx));
+          for (var i=0;i<view.length;i++){
+            if (view[i] === heroObj) continue;
+            grid.appendChild(categoryCard(view[i], COUNTS[view[i].id], i));
+          }
+        } else {
+          for (var j=0;j<view.length;j++){ grid.appendChild(categoryCard(view[j], COUNTS[view[j].id], j)); }
+        }
+      } else {
+        for (var k=0;k<view.length;k++){ grid.appendChild(categoryCard(view[k], COUNTS[view[k].id], k)); }
+      }
+
+      renderPager(total);
+    }
+
+    function applyFilterAndSort(){
+      var qEl = document.getElementById('search');
+      var q = (qEl && qEl.value ? qEl.value : '').toLowerCase().trim();
+
+      var arr = CATS.slice(0);
+      if (q) arr = arr.filter(function(c){ return c.name.toLowerCase().indexOf(q) !== -1; });
+
+      FILTERED = arr;
+      PAGE_INDEX = 1; // reset to first page on new filter
+      renderGrid();
+    }
+
+    function debounce(fn, d){
+      var t; if (!Number.isFinite(d)) d = 250;
+      return function(){ var a = arguments; clearTimeout(t); t = setTimeout(function(){ fn.apply(null, a); }, d); };
+    }
+
+    async function load(){
+      showAuthBanner();
+      refreshBadges();
+      skeleton(12);
+      try{
+        var resp = await api.get('/categories');  // [{id,name}]
+        var raw = Array.isArray(resp.data) ? resp.data : [];
+        CATS = dedupeCategories(raw);
+        CATS.sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+        COUNTS = {};
+        await Promise.all(CATS.map(async function(c){
+          try {
+            var p = await api.get('/categories/' + encodeURIComponent(c.id) + '/products');
+            var arr = Array.isArray(p.data) ? p.data : [];
+            COUNTS[c.id] = arr.length;
+          } catch (_e) { COUNTS[c.id] = undefined; }
+        }));
+
+        applyFilterAndSort();
+      }catch(err){
+        document.getElementById('grid').innerHTML = '';
+        document.getElementById('empty').classList.remove('hidden');
+        var msg = (err && err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'Failed to load categories';
+        toast(msg,'error');
+      }
+    }
+
+    /* Drawer + Token */
+    function openDrawer(){
+      var b = document.getElementById('drawerBackdrop');
+      var d = document.getElementById('drawer');
+      b.classList.remove('hidden');
+      d.classList.remove('hidden');
+      requestAnimationFrame(function(){ d.classList.add('drawer-open'); });
+    }
+    function closeDrawer(){
+      var b = document.getElementById('drawerBackdrop');
+      var d = document.getElementById('drawer');
+      d.classList.remove('drawer-open');
+      setTimeout(function(){ d.classList.add('hidden'); b.classList.add('hidden'); }, 200);
+    }
+
+    /* Wiring */
+    document.getElementById('openDrawer')?.addEventListener('click', openDrawer);
+    document.getElementById('closeDrawer')?.addEventListener('click', closeDrawer);
+    document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
+
+    document.getElementById('quickToken')?.addEventListener('click', function(){
+      var t = prompt('Paste your authToken (JWT)');
+      if (t){ localStorage.setItem('authToken', t.trim()); location.reload(); }
+    });
+
+    document.getElementById('allBtn')?.addEventListener('click', function(){ window.location.href = './shop.html'; });
+    document.getElementById('search')?.addEventListener('input', debounce(applyFilterAndSort, 250));
+
+    // Keyboard pager: ←/→, Home/End
+    window.addEventListener('keydown', function(e){
+      var total = FILTERED.length;
+      var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (e.key === 'ArrowRight'){ if (PAGE_INDEX < pages){ PAGE_INDEX++; renderGrid(); } }
+      else if (e.key === 'ArrowLeft'){ if (PAGE_INDEX > 1){ PAGE_INDEX--; renderGrid(); } }
+      else if (e.key === 'Home'){ if (PAGE_INDEX !== 1){ PAGE_INDEX = 1; renderGrid(); } }
+      else if (e.key === 'End'){ if (PAGE_INDEX !== pages){ PAGE_INDEX = pages; renderGrid(); } }
+    });
+
+    // Boot
+    load();
+  </script>
+</body>
+</html>

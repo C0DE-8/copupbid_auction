@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CopUp Coin Top-Up - CopUpBid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.18), transparent 55%),
+        radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 55%),
+        radial-gradient(circle at bottom, rgba(20, 184, 166, 0.16), transparent 55%),
+        #020617;
+    }
+    .glass-effect {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.8);
+    }
+    .custom-alert {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1000;
+      padding: 14px 18px;
+      border-radius: 999px;
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.92);
+      transform: translateX(400px);
+      transition: transform 0.3s ease-in-out, opacity 0.2s;
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .custom-alert.show { transform: translateX(0); opacity: 1; }
+    .custom-alert.success { border-color: rgba(16, 185, 129, 0.9); box-shadow: 0 18px 45px rgba(16, 185, 129, 0.35); }
+    .custom-alert.error { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 18px 45px rgba(239, 68, 68, 0.4); }
+    .custom-alert.warning { border-color: rgba(245, 158, 11, 0.9); box-shadow: 0 18px 45px rgba(245, 158, 11, 0.4); }
+  </style>
+</head>
+
+<body class="text-white min-h-screen">
+  <!-- Header -->
+  <header class="p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <button onclick="window.history.back()" class="glass-effect rounded-full p-2 hover:bg-emerald-500/20 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">CopUp Coin Vault</h1>
+        <p class="text-xs text-emerald-300/70 uppercase tracking-[0.15em]">Secure coin top-up</p>
+      </div>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="glass-effect rounded-full px-4 py-2 flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+        <span class="font-bold text-emerald-300 text-sm">₵</span>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-[10px] text-slate-300 uppercase tracking-widest">CopUp Coin</span>
+        <span id="currentBalance" class="font-semibold text-sm">***</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="container mx-auto px-4 pb-10 max-w-4xl">
+    <div class="grid gap-6 lg:grid-cols-[2fr,1.4fr] mt-4">
+      <!-- Left: Top-up card -->
+      <section class="glass-effect rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-semibold flex items-center gap-2">
+              <span class="inline-flex h-8 w-8 rounded-full bg-emerald-500/15 items-center justify-center">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </span>
+              Top-up CopUp Coin
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Enter how many CopUp Coin you want. We calculate the NGN amount using the current rate.
+            </p>
+          </div>
+        </div>
+
+        <!-- Top-up form -->
+        <form id="topupForm" class="space-y-5">
+          <!-- Coins input -->
+          <div>
+            <label class="block text-xs font-medium mb-2 text-slate-200">CopUp Coin (Quantity)</label>
+            <div class="relative flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+              <span class="text-slate-400 text-sm mr-2">₵</span>
+              <input
+                type="number"
+                id="coinsInput"
+                min="1"
+                step="1"
+                placeholder="Enter coins e.g. 2"
+                class="w-full bg-transparent outline-none border-none text-sm text-white placeholder:text-slate-500"
+              />
+            </div>
+            <p class="mt-1 text-[11px] text-slate-400">
+              Example: if 1 coin = ₦210, then 2 coins = ₦420.
+            </p>
+          </div>
+
+          <!-- Price preview -->
+          <div
+            id="estimateBox"
+            class="hidden border border-emerald-500/40 bg-emerald-500/10 rounded-xl px-4 py-3 text-sm"
+          >
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-slate-200">You will pay (NGN)</span>
+              <span id="estimateAmount" class="font-semibold text-emerald-300 text-base">₦0</span>
+            </div>
+            <p class="text-[11px] text-emerald-100/80">
+              Using rate:
+              <span class="font-mono" id="estimateRateLabel">Loading rate...</span>
+            </p>
+          </div>
+
+          <!-- CTA button -->
+          <button
+            type="submit"
+            id="topupSubmitBtn"
+            class="w-full mt-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold py-3 rounded-xl text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            <span id="topupBtnText">Continue to Payment</span>
+            <svg id="topupBtnSpinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+
+          <p class="text-[11px] text-slate-500 text-center mt-1">
+            You’ll be redirected to Flutterwave to complete this payment securely.
+          </p>
+        </form>
+      </section>
+
+      <!-- Right: Overview / help -->
+      <aside class="space-y-4">
+        <div class="glass-effect rounded-2xl p-5">
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span class="inline-flex h-7 w-7 rounded-full bg-emerald-500/15 items-center justify-center">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 11V7a4 4 0 018 0v4m-1 10H6a2 2 0 01-2-2v-5a2 2 0 012-2h12a2 2 0 012 2z"></path>
+              </svg>
+            </span>
+            Account Snapshot
+          </h3>
+
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400">Wallet owner</span>
+              <span id="userName" class="font-medium text-slate-100">—</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400">Current CopUp Coin</span>
+              <span id="userCoins" class="font-semibold text-emerald-300 text-sm">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400">Last refresh</span>
+              <span id="lastRefreshed" class="text-slate-500 text-[11px]">—</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onclick="reloadProfile()"
+            class="mt-4 w-full border border-emerald-500/40 text-emerald-300 text-xs py-2 rounded-lg hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582M20 20v-5h-.581M5.64 9A7.5 7.5 0 0119 7m-7 10a7.5 7.5 0 01-7.359-5"></path>
+            </svg>
+            Refresh balance
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='withdraw.html'"
+            class="mt-2 w-full border border-sky-500/50 text-sky-300 text-xs py-2 rounded-lg hover:bg-sky-500/10 transition-colors flex items-center justify-center gap-1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M16 12l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Withdraw to bank
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='coin-vault.html'"
+            class="mt-2 w-full border border-amber-500/60 text-amber-300 text-xs py-2 rounded-lg hover:bg-amber-500/10 transition-colors flex items-center justify-center gap-1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 2.5 2.5M12 8V4m0 4a4 4 0 104 4H9"></path>
+            </svg>
+            Buy coins manually (Vault)
+          </button>
+        </div>
+
+        <div class="glass-effect rounded-2xl p-5 text-xs text-slate-300">
+          <h3 class="text-sm font-semibold mb-2 text-slate-100">How CopUp Coin works</h3>
+          <ul class="list-disc list-inside space-y-1.5">
+            <li>You enter coins (₵). We calculate NGN (₦) using <code>coin_rate</code>.</li>
+            <li>Top-ups are processed via Flutterwave (NGN).</li>
+            <li>After successful payment, coins are credited automatically.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // === CONFIG ===
+    const API_BASE = "https://api.copup.copupbid.com/api";
+
+    // Loaded from DB: unit coins cost price NGN
+    let RATE_UNIT = 0;     // coins
+    let RATE_PRICE = 0;    // NGN
+    let RATE_CURRENCY = "NGN";
+
+    function formatNgn(n) {
+      const num = Number(n || 0);
+      return "₦" + num.toLocaleString("en-NG");
+    }
+
+    function showAlert(message, type = "success") {
+      document.querySelectorAll(".custom-alert").forEach((el) => el.remove());
+      const alert = document.createElement("div");
+      alert.className = `custom-alert ${type}`;
+      alert.innerHTML = `
+        <span>${type === "success" ? "✅" : type === "error" ? "⛔" : type === "warning" ? "⚠️" : "ℹ️"}</span>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(alert);
+      setTimeout(() => alert.classList.add("show"), 50);
+      setTimeout(() => {
+        alert.classList.remove("show");
+        setTimeout(() => alert.remove(), 250);
+      }, 4000);
+    }
+
+    function setButtonLoading(isLoading) {
+      const btn = document.getElementById("topupSubmitBtn");
+      const text = document.getElementById("topupBtnText");
+      const spinner = document.getElementById("topupBtnSpinner");
+
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add("opacity-70", "cursor-not-allowed");
+        text.textContent = "Creating payment...";
+        spinner.classList.remove("hidden");
+      } else {
+        btn.disabled = false;
+        btn.classList.remove("opacity-70", "cursor-not-allowed");
+        text.textContent = "Continue to Payment";
+        spinner.classList.add("hidden");
+      }
+    }
+
+    function computeAmountNgnFromCoins(coins) {
+      const c = Number(coins || 0);
+      if (!c || c <= 0) return 0;
+      if (!(RATE_UNIT > 0) || !(RATE_PRICE > 0)) return 0;
+
+      // amount_ngn = (coins / unit) * price
+      const raw = (c / RATE_UNIT) * RATE_PRICE;
+
+      // Use ceil so user always pays enough for the coins
+      const amount = Math.ceil(raw);
+      return Number.isFinite(amount) ? amount : 0;
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await axios.get(`${API_BASE}/users/profile`);
+        const data = res.data || {};
+        const coins = data.copup_coin ?? data.bid_points ?? data.bidPoints ?? 0;
+
+        document.getElementById("currentBalance").textContent = coins;
+        document.getElementById("userCoins").textContent = coins;
+
+        document.getElementById("userName").textContent =
+          data.full_name || data.username || data.email || "User";
+        document.getElementById("lastRefreshed").textContent = new Date().toLocaleString();
+      } catch (err) {
+        console.error("Error loading profile:", err);
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem("authToken");
+          window.location.href = "../auth/login.html";
+        } else {
+          showAlert("Unable to load profile", "error");
+        }
+      }
+    }
+
+    function reloadProfile() {
+      loadProfile();
+    }
+
+    async function loadCoinRate() {
+      const estimateRateLabel = document.getElementById("estimateRateLabel");
+      try {
+        const res = await axios.get(`${API_BASE}/users/coin-rate`);
+        const { unit, price, currency } = res.data || {};
+
+        RATE_UNIT = Number(unit || 0);
+        RATE_PRICE = Number(price || 0);
+        RATE_CURRENCY = String(currency || "NGN").toUpperCase();
+
+        if (RATE_UNIT > 0 && RATE_PRICE > 0) {
+          estimateRateLabel.textContent = `${RATE_UNIT} CopUp / ₦${RATE_PRICE.toLocaleString("en-NG")} ${RATE_CURRENCY}`;
+        } else {
+          estimateRateLabel.textContent = "Rate not configured";
+        }
+      } catch (err) {
+        console.error("Error loading coin rate:", err);
+        RATE_UNIT = 0; RATE_PRICE = 0; RATE_CURRENCY = "NGN";
+        estimateRateLabel.textContent = "Rate unavailable";
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const authToken = localStorage.getItem("authToken");
+      if (!authToken) {
+        window.location.href = "../auth/login.html";
+        return;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+
+      const coinsInput = document.getElementById("coinsInput");
+      const estimateBox = document.getElementById("estimateBox");
+      const estimateAmount = document.getElementById("estimateAmount");
+
+      function updatePreview() {
+        const coins = Number(coinsInput.value || 0);
+        const amount_ngn = computeAmountNgnFromCoins(coins);
+
+        if (!coins || coins <= 0 || !amount_ngn) {
+          estimateBox.classList.add("hidden");
+          estimateAmount.textContent = "₦0";
+          return;
+        }
+
+        estimateAmount.textContent = formatNgn(amount_ngn);
+        estimateBox.classList.remove("hidden");
+      }
+
+      coinsInput.addEventListener("input", updatePreview);
+
+      // Initial loads
+      loadProfile();
+      loadCoinRate().then(updatePreview);
+
+      const form = document.getElementById("topupForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const coins = Number(coinsInput.value || 0);
+        if (!coins || coins <= 0) {
+          showAlert("Please enter a valid CopUp Coin quantity", "warning");
+          return;
+        }
+
+        if (!(RATE_UNIT > 0) || !(RATE_PRICE > 0)) {
+          showAlert("Rate not configured. Please try again later.", "error");
+          return;
+        }
+
+        const amount_ngn = computeAmountNgnFromCoins(coins);
+        if (!amount_ngn || amount_ngn <= 0) {
+          showAlert("Invalid calculated amount. Please try again.", "error");
+          return;
+        }
+
+        setButtonLoading(true);
+        try {
+          const res = await axios.post(
+            `${API_BASE}/payment/copup/init`,
+            { amount_ngn },
+            { headers: { "Content-Type": "application/json" } }
+          );
+
+          if (!res.data?.ok || !res.data?.payment_link) {
+            console.error("Init error:", res.data);
+            showAlert(res.data?.message || "Could not create payment", "error");
+            setButtonLoading(false);
+            return;
+          }
+
+          showAlert("Redirecting to Flutterwave...", "success");
+          window.location.href = res.data.payment_link;
+        } catch (err) {
+          console.error("Init error:", err);
+          const msg = err.response?.data?.message || "Error initiating payment";
+          showAlert(msg, "error");
+          setButtonLoading(false);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

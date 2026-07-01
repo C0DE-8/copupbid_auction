@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Loading • CopUpBid</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' },
+            accent:{ 500: '#3b82f6' }
+          },
+          keyframes: {
+            shimmer: {
+              '0%': { transform: 'translateX(-100%)' },
+              '100%': { transform: 'translateX(100%)' }
+            }
+          },
+          animation: {
+            shimmer: 'shimmer 1.6s infinite'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .bg-grid {
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(34,211,238,.10), transparent 60%),
+        radial-gradient(800px 500px at 110% 0%, rgba(59,130,246,.10), transparent 60%),
+        #0b1020;
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 1.25rem;
+      backdrop-filter: blur(6px);
+    }
+    .ring-soft { box-shadow: 0 0 0 8px rgba(16,185,129,.12); }
+  </style>
+</head>
+<body class="min-h-dvh bg-grid text-slate-100">
+  <main class="min-h-dvh flex items-center justify-center p-6">
+    <section class="glass w-full max-w-lg p-8">
+      <div class="flex flex-col items-center text-center">
+        <img src="../assets/images/copupcoin.png" alt="CopupCoin" class="w-20 h-20 mb-4 animate-pulse" />
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Welcome to CopUpBid</h1>
+        <p class="text-slate-400 mt-2">Getting things ready…</p>
+
+        <!-- Loader ring -->
+        <div class="mt-6">
+          <div class="h-12 w-12 rounded-full border-4 border-white/10 border-t-brand-500 animate-spin"></div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="w-full mt-6">
+          <div class="relative h-2 rounded-full bg-white/10 overflow-hidden">
+            <div id="bar" class="absolute inset-y-0 left-0 w-0 bg-gradient-to-r from-brand-500 via-accent-500 to-brand-500 transition-[width]"></div>
+            <div class="absolute inset-0 -skew-x-12 opacity-30">
+              <div class="h-full w-1/3 bg-white/40 animate-shimmer"></div>
+            </div>
+          </div>
+          <p id="status" class="mt-2 text-xs text-slate-400">Preloading login…</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex items-center gap-3">
+          <button id="continueBtn" class="px-4 py-2 rounded-xl bg-brand-500 text-slate-950 font-semibold disabled:opacity-50 disabled:cursor-not-allowed ring-soft"
+                  disabled>
+            Continue
+          </button>
+          <a href="login.html" class="text-slate-300 underline decoration-slate-600 hover:text-white text-sm">
+            Open directly
+          </a>
+        </div>
+
+        <!-- Fallback message -->
+        <p id="fallbackMsg" class="hidden mt-3 text-xs text-amber-300">
+          Taking longer than expected. You can click “Continue” to proceed now.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <noscript>
+    <div class="fixed inset-0 grid place-items-center bg-slate-900 text-white p-6">
+      <div class="max-w-lg text-center">
+        <img src="../assets/images/copupcoin.png" alt="CopupCoin" style="width:80px;height:80px;margin:0 auto 12px auto;">
+        <h2>JavaScript required</h2>
+        <p>Please enable JavaScript or <a href="../auth/login.html" style="text-decoration:underline;">click here</a> to continue.</p>
+      </div>
+    </div>
+  </noscript>
+
+  <script>
+    (function () {
+      const TARGET_URL = "login.html";
+      const MIN_WAIT_MS = 3000;   // minimum time to show loader
+      const SLOW_MSG_MS = 5000;   // show fallback message if slow
+      const HARD_TIMEOUT_MS = 10000; // just in case
+
+      const bar = document.getElementById("bar");
+      const statusEl = document.getElementById("status");
+      const btn = document.getElementById("continueBtn");
+      const fallbackMsg = document.getElementById("fallbackMsg");
+
+      // Smooth progress to ~90% over 3s, then complete on ready
+      let progress = 0;
+      const targetDuringLoad = 90;
+      const step = () => {
+        const target = ready ? 100 : targetDuringLoad;
+        const delta = (target - progress) * 0.08; // ease
+        progress = Math.min(100, progress + Math.max(0.6, delta));
+        bar.style.width = progress + "%";
+        if (progress < 100) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+
+      // Prefetch hints
+      const prefetch = document.createElement("link");
+      prefetch.rel = "prefetch";
+      prefetch.href = TARGET_URL;
+      document.head.appendChild(prefetch);
+
+      // Conditions
+      let minWaitDone = false;
+      let loaded = false;
+      let ready = false;
+      let redirected = false;
+
+      // 1) Minimum wait
+      setTimeout(() => {
+        minWaitDone = true;
+        statusEl.textContent = loaded ? "Ready." : "Still preparing…";
+        maybeGo();
+      }, MIN_WAIT_MS);
+
+      // 2) Preload destination via hidden iframe (best) + fetch fallback
+      //    If iframe is blocked, fetch will still warm the cache.
+      const iframe = document.createElement("iframe");
+      iframe.src = TARGET_URL;
+      iframe.style.display = "none";
+      iframe.onload = () => {
+        loaded = true;
+        statusEl.textContent = "Login preloaded.";
+        maybeGo();
+      };
+      iframe.onerror = () => { /* ignore */ };
+      document.body.appendChild(iframe);
+
+      fetch(TARGET_URL, { cache: "reload" })
+        .then(() => { loaded = true; maybeGo(); })
+        .catch(() => { /* ignore; iframe may still succeed */ });
+
+      // 3) Slow notice & hard timeout
+      setTimeout(() => { fallbackMsg.classList.remove("hidden"); btn.disabled = false; }, SLOW_MSG_MS);
+      setTimeout(() => { btn.disabled = false; }, HARD_TIMEOUT_MS);
+
+      // Continue button: available after min wait (and slow notice or ready)
+      btn.addEventListener("click", () => {
+        if (redirected) return;
+        redirected = true;
+        window.location.href = TARGET_URL;
+      });
+
+      function maybeGo() {
+        // Ready to go when: min wait satisfied AND preload done
+        if (minWaitDone && loaded && !redirected) {
+          ready = true;
+          btn.disabled = false;
+          statusEl.textContent = "Entering…";
+          // Small grace so users see the bar hit 100%
+          setTimeout(() => {
+            if (redirected) return;
+            redirected = true;
+            window.location.replace(TARGET_URL);
+          }, 300);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

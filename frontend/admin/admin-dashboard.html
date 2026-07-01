@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CopUpBid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-alert.show {
+            transform: translateX(0);
+        }
+        .custom-alert.success {
+            background: rgba(16, 185, 129, 0.9);
+        }
+        .custom-alert.error {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .custom-alert.warning {
+            background: rgba(245, 158, 11, 0.9);
+        }
+        .admin-card {
+            transition: all 0.3s ease;
+        }
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+    <!-- Header -->
+    <header class="p-4 flex justify-between items-center border-b border-white/10">
+        <div class="flex items-center space-x-3">
+            <button onclick="logout()" class="glass-effect rounded-full p-2 hover:bg-red-500/20 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </button>
+            <h1 class="text-2xl font-bold text-emerald-400">Admin Dashboard</h1>
+        </div>
+        
+        <!-- Admin Info -->
+        <div class="glass-effect rounded-full px-4 py-2 flex items-center space-x-2 cursor-pointer hover:bg-white/10 transition-colors" onclick="window.location.href='admin-profile.html'">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            <span id="adminName" class="font-bold">Admin</span>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-effect rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-emerald-400" id="totalUsers">0</div>
+                <div class="text-gray-300 mt-2">Total Users</div>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-blue-400" id="activeAuctions">0</div>
+                <div class="text-gray-300 mt-2">Active Auctions</div>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-purple-400" id="activeHeists">0</div>
+                <div class="text-gray-300 mt-2">Active Heists</div>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 text-center">
+                <div class="text-3xl font-bold text-yellow-400" id="pendingPayouts">0</div>
+                <div class="text-gray-300 mt-2">Pending Payouts</div>
+            </div>
+        </div>
+
+        <!-- Management Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Users Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="openUsersManagement()">
+                <div class="flex items-center mb-4">
+                    <div class="bg-emerald-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Users Management</h3>
+                        <p class="text-gray-400 text-sm">Manage user accounts and permissions</p>
+                    </div>
+                </div>
+                <div class="text-emerald-400 font-semibold">View & Manage Users →</div>
+            </div>
+
+            <!-- Auction Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='auction-management.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Auction Management</h3>
+                        <p class="text-gray-400 text-sm">Create and manage auctions</p>
+                    </div>
+                </div>
+                <div class="text-blue-400 font-semibold">Manage Auctions →</div>
+            </div>
+
+            <!-- Heist Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='heist-management.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-purple-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Heist Management</h3>
+                        <p class="text-gray-400 text-sm">Create and manage heist games</p>
+                    </div>
+                </div>
+                <div class="text-purple-400 font-semibold">Manage Heists →</div>
+            </div>
+
+            <!-- Affiliate Management -->
+<div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='affiliate-management.html'">
+  <div class="flex items-center mb-4">
+    <div class="bg-cyan-500/20 rounded-full p-3 mr-4">
+      <!-- Link / chain icon -->
+      <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13.828 10.172a4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.414-1.414M10.172 13.828a4 4 0 005.656 0l3-3a4 4 0 10-5.656-5.656l-1.414 1.414" />
+      </svg>
+    </div>
+    <div>
+      <h3 class="text-xl font-bold">Affiliate Management</h3>
+      <p class="text-gray-400 text-sm">Generate links, track referrals & rewards</p>
+    </div>
+  </div>
+  <div class="text-cyan-400 font-semibold">Manage Affiliates →</div>
+</div>
+
+
+            <!-- Coin Rate -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='coin-rate.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-yellow-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Coin Rate</h3>
+                        <p class="text-gray-400 text-sm">Set and update coin exchange rates</p>
+                    </div>
+                </div>
+                <div class="text-yellow-400 font-semibold">Update Rates →</div>
+            </div>
+
+            <!-- Payout Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='payout-management.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Payout Management</h3>
+                        <p class="text-gray-400 text-sm">Process user payouts and withdrawals</p>
+                    </div>
+                </div>
+                <div class="text-green-400 font-semibold">Manage Payouts →</div>
+            </div>
+
+            <!-- Pay Account -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='pay-account.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-red-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Pay Account</h3>
+                        <p class="text-gray-400 text-sm">Manage payment account details</p>
+                    </div>
+                </div>
+                <div class="text-red-400 font-semibold">Update Account →</div>
+            </div>
+
+            <!-- Product Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='product-management.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-indigo-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 7h14l-2-7M10 21a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Product Management</h3>
+                        <p class="text-gray-400 text-sm">Add, edit and manage products</p>
+                    </div>
+                </div>
+                <div class="text-indigo-400 font-semibold">Manage Products →</div>
+            </div>
+
+            <!-- Waitlist Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='wait-list.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-cyan-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5s-3 1.343-3 3 1.343 3 3 3zM6 20v-1a4 4 0 014-4h4a4 4 0 014 4v1M19 7v2M21 8h-4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Waitlist</h3>
+                        <p class="text-gray-400 text-sm">View and manage users on the wait-list</p>
+                    </div>
+                </div>
+                <div class="text-cyan-400 font-semibold">View Waitlist →</div>
+            </div>
+
+            <!-- Orders Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='admin-orders.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-purple-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Orders Management</h3>
+                        <p class="text-gray-400 text-sm">View and manage orders</p>
+                    </div>
+                </div>
+                <div class="text-purple-400 font-semibold">Manage Orders →</div>
+            </div>
+
+            <!-- favorites/summary -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='admin-favorites-sumary.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-pink-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.682 4.318 12.682a4.5 4.5 0 010-6.364z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Favorites Summary</h3>
+                        <p class="text-gray-400 text-sm">View most favorited items and user favorites</p>
+                    </div>
+                </div>
+                <div class="text-pink-400 font-semibold">View Favorites →</div>
+            </div>
+
+            <!-- Coin Management -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='coin.html'">
+                <div class="flex items-center mb-4">
+                    <div class="bg-yellow-500/20 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Coin Management</h3>
+                        <p class="text-gray-400 text-sm">Set and update coin exchange rates</p>
+                    </div>
+                </div>
+                <div class="text-yellow-400 font-semibold">Manage Coins →</div>
+            </div>
+
+            <!-- Demo & Heist Control -->
+            <div class="glass-effect rounded-2xl p-6 admin-card cursor-pointer" onclick="window.location.href='admin-demo-management.html'">
+            <div class="flex items-center mb-4">
+                <div class="bg-emerald-500/20 rounded-full p-3 mr-4">
+                <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-3-3v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                </div>
+                <div>
+                <h3 class="text-xl font-bold">Demo & Heist Control</h3>
+                <p class="text-gray-400 text-sm">Manage cop users, participants & winners</p>
+                </div>
+            </div>
+            <div class="text-emerald-400 font-semibold">Open Control Panel →</div>
+            </div>
+
+
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="mt-8">
+            <div class="glass-effect rounded-2xl p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Recent Activity
+                </h2>
+                <div id="recentActivity" class="space-y-3">
+                    <div class="text-center text-gray-400 py-8">
+                        Loading recent activity...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-effect rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modalTitle" class="text-2xl font-bold text-emerald-400">Management</h2>
+                <button onclick="closeModal()" class="glass-effect rounded-full p-2 hover:bg-red-500/20 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="modalContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.copup.copupbid.com/api';
+        const ADMIN_API_BASE = 'https://api.copup.copupbid.com/api/admin';
+        let authToken = localStorage.getItem('authToken');
+
+        function setupAxiosHeaders() {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+            axios.defaults.headers.common['Content-Type'] = 'application/json';
+        }
+
+        function showAlert(message, type = 'success') {
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alert = document.createElement('div');
+            alert.className = `custom-alert ${type}`;
+            alert.textContent = message;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => alert.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
+        }
+
+        // Check authentication and admin role
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!authToken) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            setupAxiosHeaders();
+            
+            loadAdminProfile();
+            loadDashboardStats();
+            loadRecentActivity();
+        });
+
+        // Load admin profile
+        async function loadAdminProfile() {
+            try {
+                const response = await axios.get(`${ADMIN_API_BASE}/profile`);
+                const userData = response.data;
+                
+                // Check if user is admin
+                if (userData.role !== 'admin') {
+                    showAlert('Access denied. Admin privileges required.', 'error');
+                    setTimeout(() => {
+                        window.location.href = '../pages/dashboard.html';
+                    }, 2000);
+                    return;
+                }
+                
+                document.getElementById('adminName').textContent = userData.name || userData.username || 'Admin';
+            } catch (error) {
+                console.error('Error loading admin profile:', error);
+                if (error.response?.status === 401) {
+                    logout();
+                }
+            }
+        }
+
+        async function loadDashboardStats() {
+            try {
+                // Load users count
+                const usersResponse = await axios.get(`${ADMIN_API_BASE}/users?limit=1`);
+                document.getElementById('totalUsers').textContent = usersResponse.data.total || 0;
+
+                // Load active auctions count
+                const auctionsResponse = await axios.get(`${ADMIN_API_BASE}/auctions?status=active&limit=1`);
+                document.getElementById('activeAuctions').textContent = auctionsResponse.data.total || 0;
+
+                // Load active heists count
+                const heistsResponse = await axios.get(`${ADMIN_API_BASE}/heists/availables`);
+                document.getElementById('activeHeists').textContent = heistsResponse.data.length || 0;
+
+                // Load pending payouts count
+                const payoutsResponse = await axios.get(`${ADMIN_API_BASE}/payouts?status=pending`);
+                document.getElementById('pendingPayouts').textContent = payoutsResponse.data.length || 0;
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const [usersResponse, auctionsResponse] = await Promise.all([
+                    axios.get(`${ADMIN_API_BASE}/users?limit=5`),
+                    axios.get(`${ADMIN_API_BASE}/auctions?limit=5`)
+                ]);
+
+                const activities = [];
+                
+                // Add recent users
+                usersResponse.data.data?.forEach(user => {
+                    activities.push({
+                        description: `New user registered: ${user.full_name || user.username}`,
+                        user: user.email,
+                        created_at: user.created_at
+                    });
+                });
+
+                // Add recent auctions
+                auctionsResponse.data.data?.forEach(auction => {
+                    activities.push({
+                        description: `Auction created: ${auction.name}`,
+                        user: 'Admin',
+                        created_at: auction.created_at
+                    });
+                });
+
+                // Sort by date
+                activities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                const activityDiv = document.getElementById('recentActivity');
+                
+                if (activities.length === 0) {
+                    activityDiv.innerHTML = '<div class="text-center text-gray-400 py-8">No recent activity</div>';
+                    return;
+                }
+                
+                activityDiv.innerHTML = activities.slice(0, 10).map(activity => `
+                    <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold">${activity.description}</p>
+                                <p class="text-sm text-gray-400">${activity.user || 'System'}</p>
+                            </div>
+                            <span class="text-xs text-gray-500">${new Date(activity.created_at).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = '<div class="text-center text-gray-400 py-8">Error loading activity</div>';
+            }
+        }
+
+        function openUsersManagement() {
+            window.location.href = 'users-management.html';
+        }
+
+        function openAuctionManagement() {
+            window.location.href = 'auction-management.html';
+        }
+
+        function openHeistManagement() {
+            window.location.href = 'heist-management.html';
+        }
+
+        function openCoinRateManagement() {
+            window.location.href = 'coin-rate.html';
+        }
+
+        function openPayoutManagement() {
+            window.location.href = 'payout-management.html';
+        }
+
+        function openPayAccountManagement() {
+            window.location.href = 'pay-account.html';
+        }
+
+        // Modal functions
+        function showModal() {
+            document.getElementById('modalContainer').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modalContainer').classList.add('hidden');
+        }
+
+        async function loadUsers(page = 1) {
+            try {
+                const search = document.getElementById('userSearch')?.value || '';
+                const role = document.getElementById('roleFilter')?.value || '';
+                const verified = document.getElementById('verifiedFilter')?.value || '';
+                
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 10,
+                    ...(search && { q: search }),
+                    ...(role && { role: role }),
+                    ...(verified && { verified: verified })
+                });
+
+                const response = await axios.get(`${ADMIN_API_BASE}/users?${params}`);
+                const { data: users, total, page: currentPage, limit } = response.data;
+                const usersList = document.getElementById('usersList');
+                
+                if (users.length === 0) {
+                    usersList.innerHTML = '<div class="text-center text-gray-400 py-8">No users found</div>';
+                    return;
+                }
+                
+                usersList.innerHTML = users.map(user => `
+                    <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <p class="font-semibold">${user.full_name || user.username}</p>
+                                    <span class="px-2 py-1 text-xs rounded-full ${user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}">${user.role}</span>
+                                    ${user.is_verified ? '<span class="px-2 py-1 text-xs rounded-full bg-green-500/20 text-green-400">Verified</span>' : '<span class="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-400">Unverified</span>'}
+                                    ${user.is_blocked ? '<span class="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-400">Blocked</span>' : ''}
+                                </div>
+                                <p class="text-sm text-gray-400">${user.email}</p>
+                                <p class="text-xs text-gray-500">ID: ${user.id} | Joined: ${user.created_at_fmt || new Date(user.created_at).toLocaleDateString()}</p>
+                                ${user.referral_code ? `<p class="text-xs text-gray-500">Referral: ${user.referral_code}</p>` : ''}
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="editUser(${user.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Edit</button>
+                                <button onclick="toggleUserBlock(${user.id}, ${user.is_blocked})" class="bg-${user.is_blocked ? 'green' : 'red'}-600 hover:bg-${user.is_blocked ? 'green' : 'red'}-700 text-white px-3 py-1 rounded text-sm">${user.is_blocked ? 'Unblock' : 'Block'}</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add pagination
+                createPagination('usersPagination', currentPage, Math.ceil(total / limit), loadUsers);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersList').innerHTML = '<div class="text-center text-red-400 py-8">Error loading users</div>';
+            }
+        }
+
+        async function loadAuctions(page = 1) {
+            try {
+                const search = document.getElementById('auctionSearch')?.value || '';
+                const category = document.getElementById('categoryFilter')?.value || '';
+                const status = document.getElementById('statusFilter')?.value || '';
+                
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 10,
+                    ...(search && { q: search }),
+                    ...(category && { category: category }),
+                    ...(status && { status: status })
+                });
+
+                const response = await axios.get(`${ADMIN_API_BASE}/auctions?${params}`);
+                const { data: auctions, total, page: currentPage, limit } = response.data;
+                const auctionsList = document.getElementById('auctionsList');
+                
+                if (auctions.length === 0) {
+                    auctionsList.innerHTML = '<div class="text-center text-gray-400 py-8">No auctions found</div>';
+                    return;
+                }
+                
+                auctionsList.innerHTML = auctions.map(auction => `
+                    <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-4 flex-1">
+                                ${auction.image_url ? `<img src="${auction.image_url}" alt="${auction.name}" class="w-16 h-16 rounded-lg object-cover">` : '<div class="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center text-gray-400 text-xs">No Image</div>'}
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <h4 class="font-semibold">${auction.name}</h4>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-${auction.status === 'active' ? 'green' : auction.status === 'pending' ? 'yellow' : 'gray'}-500/20 text-${auction.status === 'active' ? 'green' : auction.status === 'pending' ? 'yellow' : 'gray'}-400">${auction.status}</span>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-400">${auction.category}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400 mb-2">${auction.description}</p>
+                                    <div class="text-xs text-gray-500">
+                                        <p>Entry: ${auction.entry_bid_points} bid points | Min Users: ${auction.minimum_users}</p>
+                                        <p>Created: ${new Date(auction.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="editAuction(${auction.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Edit</button>
+                                <button onclick="deleteAuction(${auction.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add pagination
+                createPagination('auctionsPagination', currentPage, Math.ceil(total / limit), loadAuctions);
+            } catch (error) {
+                console.error('Error loading auctions:', error);
+                document.getElementById('auctionsList').innerHTML = '<div class="text-center text-red-400 py-8">Error loading auctions</div>';
+            }
+        }
+
+        async function loadHeists() {
+            try {
+                const response = await axios.get(`${ADMIN_API_BASE}/heists/availables`);
+                const heists = response.data;
+                const heistsList = document.getElementById('heistsList');
+                
+                if (heists.length === 0) {
+                    heistsList.innerHTML = '<div class="text-center text-gray-400 py-8">No active heists found</div>';
+                    return;
+                }
+                
+                heistsList.innerHTML = heists.map(heist => `
+                    <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-4 flex-1">
+                                ${heist.prize_image ? `<img src="${heist.prize_image}" alt="Heist Prize" class="w-16 h-16 rounded-lg object-cover">` : '<div class="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center text-gray-400 text-xs">No Image</div>'}
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <h4 class="font-semibold">Heist #${heist.id}</h4>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-${heist.status === 'started' ? 'green' : 'yellow'}-500/20 text-${heist.status === 'started' ? 'green' : 'yellow'}-400">${heist.status}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <p>Created: ${new Date(heist.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="editHeist(${heist.id})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">Edit</button>
+                                <button onclick="deleteHeist(${heist.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading heists:', error);
+                document.getElementById('heistsList').innerHTML = '<div class="text-center text-red-400 py-8">Error loading heists</div>';
+            }
+        }
+
+        async function loadCurrentRate() {
+            try {
+                const response = await axios.get(`${ADMIN_API_BASE}/coin-rate`);
+                const rate = response.data;
+                
+                document.getElementById('unitPrice').value = rate.unit_price;
+                document.getElementById('currency').value = rate.currency;
+                
+                document.getElementById('currentRateInfo').innerHTML = `
+                    <h4 class="font-semibold mb-2">Current Rate Information</h4>
+                    <p class="text-sm">Unit Price: <span class="text-emerald-400">${rate.unit_price} ${rate.currency}</span></p>
+                    <p class="text-sm">Last Updated: <span class="text-gray-300">${new Date(rate.updated_at).toLocaleString()}</span></p>
+                `;
+            } catch (error) {
+                console.error('Error loading current rate:', error);
+                document.getElementById('currentRateInfo').innerHTML = '<p class="text-sm text-red-400">Error loading current rate</p>';
+            }
+        }
+
+        async function loadPayouts() {
+            try {
+                const status = document.getElementById('payoutStatusFilter')?.value || '';
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+
+                const response = await axios.get(`${ADMIN_API_BASE}/payouts?${params}`);
+                const payouts = response.data;
+                const payoutsList = document.getElementById('payoutsList');
+                
+                if (payouts.length === 0) {
+                    payoutsList.innerHTML = '<div class="text-center text-gray-400 py-8">No payouts found</div>';
+                    return;
+                }
+                
+                payoutsList.innerHTML = payouts.map(payout => `
+                    <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h4 class="font-semibold">${payout.username}</h4>
+                                    <span class="px-2 py-1 text-xs rounded-full bg-${payout.status === 'approved' ? 'green' : payout.status === 'rejected' ? 'red' : 'yellow'}-500/20 text-${payout.status === 'approved' ? 'green' : payout.status === 'rejected' ? 'red' : 'yellow'}-400">${payout.status}</span>
+                                </div>
+                                <p class="text-sm text-gray-400">${payout.email}</p>
+                                <div class="text-xs text-gray-500 mt-2">
+                                    <p><strong>Amount:</strong> ${payout.bid_points} bid points</p>
+                                    <p><strong>Bank:</strong> ${payout.bank_name} - ${payout.account_number}</p>
+                                    <p><strong>Account Name:</strong> ${payout.account_name}</p>
+                                    <p><strong>Requested:</strong> ${new Date(payout.created_at).toLocaleString()}</p>
+                                    ${payout.admin_note ? `<p><strong>Note:</strong> ${payout.admin_note}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                ${payout.status === 'pending' ? `
+                                    <button onclick="approvePayout(${payout.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Approve</button>
+                                    <button onclick="rejectPayout(${payout.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Reject</button>
+                                ` : `
+                                    <button onclick="viewPayout(${payout.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">View</button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading payouts:', error);
+                document.getElementById('payoutsList').innerHTML = '<div class="text-center text-gray-400 py-8">Error loading payouts</div>';
+            }
+        }
+
+        async function loadPayAccount() {
+            try {
+                const response = await axios.get(`${ADMIN_API_BASE}/pay-account`);
+                const account = response.data;
+                
+                document.getElementById('bankName').value = account.bank_name || '';
+                document.getElementById('accountName').value = account.account_name || '';
+                document.getElementById('accountNumber').value = account.account_number || '';
+                document.getElementById('accountCurrency').value = account.currency || 'NGN';
+                document.getElementById('accountNotes').value = account.notes || '';
+                
+                document.getElementById('currentAccountInfo').innerHTML = `
+                    <h4 class="font-semibold mb-2">Current Account Information</h4>
+                    <p class="text-sm">Bank: <span class="text-emerald-400">${account.bank_name || 'Not set'}</span></p>
+                    <p class="text-sm">Account: <span class="text-emerald-400">${account.account_name || 'Not set'} - ${account.account_number || 'Not set'}</span></p>
+                    <p class="text-sm">Currency: <span class="text-emerald-400">${account.currency || 'NGN'}</span></p>
+                    <p class="text-sm">Status: <span class="text-${account.is_active ? 'green' : 'red'}-400">${account.is_active ? 'Active' : 'Inactive'}</span></p>
+                    <p class="text-sm">Last Updated: <span class="text-gray-300">${new Date(account.updated_at).toLocaleString()}</span></p>
+                `;
+            } catch (error) {
+                console.error('Error loading pay account:', error);
+                if (error.response?.status === 404) {
+                    document.getElementById('currentAccountInfo').innerHTML = '<p class="text-sm text-yellow-400">No pay account configured yet</p>';
+                } else {
+                    document.getElementById('currentAccountInfo').innerHTML = '<p class="text-sm text-red-400">Error loading pay account</p>';
+                }
+            }
+        }
+
+        async function updateCoinRate(e) {
+            e.preventDefault();
+            try {
+                const unitPrice = document.getElementById('unitPrice').value;
+                const currency = document.getElementById('currency').value;
+                
+                await axios.put(`${ADMIN_API_BASE}/coin-rate`, {
+                    unit_price: parseFloat(unitPrice),
+                    currency: currency
+                });
+                
+                showAlert('Coin rate updated successfully!', 'success');
+                loadCurrentRate();
+            } catch (error) {
+                console.error('Error updating coin rate:', error);
+                showAlert('Error updating coin rate', 'error');
+            }
+        }
+
+        async function updatePayAccount(e) {
+            e.preventDefault();
+            try {
+                const formData = {
+                    bank_name: document.getElementById('bankName').value,
+                    account_name: document.getElementById('accountName').value,
+                    account_number: document.getElementById('accountNumber').value,
+                    currency: document.getElementById('accountCurrency').value,
+                    notes: document.getElementById('accountNotes').value
+                };
+                
+                await axios.put(`${ADMIN_API_BASE}/pay-account`, formData);
+                
+                showAlert('Pay account updated successfully!', 'success');
+                loadPayAccount();
+            } catch (error) {
+                console.error('Error updating pay account:', error);
+                showAlert('Error updating pay account', 'error');
+            }
+        }
+
+        function createPagination(containerId, currentPage, totalPages, loadFunction) {
+            const container = document.getElementById(containerId);
+            if (!container || totalPages <= 1) return;
+            
+            let pagination = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                pagination += `<button onclick="${loadFunction.name}(${currentPage - 1})" class="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Previous</button>`;
+            }
+            
+            // Page numbers
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                pagination += `<button onclick="${loadFunction.name}(${i})" class="px-3 py-1 ${i === currentPage ? 'bg-emerald-600' : 'bg-white/10'} rounded hover:bg-emerald-500">${i}</button>`;
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                pagination += `<button onclick="${loadFunction.name}(${currentPage + 1})" class="px-3 py-1 bg-white/10 rounded hover:bg-white/20">Next</button>`;
+            }
+            
+            container.innerHTML = pagination;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Placeholder functions for actions
+        function editUser(id) { showAlert('Edit user functionality coming soon', 'warning'); }
+        function toggleUserBlock(id, isBlocked) { showAlert('Block/unblock functionality coming soon', 'warning'); }
+        function editAuction(id) { showAlert('Edit auction functionality coming soon', 'warning'); }
+        function deleteAuction(id) { showAlert('Delete auction functionality coming soon', 'warning'); }
+        function editHeist(id) { showAlert('Edit heist functionality coming soon', 'warning'); }
+        function deleteHeist(id) { showAlert('Delete heist functionality coming soon', 'warning'); }
+        function approvePayout(id) { showAlert('Approve payout functionality coming soon', 'warning'); }
+        function rejectPayout(id) { showAlert('Reject payout functionality coming soon', 'warning'); }
+        function viewPayout(id) { showAlert('View payout functionality coming soon', 'warning'); }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '../auth/login.html';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modalContainer').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

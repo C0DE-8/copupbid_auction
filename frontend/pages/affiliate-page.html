@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Program - Coin Vault Bid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .medieval-card {
+            background: linear-gradient(145deg, #1e293b, #334155);
+            border: 2px solid #475569;
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: #10b981 #1e293b;
+        }
+        .scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scroll-container::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+        
+        /* Removed 3D effects and simplified image styling */
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with Back Button -->
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="history.back()" class="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                <span class="font-medium">Back to Alliance Hub</span>
+            </button>
+        </div>
+
+        <!-- Hero Section with Image -->
+        <div class="text-center mb-12">
+            <!-- Updated image styling to show full image without cropping -->
+            <div class="mb-8">
+                <img src="../assets/images/c1.png" 
+                     alt="Affiliate Program Hero" 
+                     class="w-full max-w-md mx-auto rounded-xl shadow-lg"
+                     style="object-fit: contain; height: auto;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <!-- Fallback for missing image -->
+                <div class="w-full max-w-md mx-auto h-48 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg" style="display: none;">
+                    <div class="text-center">
+                        <div class="text-4xl mb-2">🏆</div>
+                        <h3 class="text-xl font-bold text-white">Alliance Program</h3>
+                        <p class="text-emerald-200">Join the Elite Network</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Added rate display section -->
+            <div class="mb-8">
+                <div class="medieval-card rounded-lg p-4 max-w-md mx-auto border border-emerald-400/20">
+                    <div class="flex items-center justify-center space-x-3">
+                        <span class="text-2xl">💰</span>
+                        <div class="text-center">
+                            <p class="text-slate-400 text-sm">Current Exchange Rate</p>
+                            <p id="rate-display" class="text-emerald-400 font-bold text-lg">Loading...</p>
+                            <p id="rate-updated" class="text-slate-500 text-xs">Last updated: --</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 gold-gradient bg-clip-text text-transparent">
+                Elite Alliance Program
+            </h1>
+            <p class="text-slate-300 text-xl max-w-3xl mx-auto leading-relaxed">
+                Join our exclusive network of treasure hunters and earn legendary rewards by bringing fellow adventurers into our realm. 
+                <span class="text-emerald-400 font-semibold">Your success is our success.</span>
+            </p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex justify-center mb-10">
+            <div class="medieval-card rounded-xl p-3 flex shadow-xl border border-emerald-400/20">
+                <button id="heists-tab" class="tab-button px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 active flex items-center space-x-2">
+                    <span>🏴‍☠️</span>
+                    <span>Heist Alliances</span>
+                </button>
+                <button id="auctions-tab" class="tab-button px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 ml-3 flex items-center space-x-2">
+                    <span>🏛️</span>
+                    <span>Auction Alliances</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Heists Tab Content -->
+        <div id="heists-content" class="tab-content active">
+            <!-- Available Heists -->
+            <div class="medieval-card rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <span class="mr-3">🏴‍☠️</span>
+                    Available Heists
+                </h2>
+                <div id="heists-list" class="space-y-4 max-h-96 overflow-y-auto scroll-container">
+                    <!-- Heists will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Active Heist Campaigns -->
+            <div class="medieval-card rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <span class="mr-3">📊</span>
+                    Your Heist Campaigns
+                </h2>
+                <div id="heist-campaigns" class="space-y-4">
+                    <!-- Campaigns will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Auctions Tab Content -->
+        <div id="auctions-content" class="tab-content">
+            <!-- Available Auctions -->
+            <div class="medieval-card rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <span class="mr-3">🏛️</span>
+                    Available Auctions
+                </h2>
+                <div id="auctions-list" class="space-y-4 max-h-96 overflow-y-auto scroll-container">
+                    <div class="text-center py-8">
+                        <p class="text-slate-400 mb-2">🚧 Auction affiliates coming soon!</p>
+                        <p class="text-slate-500 text-sm">This feature is currently under development</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Auction Campaigns -->
+            <div class="medieval-card rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <span class="mr-3">📊</span>
+                    Your Auction Campaigns
+                </h2>
+                <div id="auction-campaigns" class="space-y-4">
+                    <div class="text-center py-8">
+                        <p class="text-slate-400">🚧 Auction campaigns coming soon!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div class="medieval-card rounded-xl p-8 mt-12 border border-emerald-400/20 shadow-2xl">
+            <h2 class="text-3xl font-bold mb-8 text-center gold-gradient bg-clip-text text-transparent">How the Alliance Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center group">
+                    <div class="w-20 h-20 gold-gradient rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">1</div>
+                    <h3 class="font-bold text-xl mb-3 text-emerald-400">Generate Your Banner</h3>
+                    <p class="text-slate-300 leading-relaxed">Create your unique alliance link for any quest and receive your personal recruitment banner</p>
+                </div>
+                <div class="text-center group">
+                    <div class="w-20 h-20 gold-gradient rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">2</div>
+                    <h3 class="font-bold text-xl mb-3 text-emerald-400">Rally Fellow Warriors</h3>
+                    <p class="text-slate-300 leading-relaxed">Share your banner across the realm and earn when brave souls join your cause</p>
+                </div>
+                <div class="text-center group">
+                    <div class="w-20 h-20 gold-gradient rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">3</div>
+                    <h3 class="font-bold text-xl mb-3 text-emerald-400">Claim Your Treasure</h3>
+                    <p class="text-slate-300 leading-relaxed">Receive legendary rewards when your alliance reaches the sacred threshold</p>
+                </div>
+            </div>
+            
+            <!-- Alliance Benefits Section -->
+            <div class="mt-12 pt-8 border-t border-slate-600">
+                <h3 class="text-2xl font-bold text-center mb-6 text-emerald-400">Alliance Benefits</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">💎</span>
+                        <span class="text-slate-300">Earn copup coins for every successful referral</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🏆</span>
+                        <span class="text-slate-300">Unlock exclusive alliance achievements</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">📈</span>
+                        <span class="text-slate-300">Track your progress in real-time</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🎯</span>
+                        <span class="text-slate-300">Set and achieve recruitment targets</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Link Generation Modal -->
+    <div id="link-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="medieval-card rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold mb-4" id="modal-title">Generate Affiliate Link</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Your Affiliate Link:</label>
+                <div class="flex">
+                    <input type="text" id="generated-link" class="flex-1 bg-slate-700 border border-slate-600 rounded-l-md px-3 py-2 text-sm" readonly>
+                    <button onclick="copyLink()" class="gold-gradient px-4 py-2 rounded-r-md text-sm font-medium hover:opacity-90 transition-opacity">
+                        Copy
+                    </button>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-600 rounded-md hover:bg-slate-500 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication check
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            window.location.href = '../auth/login.html';
+        }
+
+        const API_BASE_URL = 'https://api.copup.copupbid.com/api/users';
+        
+        let currentTab = 'heists';
+        let heistData = [];
+        let auctionData = [];
+
+        // Tab switching
+        document.getElementById('heists-tab').addEventListener('click', () => switchTab('heists'));
+        document.getElementById('auctions-tab').addEventListener('click', () => switchTab('auctions'));
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tab}-content`).classList.add('active');
+            
+            // Load data for the active tab
+            if (tab === 'heists') {
+                loadHeists();
+            } else {
+                loadAuctions();
+                loadAuctionCampaigns();
+            }
+        }
+
+        async function loadHeists() {
+            try {
+                console.log('[v0] Loading heists from:', `${API_BASE_URL}/heist/affiliate/list`);
+                const response = await fetch(`${API_BASE_URL}/heist/affiliate/list`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                // Check if response is ok and content-type is JSON
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                heistData = Array.isArray(data) ? data : [];
+                displayHeists();
+                loadHeistStats();
+                await loadHeistCampaigns();
+            } catch (error) {
+                console.error('Error loading heists:', error);
+                document.getElementById('heists-list').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-400 mb-2">⚠️ Failed to load heists</p>
+                        <p class="text-slate-400 text-sm">${error.message}</p>
+                        <p class="text-slate-500 text-xs mt-2">Make sure the server is running on localhost:4000</p>
+                    </div>
+                `;
+                // Set default stats
+                updateHeistStats({});
+                await loadHeistCampaigns();
+            }
+        }
+
+        async function loadHeistStats() {
+            // Stats endpoint doesn't exist, use defaults
+            updateHeistStats({});
+        }
+
+        async function loadAuctions() {
+            document.getElementById('auctions-list').innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-slate-400 mb-2">🚧 Auction affiliates coming soon!</p>
+                    <p class="text-slate-500 text-sm">This feature is currently under development</p>
+                </div>
+            `;
+            updateAuctionStats({});
+        }
+
+        // Display heists
+        function displayHeists() {
+            const container = document.getElementById('heists-list');
+            if (heistData.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No heists available for affiliate program</p>';
+                return;
+            }
+
+            container.innerHTML = heistData.map(heist => `
+                <div class="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-lg">${heist.name}</h3>
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-blue-400">🎯 ${heist.target_users} referrals needed</span>
+                            <span class="text-emerald-400">💎 ${heist.reward_bid_points} CP reward</span>
+                        </div>
+                    </div>
+                    <button onclick="generateHeistLink('${heist.id}')" class="gold-gradient px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity">
+                        Generate Link
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Display auctions
+        function displayAuctions() {
+            const container = document.getElementById('auctions-list');
+            if (auctionData.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No auctions available for affiliate program</p>';
+                return;
+            }
+
+            container.innerHTML = auctionData.map(auction => `
+                <div class="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-lg">${auction.title}</h3>
+                        <p class="text-slate-400 text-sm mb-2">${auction.description}</p>
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-green-400">💰 $${auction.ticket_price}</span>
+                            <span class="text-blue-400">🎯 ${auction.affiliate_target} referrals needed</span>
+                            <span class="text-emerald-400">💎 $${auction.affiliate_reward} reward</span>
+                        </div>
+                    </div>
+                    <button onclick="generateAuctionLink('${auction.id}')" class="gold-gradient px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity">
+                        Generate Link
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function loadHeistCampaigns() {
+            try {
+                document.getElementById('heist-campaigns').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-slate-400">⏳ Loading your campaigns...</p>
+                    </div>
+                `;
+                
+                const campaigns = [];
+                
+                for (const heist of heistData) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/heist/affiliate/progress/${heist.id}`, {
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                const progress = await response.json();
+                                campaigns.push({
+                                    id: heist.id,
+                                    heist_title: heist.name,
+                                    referrals: progress.referredUsers || 0,
+                                    target: progress.targetUsers || heist.target_users,
+                                    reward: heist.reward_bid_points,
+                                    progressDisplay: progress.progressDisplay || `${progress.referredUsers || 0}/${progress.targetUsers || heist.target_users}`,
+                                    remainingReferrals: progress.remainingReferrals || Math.max(0, (progress.targetUsers || heist.target_users) - (progress.referredUsers || 0)),
+                                    canClaim: (progress.referredUsers || 0) >= (progress.targetUsers || heist.target_users),
+                                    claimed: false
+                                });
+                            }
+                        } else if (response.status === 404) {
+                            // No progress yet for this heist, show as 0 progress
+                            campaigns.push({
+                                id: heist.id,
+                                heist_title: heist.name,
+                                referrals: 0,
+                                target: heist.target_users,
+                                reward: heist.reward_bid_points,
+                                progressDisplay: `0/${heist.target_users}`,
+                                remainingReferrals: heist.target_users,
+                                canClaim: false,
+                                claimed: false
+                            });
+                        }
+                    } catch (error) {
+                        console.log(`[v0] Error loading progress for heist ${heist.id}:`, error);
+                        // Add heist with 0 progress if API fails
+                        campaigns.push({
+                            id: heist.id,
+                            heist_title: heist.name,
+                            referrals: 0,
+                            target: heist.target_users,
+                            reward: heist.reward_bid_points,
+                            progressDisplay: `0/${heist.target_users}`,
+                            remainingReferrals: heist.target_users,
+                            canClaim: false,
+                            claimed: false
+                        });
+                    }
+                }
+                
+                displayHeistCampaigns(campaigns);
+            } catch (error) {
+                console.error('Error loading heist campaigns:', error);
+                document.getElementById('heist-campaigns').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-400 mb-2">⚠️ Failed to load campaigns</p>
+                        <p class="text-slate-400 text-sm">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadAuctionCampaigns() {
+            document.getElementById('auction-campaigns').innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-slate-400">🚧 Auction campaigns coming soon!</p>
+                </div>
+            `;
+        }
+
+        // Display heist campaigns
+        function displayHeistCampaigns(campaigns) {
+            const container = document.getElementById('heist-campaigns');
+            if (campaigns.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No active campaigns</p>';
+                return;
+            }
+
+            container.innerHTML = campaigns.map(campaign => {
+                const progress = (campaign.referrals / campaign.target) * 100;
+                
+                return `
+                    <div class="bg-slate-700 rounded-lg p-4 border-l-4 ${campaign.canClaim ? 'border-green-400' : 'border-yellow-400'}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg">${campaign.heist_title}</h3>
+                                <p class="text-slate-400 text-sm">${campaign.progressDisplay}</p>
+                                ${campaign.remainingReferrals > 0 ? 
+                                    `<p class="text-blue-400 text-xs mt-1">🎯 ${campaign.remainingReferrals} more referrals needed</p>` : 
+                                    `<p class="text-green-400 text-xs mt-1">✅ Target reached!</p>`
+                                }
+                            </div>
+                            <div class="text-right">
+                                <div class="text-emerald-400 font-semibold text-lg">💎 ${campaign.reward} CP</div>
+                                ${campaign.canClaim ? '<span class="text-green-400 text-sm font-medium">🎉 Ready to claim!</span>' : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Enhanced progress bar with better visual feedback -->
+                        <div class="w-full bg-slate-600 rounded-full h-3 mb-4 overflow-hidden">
+                            <div class="progress-bar h-3 rounded-full transition-all duration-500 ${campaign.canClaim ? 'bg-gradient-to-r from-green-400 to-green-500' : 'gold-gradient'}" 
+                                 style="width: ${Math.min(progress, 100)}%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-slate-400">${progress.toFixed(1)}% complete</span>
+                                ${campaign.canClaim ? 
+                                    '<span class="text-green-400 text-sm">🏆 Eligible for reward</span>' : 
+                                    '<span class="text-blue-400 text-sm">📈 Keep sharing your link</span>'
+                                }
+                            </div>
+                            ${campaign.canClaim ? 
+                                `<button onclick="claimHeistReward('${campaign.id}')" 
+                                         class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                    💰 Claim ${campaign.reward} CP
+                                 </button>` :
+                                `<span class="text-slate-500 text-sm px-4 py-2 bg-slate-600 rounded-md">In Progress</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Display auction campaigns
+        function displayAuctionCampaigns(campaigns) {
+            const container = document.getElementById('auction-campaigns');
+            if (campaigns.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No active campaigns</p>';
+                return;
+            }
+
+            container.innerHTML = campaigns.map(campaign => {
+                const progress = (campaign.referrals / campaign.target) * 100;
+                
+                return `
+                    <div class="bg-slate-700 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold">${campaign.auction_title}</h3>
+                                <p class="text-slate-400 text-sm">${campaign.referrals}/${campaign.target} referrals</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-emerald-400 font-semibold">$${campaign.reward}</div>
+                                ${campaign.canClaim ? '<span class="text-green-400 text-sm">Ready to claim!</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-600 rounded-full h-2 mb-3">
+                            <div class="progress-bar gold-gradient h-2 rounded-full" style="width: ${Math.min(progress, 100)}%"></div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-400">${progress.toFixed(1)}% complete</span>
+                            ${campaign.canClaim ? 
+                                `<button onclick="claimAuctionReward('${campaign.id}')" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-medium transition-colors">Claim Reward</button>` :
+                                `<span class="text-slate-500 text-sm">${campaign.claimed ? 'Claimed' : 'In Progress'}</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update stats
+        function updateHeistStats(stats) {
+            // Removed stats cards section
+        }
+
+        function updateAuctionStats(stats) {
+            // Removed stats cards section
+        }
+
+        async function generateHeistLink(heistId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/heist/affiliate/link/${heistId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                
+                if (data.affiliateLink) {
+                    showLinkModal('Heist Affiliate Link', data.affiliateLink);
+                } else {
+                    alert('Failed to generate link: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error generating heist link:', error);
+                alert(`Failed to generate link: ${error.message}`);
+            }
+        }
+
+        async function generateAuctionLink(auctionId) {
+            alert('Auction affiliate links are coming soon!');
+        }
+
+        // Claim rewards
+        async function claimHeistReward(heistId) {
+            try {
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '⏳ Claiming...';
+                button.disabled = true;
+                
+                const response = await fetch(`${API_BASE_URL}/heist/affiliate/claim/${heistId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json' 
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.includes('Reward granted')) {
+                    // Success - show celebration
+                    button.innerHTML = '🎉 Claimed!';
+                    button.className = 'bg-gradient-to-r from-green-600 to-green-700 px-4 py-2 rounded-md text-sm font-medium';
+                    
+                    // Show success message
+                    showSuccessMessage(`🎉 Congratulations! You earned ${data.reward_bid_points} copup coins!`);
+                    
+                    // Reload campaigns and stats after a short delay
+                    setTimeout(() => {
+                        loadHeistCampaigns();
+                        loadHeistStats();
+                    }, 2000);
+                    
+                } else if (data.message && data.message.includes('Target not met')) {
+                    // Target not met
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    showErrorMessage(`Target not met yet. You have ${data.referredUsers}/${data.targetUsers} referrals. Need ${data.remainingReferrals} more.`);
+                    
+                } else {
+                    // Other response
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    showInfoMessage(data.message || 'Unknown response from server');
+                }
+                
+            } catch (error) {
+                console.error('Error claiming heist reward:', error);
+                const button = event.target;
+                button.innerHTML = '❌ Failed';
+                button.disabled = false;
+                showErrorMessage(`Failed to claim reward: ${error.message}`);
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    button.innerHTML = '💰 Claim Reward';
+                    button.disabled = false;
+                }, 3000);
+            }
+        }
+
+        async function claimAuctionReward(campaignId) {
+            alert('Auction reward claiming is coming soon!');
+        }
+
+        // Modal functions
+        function showLinkModal(title, link) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('generated-link').value = link;
+            document.getElementById('link-modal').classList.remove('hidden');
+            document.getElementById('link-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('link-modal').classList.add('hidden');
+            document.getElementById('link-modal').classList.remove('flex');
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('generated-link');
+            linkInput.select();
+            document.execCommand('copy');
+            
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHeists();
+            loadRate();
+        });
+
+        async function loadRate() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/rate`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                
+                // Display rate information
+                const rateDisplay = document.getElementById('rate-display');
+                const rateUpdated = document.getElementById('rate-updated');
+                
+                if (data.unit_price && data.currency) {
+                    rateDisplay.textContent = `1 CP = ${data.unit_price} ${data.currency}`;
+                } else {
+                    rateDisplay.textContent = 'Rate unavailable';
+                }
+                
+                if (data.updated_at) {
+                    const updateDate = new Date(data.updated_at);
+                    rateUpdated.textContent = `Last updated: ${updateDate.toLocaleDateString()}`;
+                } else {
+                    rateUpdated.textContent = 'Last updated: --';
+                }
+                
+            } catch (error) {
+                console.error('Error loading rate:', error);
+                document.getElementById('rate-display').textContent = 'Rate unavailable';
+                document.getElementById('rate-updated').textContent = 'Failed to load';
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('link-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeModal();
+            }
+        });
+
+        // Notification functions for better user feedback
+        function showSuccessMessage(message) {
+            showNotification(message, 'success');
+        }
+        
+        function showErrorMessage(message) {
+            showNotification(message, 'error');
+        }
+        
+        function showInfoMessage(message) {
+            showNotification(message, 'info');
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+            
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Slide in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Slide out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
