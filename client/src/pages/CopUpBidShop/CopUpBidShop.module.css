@@ -465,7 +465,8 @@
 
 .btnPrimary,
 .btnGhost,
-.pageBtn {
+.pageBtn,
+.pageTextBtn {
   border-radius: 14px;
   padding: 11px 14px;
   font-weight: 950;
@@ -548,7 +549,15 @@
   place-items: center;
 }
 
-.pageBtn:disabled {
+.pageTextBtn {
+  min-width: 98px;
+  border: 1px solid rgba(0, 169, 157, 0.16);
+  background: #ffffff;
+  color: #06302c;
+}
+
+.pageBtn:disabled,
+.pageTextBtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -604,6 +613,21 @@
   gap: 12px;
 }
 
+.cartEmpty {
+  min-height: 78px;
+  border-radius: 14px;
+  border: 1px dashed rgba(0, 169, 157, 0.22);
+  background: rgba(0, 169, 157, 0.05);
+  color: #49635f;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
 .cartItem {
   border: 0;
   padding: 0;
@@ -642,6 +666,7 @@
 .cartItem small {
   color: #6d657a;
   font-weight: 900;
+  line-height: 1.35;
 }
 
 .checkoutBox {

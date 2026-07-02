@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer";
 import LoginRequiredModal from "../../components/LoginRequiredModal/LoginRequiredModal";
 import SkeletonGrid from "../../components/SkeletonGrid/SkeletonGrid";
 import { api } from "../../lib/api";
+import { emitCartUpdated } from "../../lib/copupEvents";
 
 import {
   FiAlertTriangle,
@@ -294,6 +295,7 @@ export default function Cart() {
       const { data } = await api.post(buildUsersUrl("shop/cart/checkout"), payload);
       setCheckoutMsg(data?.message || "Checkout successful.");
       await Promise.all([fetchCoinRate(), fetchShopCart(), fetchAuctionCart()]);
+      emitCartUpdated({ source: "shop-checkout", payload: data });
     } catch (e) {
       const server = e?.response?.data || {};
       setCheckoutErr(server?.message || e?.message || "Checkout failed");
@@ -332,6 +334,7 @@ export default function Cart() {
       const { data } = await api.post(buildUsersUrl("auction/checkout"), payload);
       setCheckoutMsg(data?.message || "Auction checkout successful.");
       await Promise.all([fetchCoinRate(), fetchShopCart(), fetchAuctionCart()]);
+      emitCartUpdated({ source: "auction-checkout", payload: data });
     } catch (e) {
       const server = e?.response?.data || {};
       setCheckoutErr(server?.message || e?.message || "Checkout failed");

@@ -1,6 +1,7 @@
 // src/components/SkeletonGrid/SkeletonGrid.jsx
 import React from "react";
 import styles from "./SkeletonGrid.module.css";
+import coinGif from "../../assets/copup.gif";
 
 export default function SkeletonGrid({ count = 9 }) {
   const items = Array.from({ length: count });
@@ -9,7 +10,10 @@ export default function SkeletonGrid({ count = 9 }) {
       {items.map((_, idx) => (
         <article key={idx} className={styles.card}>
           <div className={styles.top}>
-            <div className={styles.shimmer} />
+            <div className={styles.loader}>
+              <img src={coinGif} alt="Loading CopUpBid content" />
+              <span>Loading</span>
+            </div>
           </div>
           <div className={styles.body}>
             <div className={styles.line1} />

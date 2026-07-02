@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   X,
-  LayoutGrid,
+  Store,
   Gavel,
   ShoppingCart,
   TrendingUp,
@@ -25,7 +25,7 @@ export default function UserToolbar() {
   const nav = useNavigate();
 
   // ✅ token must be reactive (not useMemo), so UI updates instantly without refresh
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [token, setToken] = useState(() => localStorage.getItem("token") || localStorage.getItem("accessToken"));
 
   const [open, setOpen] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -207,8 +207,8 @@ export default function UserToolbar() {
         </div>
 
         <div className={styles.section}>
-          <button className={styles.item} onClick={() => go("/dashboard")}>
-            <LayoutGrid size={16} /> Dashboard
+          <button className={styles.item} onClick={() => go("/shop")}>
+            <Store size={16} /> Shop
           </button>
 
           <button className={styles.item} onClick={() => go("/auctions")}>

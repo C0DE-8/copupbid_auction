@@ -72,7 +72,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(6, 23, 21, 0.42);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -91,8 +91,8 @@
   right: 0;
   width: min(360px, 92vw);
   height: 100vh;
-  background: rgba(22, 31, 46, 0.95);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(248, 247, 251, 0.98);
+  border-left: 1px solid rgba(36, 28, 54, 0.08);
   backdrop-filter: blur(12px);
   transform: translateX(110%);
   transition: transform 0.25s ease;
@@ -115,12 +115,13 @@
 .drawerTitle {
   font-weight: 900;
   font-size: 18px;
+  color: #241d33;
 }
 
 .iconBtn {
   border: 0;
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  background: #fff;
+  color: #06302c;
   border-radius: 10px;
   width: 36px;
   height: 36px;
@@ -143,8 +144,9 @@
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #00a99d;
+  background: rgba(0, 169, 157, 0.1);
+  border: 1px solid rgba(0, 169, 157, 0.18);
   overflow: hidden;
 }
 
@@ -164,19 +166,20 @@
 .profileName {
   font-weight: 900;
   font-size: 14px;
+  color: #241d33;
 }
 
 .profileLink {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.65);
+  color: #008f85;
   font-weight: 800;
   cursor: pointer;
   padding: 0;
 }
 
 .profileLink:hover {
-  color: #39d98a;
+  color: #006f68;
 }
 
 /* Items */
@@ -190,7 +193,7 @@
   width: 100%;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: #352b48;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -201,12 +204,13 @@
 }
 
 .item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  color: #008f85;
+  background: rgba(0, 169, 157, 0.08);
 }
 
 .divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(36, 28, 54, 0.08);
   margin: 6px 18px;
 }
 

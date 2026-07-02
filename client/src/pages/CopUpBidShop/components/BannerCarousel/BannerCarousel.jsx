@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  FiChevronLeft,
-  FiChevronRight,
   FiExternalLink,
   FiGrid,
 } from "react-icons/fi";
 import styles from "./BannerCarousel.module.css";
+import coinGif from "../../../../assets/copup.gif";
 
 export default function BannerCarousel({
   banners = [],
@@ -103,7 +102,10 @@ export default function BannerCarousel({
   if (loading) {
     return (
       <div className={styles.wrap}>
-        <div className={styles.skeleton} />
+        <div className={styles.skeleton}>
+          <img src={coinGif} alt="Loading CopUpBid banner" />
+          <span>Loading featured drops</span>
+        </div>
       </div>
     );
   }
@@ -199,28 +201,6 @@ export default function BannerCarousel({
           </motion.div>
         </AnimatePresence>
 
-        {list.length > 1 ? (
-          <>
-            <button
-              type="button"
-              className={`${styles.arrow} ${styles.left}`}
-              onClick={prev}
-              aria-label="Previous banner"
-              title="Previous"
-            >
-              <FiChevronLeft />
-            </button>
-            <button
-              type="button"
-              className={`${styles.arrow} ${styles.right}`}
-              onClick={next}
-              aria-label="Next banner"
-              title="Next"
-            >
-              <FiChevronRight />
-            </button>
-          </>
-        ) : null}
       </div>
 
       {list.length > 1 ? (

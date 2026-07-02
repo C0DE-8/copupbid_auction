@@ -74,15 +74,18 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(10, 15, 28, 0.55);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(0, 169, 157, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.88);
   z-index: 3;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
 }
 .imgLoader img {
-  width: 78px;
-  height: 78px;
+  width: 82px;
+  height: 82px;
   object-fit: contain;
   opacity: 0.95;
+  filter: drop-shadow(0 16px 30px rgba(0, 143, 133, 0.2));
   animation: pop 0.9s ease-in-out infinite;
 }
 @keyframes pop {

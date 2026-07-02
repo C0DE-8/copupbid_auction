@@ -1870,14 +1870,18 @@ router.get('/shop/cart', authenticateToken, async (req, res) => {
          ci.price,
          ci.subtotal,
          ci.mode,
-         ci.created_at
+         ci.created_at,
+         p.image_path
        FROM ${CART_TABLE} ci
        JOIN products p ON p.id = ci.product_id
        WHERE ci.user_id = ?
        ORDER BY ci.id DESC`,
       [userId]
     );
-    res.json(rows);
+    res.json(rows.map((row) => ({
+      ...row,
+      image_url: absUrl(req, row.image_path),
+    })));
   } catch (e) {
     console.error('GET /users/shop/cart error:', e);
     res.status(500).json({ message: 'Failed to fetch cart' });

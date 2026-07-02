@@ -249,3 +249,62 @@
   .card{ padding:38px 20px; }
   .tiers{ grid-template-columns: 1fr; }
 }
+
+/* CopUpBid light theme */
+.page {
+  color: #241d33;
+  background:
+    radial-gradient(circle at 45% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
+    linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
+}
+
+.glow {
+  opacity: 0.45;
+}
+
+.card,
+.step,
+.tierCard,
+.exampleBox,
+.note {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: #241d33;
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
+}
+
+.badge {
+  color: #06302c;
+  background: rgba(0, 169, 157, 0.08);
+  border-color: rgba(0, 169, 157, 0.18);
+}
+
+.title {
+  background: none;
+  -webkit-text-fill-color: #241d33;
+}
+
+.subtitle,
+.stepText span,
+.exampleText,
+.small {
+  color: #6d657a;
+}
+
+.section {
+  border-color: rgba(36, 28, 54, 0.08);
+}
+
+.sectionTitle,
+.stepText b,
+.tierName,
+.exampleTitle {
+  color: #241d33;
+}
+
+.stepNum,
+.ghostBtn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+  border-color: transparent;
+}

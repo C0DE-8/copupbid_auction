@@ -695,3 +695,64 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* CopUpBid light theme */
+.page {
+  color: #241d33;
+  background:
+    radial-gradient(circle at 45% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
+    linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
+}
+
+.bgGlow { opacity: 0.45; }
+
+.kicker,
+.card,
+.profileWallet,
+.modal {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: #241d33;
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
+}
+
+.h1,
+.cardTitle,
+.profileWalletTitle,
+.profileWalletValue,
+.modalTitle {
+  color: #241d33;
+}
+
+.sub,
+.cardSub,
+.profileWalletLabel,
+.modalHint,
+.modalNote {
+  color: #6d657a;
+}
+
+.subStrong,
+.badge,
+.starOn {
+  color: #008f85;
+}
+
+.profileWalletBox {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: #faf9fd;
+}
+
+.eyeMini,
+.modalClose,
+.modalAlt,
+.modalGhost {
+  border-color: rgba(0, 169, 157, 0.18);
+  background: #ffffff;
+  color: #06302c;
+}
+
+.modalPrimary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+}

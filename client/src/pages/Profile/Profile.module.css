@@ -1276,3 +1276,105 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* CopUpBid light theme */
+.page {
+  color: #241d33;
+  background:
+    radial-gradient(circle at 45% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
+    linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
+}
+
+.bgGlow { opacity: 0.45; }
+
+.card,
+.tipCard,
+.stateCard,
+.modalCard,
+.skelCard,
+.miniBox,
+.statusChip {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: #241d33;
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
+}
+
+.title,
+.cardTitle,
+.nameText,
+.miniValue,
+.securityTitle,
+.kvVal,
+.tipTitle,
+.stateTitle,
+.modalTitle,
+.modalAlertTitle {
+  color: #241d33;
+}
+
+.subTitle,
+.cardSub,
+.miniLabel,
+.joinLine,
+.securityHint,
+.kvKey,
+.hint,
+.tipText,
+.stateSub,
+.modalSub,
+.modalHint,
+.modalAlertText,
+.modalFootNote,
+.alertText {
+  color: #6d657a;
+}
+
+.good,
+.alertOk,
+.modalAlertOk {
+  color: #027a48;
+  border-color: rgba(0, 169, 157, 0.18);
+  background: rgba(0, 169, 157, 0.08);
+}
+
+.bad,
+.alertError,
+.modalAlertErr {
+  color: #b42318;
+  border-color: rgba(239, 68, 68, 0.18);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.input,
+.modalInput {
+  border-color: rgba(36, 28, 54, 0.1);
+  background: #ffffff;
+  color: #241d33;
+}
+
+.label,
+.modalLabel {
+  color: #352b48;
+}
+
+.btnPrimary,
+.btnPrimaryWide,
+.btnSecPrimary,
+.modalBtnPrimary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+  box-shadow: 0 16px 34px rgba(0, 169, 157, 0.22);
+}
+
+.btnGhost,
+.btnGhostWide,
+.btnSecGhost,
+.modalBtnGhost,
+.copyBtn,
+.modalClose,
+.avatarBtn {
+  border-color: rgba(0, 169, 157, 0.18);
+  background: #ffffff;
+  color: #06302c;
+}

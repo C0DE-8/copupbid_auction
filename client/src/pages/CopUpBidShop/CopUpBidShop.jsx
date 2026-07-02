@@ -1,7 +1,7 @@
 // src/pages/CopUpBidShop/CopUpBidShop.jsx
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./CopUpBidShop.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
@@ -11,7 +11,7 @@ import SkeletonGrid from "../../components/SkeletonGrid/SkeletonGrid";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductModal from "../../components/ProductModal/ProductModal";
 import LoginRequiredModal from "../../components/LoginRequiredModal/LoginRequiredModal";
-import { emitBalanceUpdated } from "../../lib/copupEvents";
+import { COPUP_EVENTS, emitBalanceUpdated, emitCartUpdated } from "../../lib/copupEvents";
 import BannerCarousel from "./components/BannerCarousel/BannerCarousel";
 
 import {
@@ -20,10 +20,6 @@ import {
   FiRotateCcw,
   FiShoppingCart,
   FiGrid,
-  FiChevronLeft,
-  FiChevronRight,
-  FiChevronsLeft,
-  FiChevronsRight,
 } from "react-icons/fi";
 import {
   BadgePercent,
@@ -94,6 +90,7 @@ function authConfig(token) {
 
 export default function CopUpBidShop() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isProd =
     (typeof import.meta !== "undefined" &&
@@ -114,6 +111,9 @@ export default function CopUpBidShop() {
   // favorites
   const [favIds, setFavIds] = useState(() => new Set());
   const [favLoadingId, setFavLoadingId] = useState(null);
+  const [shopCart, setShopCart] = useState([]);
+  const [auctionCart, setAuctionCart] = useState([]);
+  const [cartLoading, setCartLoading] = useState(false);
 
   // ui
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -281,6 +281,41 @@ export default function CopUpBidShop() {
     }
   }, []);
 
+  const fetchUserCart = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setShopCart([]);
+      setAuctionCart([]);
+      return;
+    }
+
+    setCartLoading(true);
+    try {
+      const [shopRes, auctionRes] = await Promise.allSettled([
+        api.get(buildUsersUrl("shop/cart")),
+        api.get(buildUsersUrl("cart")),
+      ]);
+
+      const shopRows =
+        shopRes.status === "fulfilled"
+          ? Array.isArray(shopRes.value.data)
+            ? shopRes.value.data
+            : Array.isArray(shopRes.value.data?.items)
+            ? shopRes.value.data.items
+            : []
+          : [];
+      const auctionRows =
+        auctionRes.status === "fulfilled" && Array.isArray(auctionRes.value.data)
+          ? auctionRes.value.data
+          : [];
+
+      setShopCart(shopRows);
+      setAuctionCart(auctionRows);
+    } finally {
+      setCartLoading(false);
+    }
+  }, []);
+
   const init = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -293,9 +328,11 @@ export default function CopUpBidShop() {
         fetchFeatured(),
         fetchFavorites(),
         fetchBanners(),
+        fetchUserCart(),
       ]);
       setProducts(all || []);
-      setSelectedCategoryId(null);
+      const categoryFromUrl = toNumberOrNull(new URLSearchParams(window.location.search).get("category"));
+      setSelectedCategoryId(categoryFromUrl || null);
       setStatus("Ready");
     } catch (e) {
       setError(explainAxiosError(e));
@@ -304,11 +341,20 @@ export default function CopUpBidShop() {
       setLoading(false);
       setLoadingProducts(false);
     }
-  }, [fetchCategories, fetchAllProducts, fetchFeatured, fetchFavorites, fetchBanners]);
+  }, [fetchCategories, fetchAllProducts, fetchFeatured, fetchFavorites, fetchBanners, fetchUserCart]);
 
   useEffect(() => {
     init();
   }, [init]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const categoryFromUrl = toNumberOrNull(params.get("category"));
+    if (categoryFromUrl) {
+      setSelectedCategoryId(categoryFromUrl);
+      setPage(1);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (loading) return;
@@ -325,6 +371,7 @@ export default function CopUpBidShop() {
       fetchFeatured(),
       fetchFavorites(),
       fetchBanners(),
+      fetchUserCart(),
     ]);
   };
 
@@ -341,8 +388,23 @@ export default function CopUpBidShop() {
       fetchFeatured(),
       fetchFavorites(),
       fetchBanners(),
+      fetchUserCart(),
     ]);
-  }, [fetchAllProducts, fetchProducts, fetchFeatured, fetchFavorites, fetchBanners]);
+  }, [fetchAllProducts, fetchProducts, fetchFeatured, fetchFavorites, fetchBanners, fetchUserCart]);
+
+  useEffect(() => {
+    const refreshCart = () => fetchUserCart();
+    window.addEventListener(COPUP_EVENTS.AUTH_CHANGED, refreshCart);
+    window.addEventListener(COPUP_EVENTS.CART_UPDATED, refreshCart);
+    window.addEventListener(COPUP_EVENTS.BALANCE_UPDATED, refreshCart);
+    window.addEventListener("storage", refreshCart);
+    return () => {
+      window.removeEventListener(COPUP_EVENTS.AUTH_CHANGED, refreshCart);
+      window.removeEventListener(COPUP_EVENTS.CART_UPDATED, refreshCart);
+      window.removeEventListener(COPUP_EVENTS.BALANCE_UPDATED, refreshCart);
+      window.removeEventListener("storage", refreshCart);
+    };
+  }, [fetchUserCart]);
 
   // ✅ favorites toggle (opens login modal if logged out)
   const toggleFavorite = useCallback(
@@ -450,6 +512,8 @@ export default function CopUpBidShop() {
 
         // ✅ notify header/toolbar to refresh balance immediately
         emitBalanceUpdated({ source: "buy", payload: data });
+        emitCartUpdated({ source: "buy", payload: data });
+        fetchUserCart();
       } catch (e) {
         const server = e?.response?.data || {};
         const msg = server?.message || e?.message || "Buy failed";
@@ -458,7 +522,7 @@ export default function CopUpBidShop() {
         setBuyLoading(false);
       }
     },
-    [openLoginModal]
+    [openLoginModal, fetchUserCart]
   );
 
   // Card action: Buy -> open modal (NOT buy immediately)
@@ -579,21 +643,33 @@ export default function CopUpBidShop() {
     }));
   }, [categories]);
 
-  const cartPreviewItems = useMemo(() => {
-    const seen = new Set();
-    return [...filteredFeatured, ...effectiveList]
-      .filter((item) => {
-        if (!item?.id || seen.has(item.id)) return false;
-        seen.add(item.id);
-        return true;
-      })
-      .slice(0, 4);
-  }, [filteredFeatured, effectiveList]);
+  const realCartItems = useMemo(() => {
+    const shop = (Array.isArray(shopCart) ? shopCart : []).map((item) => ({
+      id: `shop-${item.id}`,
+      productId: item.product_id,
+      name: item.product_name || item.name || "Shop item",
+      image: item.image_url || item.image || "",
+      qty: Number(item.qty) || 1,
+      total: Number(item.subtotal) || (Number(item.price) || 0) * (Number(item.qty) || 1),
+      type: "Shop",
+    }));
 
-  const previewTotal = cartPreviewItems.reduce(
-    (sum, item) => sum + (Number(item?.cash_price) || 0),
-    0
-  );
+    const auctions = (Array.isArray(auctionCart) ? auctionCart : []).map((item) => ({
+      id: `auction-${item.id}`,
+      productId: null,
+      name: item.name || "Auction item",
+      image: item.image || "",
+      qty: 1,
+      total: Number(item.displayPricePoints) || Number(item.pointsSpent) || Number(item.price) || 0,
+      type: "Auction",
+    }));
+
+    return [...shop, ...auctions];
+  }, [shopCart, auctionCart]);
+
+  const cartPreviewItems = realCartItems.slice(0, 4);
+  const previewTotal = realCartItems.reduce((sum, item) => sum + (Number(item?.total) || 0), 0);
+  const realCartCount = realCartItems.reduce((sum, item) => sum + (Number(item?.qty) || 1), 0);
 
   const recentProducts = useMemo(
     () => [...(Array.isArray(allProducts) ? allProducts : [])].slice(0, 4),
@@ -894,22 +970,11 @@ export default function CopUpBidShop() {
                   <div className={styles.pageLeft}>
                     <button
                       type="button"
-                      className={styles.pageBtn}
-                      onClick={() => setPage(1)}
-                      disabled={safePage <= 1}
-                      title="First"
-                    >
-                      <FiChevronsLeft />
-                    </button>
-
-                    <button
-                      type="button"
-                      className={styles.pageBtn}
+                      className={styles.pageTextBtn}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={safePage <= 1}
-                      title="Prev"
                     >
-                      <FiChevronLeft />
+                      Previous
                     </button>
 
                     <div className={styles.pageInfo}>
@@ -918,22 +983,11 @@ export default function CopUpBidShop() {
 
                     <button
                       type="button"
-                      className={styles.pageBtn}
+                      className={styles.pageTextBtn}
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={safePage >= totalPages}
-                      title="Next"
                     >
-                      <FiChevronRight />
-                    </button>
-
-                    <button
-                      type="button"
-                      className={styles.pageBtn}
-                      onClick={() => setPage(totalPages)}
-                      disabled={safePage >= totalPages}
-                      title="Last"
-                    >
-                      <FiChevronsRight />
+                      Next
                     </button>
                   </div>
 
@@ -1091,21 +1145,29 @@ export default function CopUpBidShop() {
           <div className={styles.railCard}>
             <div className={styles.railHeader}>
               <strong>My Cart</strong>
-              <span>{cartPreviewItems.length}</span>
+              <span>{realCartCount}</span>
             </div>
 
             <div className={styles.cartList}>
-              {cartPreviewItems.map((item) => (
+              {cartLoading ? (
+                <div className={styles.cartEmpty}>Loading your cart...</div>
+              ) : !getAuthToken() ? (
+                <div className={styles.cartEmpty}>
+                  Login to see your real cart items here.
+                </div>
+              ) : cartPreviewItems.length === 0 ? (
+                <div className={styles.cartEmpty}>Your cart is empty.</div>
+              ) : cartPreviewItems.map((item) => (
                 <button
-                  key={`cart-${item.id}`}
+                  key={item.id}
                   type="button"
                   className={styles.cartItem}
-                  onClick={() => handleOpenProduct(item.id, item)}
+                  onClick={() => (item.productId ? handleOpenProduct(item.productId, item) : goProtected("/cart"))}
                 >
-                  <img src={item.image_url || "/copupcoin.png"} alt="" />
+                  <img src={item.image || "/copupcoin.png"} alt="" />
                   <span>
                     <strong>{item.name}</strong>
-                    <small>{formatCoin(item.cash_price)} COIN</small>
+                    <small>{item.type} • {item.qty} item{item.qty === 1 ? "" : "s"} • {formatCoin(item.total)} COIN</small>
                   </span>
                 </button>
               ))}

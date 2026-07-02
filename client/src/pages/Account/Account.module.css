@@ -845,3 +845,126 @@
     align-items: flex-start;
   }
 }
+
+/* CopUpBid light theme */
+.page {
+  color: #241d33;
+  background:
+    radial-gradient(circle at 45% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
+    linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
+}
+
+.bgGlow { opacity: 0.45; }
+
+.walletCard,
+.panel,
+.formCard,
+.historyCard,
+.payAccountCard,
+.selectMenu {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: #241d33;
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
+}
+
+.walletTop {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: linear-gradient(135deg, rgba(0, 169, 157, 0.08), rgba(255, 184, 77, 0.08));
+}
+
+.title,
+.walletTitle,
+.walletValue,
+.panelTitle,
+.rateTitle,
+.historyTitle,
+.hCoins,
+.payAccountTitle,
+.payVal,
+.lockTitle {
+  color: #241d33;
+}
+
+.kicker,
+.walletHint,
+.walletLabel,
+.panelSub,
+.formLabel,
+.formNote,
+.helper,
+.historyEmpty,
+.hMeta,
+.hPrice,
+.adminNote,
+.payKey,
+.payAccountHint,
+.lockSub,
+.rateValue {
+  color: #6d657a;
+}
+
+.walletBox,
+.rateRow,
+.historyItem,
+.payAccountRow,
+.locked,
+.uploadBox,
+.confirmRow {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: #faf9fd;
+}
+
+.backBtn,
+.refreshBtn,
+.eyeBtn,
+.tab,
+.methodTab,
+.ghostBtn,
+.selectBtn,
+.selectOption,
+.miniCopy,
+.proofLinkBtn {
+  border-color: rgba(0, 169, 157, 0.18);
+  background: #ffffff;
+  color: #06302c;
+}
+
+.tabActive,
+.methodTabActive,
+.primaryBtn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+  border-color: transparent;
+  box-shadow: 0 16px 34px rgba(0, 169, 157, 0.22);
+}
+
+.input,
+.selectSearchInput {
+  border-color: rgba(36, 28, 54, 0.1);
+  background: #ffffff;
+  color: #241d33;
+}
+
+.errorBox {
+  color: #b42318;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.18);
+}
+
+.okBox,
+.statusOk {
+  color: #027a48;
+  background: rgba(0, 169, 157, 0.08);
+  border-color: rgba(0, 169, 157, 0.18);
+}
+
+.statusPending {
+  color: #946200;
+  background: rgba(255, 184, 77, 0.14);
+}
+
+.statusBad {
+  color: #b42318;
+  background: rgba(239, 68, 68, 0.08);
+}

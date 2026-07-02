@@ -511,3 +511,113 @@
   font-size: 11px;
   color: rgba(255, 255, 255, 0.75);
 }
+
+/* Light CopUpBid theme override */
+:global(html),
+:global(body) {
+  background: #f4f2f8;
+}
+
+.page {
+  color: #241d33;
+  background:
+    radial-gradient(circle at 45% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
+    linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
+}
+
+.heroCard,
+.stateCard,
+.block,
+.checkoutCard {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
+}
+
+.heroIcon,
+.stateIcon,
+.checkoutIcon {
+  color: #00a99d;
+  background: rgba(0, 169, 157, 0.1);
+  border-color: rgba(0, 169, 157, 0.14);
+}
+
+.heroTitle,
+.stateTitle,
+.blockTitle,
+.checkoutTitle,
+.itemName,
+.itemPrice,
+.summaryLine b,
+.summaryLineBig b {
+  color: #241d33;
+}
+
+.heroSub,
+.stateSub,
+.blockSub,
+.itemMeta,
+.itemFiat,
+.checkoutSub,
+.summaryLine,
+.summaryLineBig,
+.emptyMini,
+.softNote {
+  color: #6d657a;
+}
+
+.ratePill,
+.itemRow,
+.summaryBar {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: #faf9fd;
+  color: #5f586f;
+}
+
+.btnPrimary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+  box-shadow: 0 16px 34px rgba(0, 169, 157, 0.22);
+}
+
+.btnGhost {
+  border-color: rgba(0, 169, 157, 0.18);
+  background: #ffffff;
+  color: #06302c;
+}
+
+.btnGhost:hover {
+  background: rgba(0, 169, 157, 0.08);
+}
+
+.input,
+.textarea {
+  border-color: rgba(36, 28, 54, 0.1);
+  background: #ffffff;
+  color: #241d33;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #9a93a8;
+}
+
+.label {
+  color: #352b48;
+}
+
+.summaryDivider {
+  background: rgba(36, 28, 54, 0.08);
+}
+
+.alertOk {
+  color: #027a48;
+  background: rgba(0, 169, 157, 0.08);
+  border-color: rgba(0, 169, 157, 0.18);
+}
+
+.alertErr {
+  color: #b42318;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.18);
+}

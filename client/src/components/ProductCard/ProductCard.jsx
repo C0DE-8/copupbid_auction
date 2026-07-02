@@ -27,10 +27,6 @@ function normStock(v) {
   return "in_stock";
 }
 
-function getAuthToken() {
-  return localStorage.getItem("token") || localStorage.getItem("accessToken");
-}
-
 export default function ProductCard({
   product,
   onOpen,
@@ -60,8 +56,6 @@ export default function ProductCard({
     async (e) => {
       e?.preventDefault?.();
       e?.stopPropagation?.();
-      const token = getAuthToken();
-      if (!token) return;
       if (!product?.id) return;
       if (typeof onToggleFav !== "function") return;
       await onToggleFav(product.id);

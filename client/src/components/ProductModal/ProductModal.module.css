@@ -171,7 +171,9 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(10, 15, 28, 0.62);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(0, 169, 157, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.9);
   z-index: 3;
   backdrop-filter: blur(10px);
 }
@@ -181,6 +183,7 @@
   height: 88px;
   object-fit: contain;
   opacity: 0.96;
+  filter: drop-shadow(0 16px 30px rgba(0, 143, 133, 0.2));
   animation: pop 0.95s ease-in-out infinite;
 }
 
