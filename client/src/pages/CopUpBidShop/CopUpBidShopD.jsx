@@ -94,17 +94,22 @@ export default function CopUpBidShopD() {
 
   // login required modal
   const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [loginModalMeta, setLoginModalMeta] = useState({ title: "", message: "" });
+  const [loginModalMeta, setLoginModalMeta] = useState({
+    title: "",
+    message: "",
+    redirectTo: "/",
+  });
 
-  const openLoginModal = useCallback((title, message) => {
+  const openLoginModal = useCallback((title, message, redirectTo = `/shop/product/${productId}`) => {
     setLoginModalMeta({
       title: title || "Login required",
       message:
         message ||
         "You can browse freely, but you must login to favorite or buy items.",
+      redirectTo,
     });
     setLoginModalOpen(true);
-  }, []);
+  }, [productId]);
 
   const closeLoginModal = useCallback(() => setLoginModalOpen(false), []);
 
@@ -176,7 +181,7 @@ export default function CopUpBidShopD() {
   const toggleFavorite = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
-      openLoginModal("Login required", "You must login to favorite items.");
+      openLoginModal("Login required", "You must login to favorite items.", `/shop/product/${productId}`);
       return;
     }
 
@@ -209,7 +214,7 @@ export default function CopUpBidShopD() {
     const token = getAuthToken();
     if (!token) {
       setBuyError("Please login to continue.");
-      openLoginModal("Login required", "You must login to buy items.");
+      openLoginModal("Login required", "You must login to buy items.", `/shop/product/${productId}`);
       return;
     }
 
@@ -445,6 +450,7 @@ export default function CopUpBidShopD() {
         onClose={closeLoginModal}
         title={loginModalMeta.title}
         message={loginModalMeta.message}
+        redirectTo={loginModalMeta.redirectTo}
       />
     </div>
   );

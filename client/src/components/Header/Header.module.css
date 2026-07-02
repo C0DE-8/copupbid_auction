@@ -78,41 +78,25 @@
   flex: 0 0 auto;
 }
 
-.loginBtn,
-.joinBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 999px;
-  font-weight: 800;
-  text-decoration: none;
-  white-space: nowrap;
-
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+.iconAction {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(6, 48, 44, 0.12);
+  display: grid;
+  place-items: center;
+  color: #06302c;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 10px 24px rgba(5, 36, 33, 0.06);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.loginBtn {
-  background: #241d33;
-  color: #fff;
-}
-
-.loginBtn:hover {
-  transform: translateY(-1px);
-}
-
-.joinBtn {
-  border: 1px solid rgba(0, 169, 157, 0.25);
-  color: #00a99d;
-  background: rgba(0, 169, 157, 0.08);
-}
-
-.joinBtn:hover {
-  background: rgba(0, 169, 157, 0.15);
-  border-color: rgba(0, 169, 157, 0.35);
-  color: #006f68;
+.iconAction:hover {
+  color: #008f85;
+  background: #fff;
+  border-color: rgba(0, 169, 157, 0.26);
   transform: translateY(-1px);
 }
 
@@ -142,19 +126,17 @@
     gap: 8px;
   }
 
-  .loginBtn,
-  .joinBtn {
-    height: 36px;
-    padding: 0 12px;
-    font-size: 13px;
+  .iconAction {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
   }
 }
 
 /* ultra small: keep buttons tight */
 @media (max-width: 380px) {
-  .loginBtn,
-  .joinBtn {
-    padding: 0 10px;
-    font-size: 12px;
+  .iconAction {
+    width: 36px;
+    height: 36px;
   }
 }

@@ -119,6 +119,7 @@ export default function CopUpBidShop() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortMode, setSortMode] = useState("name_asc");
+  const [seoExpanded, setSeoExpanded] = useState(false);
 
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
@@ -956,6 +957,133 @@ export default function CopUpBidShop() {
               ) : null}
             </>
           )}
+          </section>
+
+          <section
+            className={`${styles.aboutSeo} ${seoExpanded ? styles.aboutSeoExpanded : ""}`}
+            aria-labelledby="about-copupbid"
+          >
+            <div className={styles.aboutSeoHeader}>
+              <span>Nigeria's auction marketplace</span>
+              <h1 id="about-copupbid">CopUpBid - bid, shop, and win with CopUpCoin</h1>
+              <p>
+                CopUpBid is an online auction e-commerce website for Nigerian shoppers who want a
+                smarter way to discover products, join live auctions, and shop from one trusted
+                digital marketplace.
+              </p>
+            </div>
+
+            <div className={styles.aboutSeoBody}>
+              <article>
+                <h2>Shop for products and auction deals on CopUpBid Nigeria</h2>
+                <p>
+                  CopUpBid brings shopping and auction bidding together in one platform. Customers
+                  can browse product drops, view item details, save favorites, add items to cart,
+                  check auction winners, and return to their account dashboard after login. Whether
+                  you are searching for electronics, mobile phones, computer accessories, fashion,
+                  beauty products, home items, gifts, gadgets, or seasonal deals, CopUpBid is built
+                  to help you find useful products and compete for better prices through auctions.
+                </p>
+                <p>
+                  The platform is designed for Nigerian bidders and online shoppers who want a clear
+                  process: create an account, load or earn CopUpCoin where available, browse live
+                  listings, join eligible auctions, place valid bids, and complete checkout when you
+                  win or buy an item directly. You can shop from home, during work breaks, or on
+                  mobile while keeping your profile, cart, favorites, order activity, and auction
+                  history in one place.
+                </p>
+              </article>
+
+              <article>
+                <h2>How CopUpBid auctions work</h2>
+                <p>
+                  CopUpBid auctions are made to be simple. A product is listed with auction details,
+                  bidding opens for eligible users, and bidders use the available balance or bid
+                  points shown in their account. When the auction closes, the highest verified bidder
+                  can win the item and continue with the required payment or fulfillment steps. This
+                  gives shoppers a chance to compete for products while still using a structured
+                  marketplace flow.
+                </p>
+                <p>
+                  To keep the auction experience fair, CopUpBid may review bidding activity, account
+                  behavior, payment records, and delivery details. Fake accounts, bot activity,
+                  collusion, payment abuse, and attempts to manipulate auctions can lead to cancelled
+                  bids, restricted accounts, or other actions allowed by the platform rules.
+                </p>
+              </article>
+
+              <article>
+                <h2>Buy original products, gadgets, fashion, and everyday items</h2>
+                <p>
+                  CopUpBid can support a wide range of shopping categories. Electronics shoppers can
+                  look for phones, laptops, chargers, smart devices, gaming accessories, and other
+                  gadgets. Fashion buyers can discover clothing, shoes, bags, jewelry, watches, and
+                  accessories. Home shoppers can browse decor, small appliances, furniture, kitchen
+                  products, and lifestyle items. The marketplace can also feature beauty products,
+                  collectibles, sports items, gift bundles, and limited seasonal drops.
+                </p>
+                <p>
+                  Product pages are built to show helpful information such as images, prices,
+                  descriptions, delivery details, stock status, vendor information, and available
+                  purchase modes. This helps customers compare products before they bid or buy.
+                </p>
+              </article>
+
+              <article>
+                <h2>CopUpCoin, cart, checkout, and account tools</h2>
+                <p>
+                  CopUpCoin is the platform coin used across the CopUpBid experience where supported.
+                  Users can manage their account, view balances, track activity, open their cart,
+                  save favorite products, and return to the page they wanted after login or
+                  registration. These account tools make the shopping flow easier for returning
+                  customers and help new users continue from where they started.
+                </p>
+                <p>
+                  Checkout and order tools are designed for e-commerce needs: users can review
+                  selected items, confirm quantities, complete payment steps, and follow updates
+                  about orders or auction wins. Support pages, privacy information, terms, and cookie
+                  preferences are also available so users understand how the platform works.
+                </p>
+              </article>
+
+              <article>
+                <h2>Earn rewards through referrals and affiliate opportunities</h2>
+                <p>
+                  CopUpBid can also support referral and affiliate programs for users who want to
+                  introduce others to auction shopping. When campaigns are available, users may be
+                  able to invite friends, help new customers discover products, and earn rewards
+                  based on the rules of each program. This creates a simple way for students,
+                  creators, entrepreneurs, and community sellers to grow with the platform.
+                </p>
+              </article>
+
+              <article>
+                <h2>Why shoppers choose CopUpBid</h2>
+                <p>
+                  CopUpBid is built around convenience, product discovery, fair auction participation,
+                  and a local shopping experience. Customers can browse products, join auctions,
+                  learn how bidding works, view previous winners, manage their profile, and get help
+                  when they need support. The goal is to make online auction shopping easier to
+                  understand and more useful for Nigerian buyers.
+                </p>
+              </article>
+            </div>
+
+            <div className={styles.aboutStats} aria-label="CopUpBid marketplace highlights">
+              <div><strong>CopUpCoin</strong><span>Platform coin for bidding and rewards</span></div>
+              <div><strong>Auctions</strong><span>Live drops, product wins, and bidder history</span></div>
+              <div><strong>Shopping</strong><span>Electronics, fashion, home, gifts, and gadgets</span></div>
+              <div><strong>Nigeria</strong><span>Built for local shoppers, payments, and delivery</span></div>
+            </div>
+
+            <button
+              type="button"
+              className={styles.aboutToggle}
+              onClick={() => setSeoExpanded((value) => !value)}
+              aria-expanded={seoExpanded}
+            >
+              {seoExpanded ? "Show less" : "Show more"}
+            </button>
           </section>
         </main>
 
