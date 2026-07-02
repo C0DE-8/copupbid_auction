@@ -45,6 +45,9 @@ import Winner from "./pages/Winner/Winner";
 import HowItWork from "./pages/Support/HowItWork";
 import CopUpBidShopD from "./pages/CopUpBidShop/CopUpBidShopD";
 import AdminCoinPay from "./pages/admin/AdminCoinPay";
+import CookieConsent from "./components/CookieConsent/CookieConsent";
+import Privacy from "./pages/Privacy/Privacy";
+import Terms from "./pages/Privacy/Terms";
 
 export default function App() {
   return (
@@ -63,6 +66,8 @@ export default function App() {
         <Route path="/" element={<CopUpBidShop />} />
          <Route path="/shop/product/:id" element={<CopUpBidShopD />} />
         <Route path="/shop" element={<CopUpBidShop />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
 
         <Route element={<UserRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -171,6 +176,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
       </Routes>
+      <CookieConsent />
     </Router>
   );
 }
