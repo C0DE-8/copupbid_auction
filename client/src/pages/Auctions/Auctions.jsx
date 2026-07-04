@@ -10,6 +10,7 @@ import Footer from "../../components/Footer/Footer";
 import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import { api, imgUrl } from "../../lib/api";
 import { emitBalanceUpdated } from "../../lib/copupEvents";
+import { useToast } from "../../components/Toast/ToastContext";
 
 const FILTERS = [
   { key: "all", label: "All rooms" },
@@ -23,6 +24,27 @@ function formatCoins(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "0";
   return n.toLocaleString();
+}
+
+function formatMoney(value, currency = "NGN") {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return `${currency} 0`;
+  try {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: currency || "NGN",
+      maximumFractionDigits: 2,
+    }).format(n);
+  } catch {
+    return `${currency || "NGN"} ${n.toLocaleString()}`;
+  }
+}
+
+function coinsToCurrency(coins, rate) {
+  const unit = Number(rate?.unit || 0);
+  const price = Number(rate?.price || 0);
+  if (!(unit > 0) || !(price > 0)) return 0;
+  return (Number(coins || 0) / unit) * price;
 }
 
 function formatTime(seconds) {
@@ -146,9 +168,11 @@ function getMessage(error, fallback) {
 export default function Auctions() {
   const { auctionId } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [auctions, setAuctions] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [coinRate, setCoinRate] = useState(null);
   const [detail, setDetail] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -169,6 +193,15 @@ export default function Auctions() {
       localStorage.setItem("copup_task_coin", String(data?.task_coin ?? 0));
     } catch {
       setProfile(null);
+    }
+  }, []);
+
+  const loadCoinRate = useCallback(async () => {
+    try {
+      const { data } = await api.get("/users/coin-rate");
+      setCoinRate(data || null);
+    } catch {
+      setCoinRate(null);
     }
   }, []);
 
@@ -205,8 +238,8 @@ export default function Auctions() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([loadAuctions(), loadProfile()]);
-  }, [loadAuctions, loadProfile]);
+    Promise.all([loadAuctions(), loadProfile(), loadCoinRate()]);
+  }, [loadAuctions, loadProfile, loadCoinRate]);
 
   useEffect(() => {
     loadDetail();
@@ -252,6 +285,16 @@ export default function Auctions() {
           totalSpent: stats.highestSpender.totalSpent,
         }
       : null);
+  const completedWinner = selectedAuction?.status === "completed"
+    ? (stats?.winner || (topBidder
+        ? {
+            username: topBidder.username,
+            totalSpent: topBidder.total_spent ?? topBidder.totalSpent,
+          }
+        : null))
+    : null;
+  const winnerCoins = Number(completedWinner?.totalSpent || completedWinner?.finalPrice || selectedAuction?.final_price || 0);
+  const winnerFiat = coinsToCurrency(winnerCoins, coinRate);
 
   useEffect(() => {
     setDisplaySeconds(Number(stats?.remainingSeconds ?? stats?.timerDuration ?? 0) || 0);
@@ -297,7 +340,7 @@ export default function Auctions() {
     setNotice("");
     try {
       const { data } = await api.post(`/users/bid/${id}`);
-      setNotice(data?.message || "Bid placed successfully.");
+      toast.success(data?.message || "Bid placed successfully.");
       emitBalanceUpdated();
       await Promise.all([loadAuctions(), loadProfile(), loadDetail()]);
     } catch (err) {
@@ -480,6 +523,26 @@ export default function Auctions() {
                           <strong>{formatCoins(stats?.myTotalSpent)} coins</strong>
                         </div>
                       </div>
+
+                      {completedWinner ? (
+                        <div className={styles.winnerCallout}>
+                          <div className={styles.winnerIcon}>
+                            {completedWinner.profile ? (
+                              <img src={imgUrl(completedWinner.profile)} alt="" />
+                            ) : (
+                              <Trophy size={24} />
+                            )}
+                          </div>
+                          <div className={styles.winnerCopy}>
+                            <span>Winning bidder</span>
+                            <h3>{completedWinner.username || "Winner"}</h3>
+                            <p>
+                              Won this auction with <strong>{formatCoins(winnerCoins)} coins</strong>
+                              {" "}spent, valued at <strong>{formatMoney(winnerFiat, coinRate?.currency || "NGN")}</strong>.
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
 
                       <div className={styles.roomActions}>
                         {!isJoined ? (

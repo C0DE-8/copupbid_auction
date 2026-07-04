@@ -546,7 +546,9 @@ router.get("/:id/stats", authenticateToken, async (req, res) => {
     const [aRows] = await pool.query(
       `SELECT a.*,
               (SELECT username FROM users WHERE id = a.highest_bidder) AS highest_bidder_username,
-              (SELECT username FROM users WHERE id = a.current_bidder) AS current_bidder_username
+              (SELECT username FROM users WHERE id = a.current_bidder) AS current_bidder_username,
+              (SELECT username FROM users WHERE id = a.winner_id) AS winner_username,
+              (SELECT profile FROM users WHERE id = a.winner_id) AS winner_profile
          FROM auctions a
         WHERE a.id = ?`,
       [id]
@@ -618,6 +620,10 @@ router.get("/:id/stats", authenticateToken, async (req, res) => {
       totalSpent: r.total_spent,
     }));
 
+    const winnerSpend = a.winner_id
+      ? Number(boardRows.find((r) => Number(r.user_id) === Number(a.winner_id))?.total_spent || 0)
+      : 0;
+
     // Build response (keep your requested keys + extras)
     return res.json({
       // requested keys
@@ -643,6 +649,15 @@ router.get("/:id/stats", authenticateToken, async (req, res) => {
       myTotalSpent: Number(myBidSpend.spent || 0),
       uniqueBidders,
       totalSpent,
+      winner: a.winner_id
+        ? {
+            userId: a.winner_id,
+            username: a.winner_username || "Winner",
+            profile: absUrl(req, a.winner_profile),
+            totalSpent: winnerSpend || Number(a.final_price || 0),
+            finalPrice: Number(a.final_price || 0),
+          }
+        : null,
       highestSpender,
       leaderboard,
     });
