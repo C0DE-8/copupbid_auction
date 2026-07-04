@@ -14,16 +14,16 @@
   background:
     radial-gradient(circle at 45% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
     linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
-  padding-top: 82px;
+  padding-top: 86px;
   overflow-x: hidden;
 }
 
 .shell {
-  width: min(1480px, calc(100% - 28px));
+  width: min(1500px, calc(100% - 32px));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 310px;
-  gap: 22px;
+  grid-template-columns: 238px minmax(0, 1fr) 318px;
+  gap: 24px;
   align-items: start;
 }
 
@@ -767,7 +767,7 @@
 
 @media (max-width: 1260px) {
   .shell {
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 238px minmax(0, 1fr);
   }
 
   .cartRail {
@@ -787,7 +787,7 @@
   }
 
   .shell {
-    width: min(100% - 20px, 760px);
+    width: min(100% - 24px, 820px);
     grid-template-columns: 1fr;
     gap: 14px;
   }
@@ -845,7 +845,7 @@
   }
 
   .shell {
-    width: calc(100% - 14px);
+    width: calc(100% - 18px);
   }
 
   .searchPanel,

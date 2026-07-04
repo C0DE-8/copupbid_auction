@@ -2,14 +2,16 @@
   position: sticky;
   top: 96px;
   min-height: calc(100vh - 112px);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(36, 28, 54, 0.08);
-  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.09);
-  padding: 18px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(250, 249, 253, 0.9));
+  border: 1px solid rgba(36, 28, 54, 0.09);
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.1);
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  backdrop-filter: blur(14px);
 }
 
 .sideBrand {
@@ -35,7 +37,7 @@
 .categoryItem {
   width: 100%;
   border: 0;
-  border-radius: 14px;
+  border-radius: 13px;
   padding: 12px;
   display: flex;
   align-items: center;
@@ -43,7 +45,7 @@
   background: transparent;
   color: #5f586f;
   font: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 850;
   text-align: left;
   cursor: pointer;
@@ -54,6 +56,7 @@
 .categoryItem:hover {
   background: rgba(0, 169, 157, 0.09);
   color: #2d2540;
+  box-shadow: inset 0 0 0 1px rgba(0, 169, 157, 0.08);
 }
 
 .sideItem:active,
@@ -63,7 +66,9 @@
 
 .sideItemActive {
   color: #fff;
-  background: linear-gradient(135deg, #00a99d, #008f85);
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255, 184, 77, 0.28), transparent 34%),
+    linear-gradient(135deg, #00a99d, #008f85);
   box-shadow: 0 14px 34px rgba(0, 169, 157, 0.28);
 }
 
@@ -88,7 +93,7 @@
 
 .offerCard {
   margin-top: auto;
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 16px;
   color: #fff;
   background:
@@ -122,6 +127,11 @@
   font: inherit;
   font-weight: 950;
   cursor: pointer;
+}
+
+.offerCard button:hover {
+  color: #008f85;
+  box-shadow: 0 12px 26px rgba(6, 48, 44, 0.14);
 }
 
 @media (max-width: 1120px) {

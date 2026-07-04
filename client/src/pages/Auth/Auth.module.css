@@ -11,15 +11,17 @@
 :global(body) {
   margin: 0;
   padding: 0;
-  background: #070b14;
-  color: #fff;
+  background: #f4f2f8;
+  color: #241d33;
   overflow-x: hidden;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
 
 .page {
   min-height: 100vh;
-  background: #070b14;
+  background:
+    radial-gradient(circle at 44% 0%, rgba(0, 169, 157, 0.14), transparent 38%),
+    linear-gradient(180deg, #f8f7fb 0%, #f0eef7 100%);
   position: relative;
   overflow: hidden;
   padding: 90px 0 60px;
@@ -75,18 +77,18 @@
 }
 
 .card {
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(22, 31, 46, 0.82);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  border-radius: 18px;
+  border: 1px solid rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 26px 80px rgba(48, 38, 83, 0.14);
   overflow: hidden;
 }
 
 /* header */
 .cardHead {
   padding: 22px 22px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(36, 28, 54, 0.08);
 }
 
 /* ✅ center logo + title like screenshot */
@@ -121,8 +123,8 @@
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(0, 169, 157, 0.1);
+  border: 1px solid rgba(0, 169, 157, 0.25);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
@@ -139,14 +141,14 @@
   letter-spacing: 0.2px;
   font-size: 22px;
   margin: 0;
-  color: #39d98a;
+  color: #008f85;
 }
 
 /* subtitle under the title */
 .brandSub {
   margin-top: 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.65);
+  color: #6d657a;
 }
 
 .cardBody {
@@ -166,7 +168,7 @@
 
 .label {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.78);
+  color: #352b48;
   font-weight: 800;
 }
 
@@ -174,11 +176,11 @@
 .input {
   width: 100%;
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 13px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border: 1px solid rgba(36, 28, 54, 0.1);
+  background: #ffffff;
+  color: #241d33;
   outline: none;
   font-size: 14px;
   transition: border-color 150ms ease, box-shadow 150ms ease,
@@ -186,13 +188,13 @@
 }
 
 .input::placeholder {
-  color: rgba(255, 255, 255, 0.55);
+  color: #9a93a8;
 }
 
 .input:focus {
-  border-color: rgba(56, 189, 248, 0.85);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
-  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 169, 157, 0.42);
+  box-shadow: 0 0 0 4px rgba(0, 169, 157, 0.12);
+  background: #ffffff;
 }
 
 /* 2-col grid stays */
@@ -218,17 +220,17 @@
 /* ✅ gradient button */
 .btnPrimary {
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 13px 14px;
   font-weight: 900;
   color: #ffffff;
-  background: linear-gradient(90deg, #39d98a, #2d7dff);
+  background: linear-gradient(135deg, #00a99d, #008f85);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
 
 .btnPrimary:hover {
-  box-shadow: 0 14px 40px rgba(45, 125, 255, 0.18);
+  box-shadow: 0 16px 42px rgba(0, 169, 157, 0.24);
 }
 
 .btnPrimary:active {
@@ -241,19 +243,19 @@
 }
 
 .btnGhost {
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 13px 14px;
   font-weight: 900;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  border: 1px solid rgba(0, 169, 157, 0.16);
+  background: #ffffff;
+  color: #06302c;
   cursor: pointer;
   transition: transform 120ms ease, background 120ms ease,
     border-color 120ms ease;
 }
 
 .btnGhost:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(0, 169, 157, 0.07);
 }
 
 .btnGhost:active {
@@ -268,7 +270,7 @@
 .hr {
   margin: 14px 0 10px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(36, 28, 54, 0.08);
 }
 
 /* ✅ footer links centered like screenshot */
@@ -280,7 +282,7 @@
 }
 
 .link {
-  color: rgba(57, 217, 138, 0.95);
+  color: #008f85;
   font-weight: 900;
   font-size: 13px;
   text-decoration: none;
@@ -292,18 +294,18 @@
 
 .helper {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.62);
+  color: #6d657a;
 }
 
 /* messages */
 .msgOk {
   margin-top: 10px;
   border-radius: 10px;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(0, 169, 157, 0.22);
+  background: rgba(0, 169, 157, 0.08);
   padding: 10px 12px;
   font-size: 13px;
-  color: rgba(209, 250, 229, 0.98);
+  color: #027a48;
 }
 
 .msgErr {
@@ -313,7 +315,7 @@
   background: rgba(239, 68, 68, 0.1);
   padding: 10px 12px;
   font-size: 13px;
-  color: rgba(254, 202, 202, 0.96);
+  color: #b42318;
 }
 
 /* ✅ Show/Hide password wrapper */
@@ -333,7 +335,7 @@
   right: 12px;
   background: none;
   border: none;
-  color: #39d98a;
+  color: #008f85;
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;

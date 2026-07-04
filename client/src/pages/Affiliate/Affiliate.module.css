@@ -238,7 +238,7 @@
 .progressFill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(16,185,129,1), rgba(59,130,246,1));
+  background: linear-gradient(90deg, rgba(0, 169, 157,1), rgba(255, 184, 77,1));
   width: 0%;
 }
 
@@ -253,7 +253,7 @@
   color: #0a0f1c;
   font-weight: 950;
   cursor: pointer;
-  background: linear-gradient(90deg, rgba(16,185,129,1), rgba(59,130,246,1));
+  background: linear-gradient(90deg, rgba(0, 169, 157,1), rgba(255, 184, 77,1));
   white-space: nowrap;
 }
 .btnPrimary:hover { filter: brightness(1.05); }
@@ -291,8 +291,8 @@
   padding: 12px 12px;
   font-size: 13px;
   font-weight: 850;
-  border: 1px solid rgba(16, 185, 129, 0.18);
-  background: rgba(16, 185, 129, 0.10);
+  border: 1px solid rgba(0, 169, 157, 0.18);
+  background: rgba(0, 169, 157, 0.10);
   color: rgba(255, 255, 255, 0.92);
 }
 

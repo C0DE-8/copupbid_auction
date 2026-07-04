@@ -1,12 +1,14 @@
 .footer{
   border-top:1px solid rgba(6,48,44,.12);
-  padding:28px 24px 18px;
+  padding:34px 24px 20px;
   margin-top: 28px;
-  background: #061715;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(0,169,157,.2), transparent 32%),
+    linear-gradient(135deg, #061715 0%, #09201d 100%);
   color: #f8fffd;
 }
 .inner{
-  max-width:1120px; margin:0 auto;
+  max-width:1280px; margin:0 auto;
   display:flex; justify-content:space-between; align-items:center;
   gap:18px; flex-wrap:wrap;
 }
@@ -14,10 +16,37 @@
 .logo{width:40px; height:40px; border-radius:999px;}
 .title{font-weight:900;}
 .sub{font-size:12px; color:rgba(248,255,253,.68); margin-top:2px;}
-.links{display:flex; gap:18px;}
-.links a{color:rgba(248,255,253,.7); text-decoration:none; font-weight:700; font-size:14px;}
-.links a:hover{color:#13c8ba;}
+.links{display:flex; gap:10px; flex-wrap:wrap;}
+.links a{
+  color:rgba(248,255,253,.76);
+  text-decoration:none;
+  font-weight:800;
+  font-size:14px;
+  border-radius:999px;
+  padding:8px 10px;
+  transition: background 140ms ease, color 140ms ease;
+}
+.links a:hover{
+  color:#13c8ba;
+  background:rgba(255,255,255,.06);
+}
 .copy{
-  max-width:1120px; margin:16px auto 0;
+  max-width:1280px; margin:16px auto 0;
   text-align:center; font-size:12px; color:rgba(248,255,253,.58);
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 28px 18px 18px;
+  }
+  .inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .links {
+    width: 100%;
+  }
+  .links a {
+    padding-left: 0;
+  }
 }
