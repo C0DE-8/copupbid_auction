@@ -750,3 +750,297 @@
   background: #ffffff;
   color: #06302c;
 }
+
+.main {
+  min-height: calc(100vh - 220px);
+}
+
+.heroCard,
+.stateCard,
+.featuredWinner,
+.winnerCard {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: #241d33;
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.heroTop {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.heroActions {
+  margin-left: auto;
+}
+
+.body {
+  padding: 10px 0 80px;
+}
+
+.featuredWinner {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  border-radius: 26px;
+  border: 1px solid rgba(36, 28, 54, 0.08);
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.featuredWinner::after {
+  content: "";
+  position: absolute;
+  inset: auto -40px -80px auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: rgba(0, 169, 157, 0.12);
+  pointer-events: none;
+}
+
+.featuredMedia {
+  height: 130px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #008f85;
+  background: #faf9fd;
+  border: 1px solid rgba(36, 28, 54, 0.08);
+}
+
+.featuredMedia img,
+.winnerCover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.featuredCopy {
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.featuredCopy span {
+  display: inline-flex;
+  color: #008f85;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.featuredCopy h2 {
+  margin: 6px 0 0;
+  color: #241d33;
+  font-size: clamp(28px, 5vw, 46px);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.featuredCopy p {
+  max-width: 620px;
+  margin: 10px 0 0;
+  color: #6d657a;
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 800;
+}
+
+.featuredCopy strong {
+  color: #241d33;
+}
+
+.featuredAvatar {
+  position: relative;
+  z-index: 1;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 24px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 40px rgba(0, 169, 157, 0.22);
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.featuredAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.winnerGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.winnerCard {
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(36, 28, 54, 0.08);
+  padding: 12px;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.winnerCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 169, 157, 0.18);
+  box-shadow: 0 28px 70px rgba(48, 38, 83, 0.12);
+}
+
+.winnerCover {
+  position: relative;
+  height: 180px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 18px;
+  color: #008f85;
+  background: #faf9fd;
+  border: 1px solid rgba(36, 28, 54, 0.08);
+}
+
+.winnerCover span {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #06302c;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: capitalize;
+  backdrop-filter: blur(12px);
+}
+
+.winnerCard .winnerRow {
+  margin-top: 12px;
+}
+
+.winnerName,
+.winnerSub,
+.userName,
+.userSub,
+.prizeTitle,
+.prizeSub,
+.metaLabel,
+.metaValue {
+  color: inherit;
+}
+
+.winnerSub,
+.userSub,
+.prizeSub,
+.metaLabel {
+  color: #6d657a;
+}
+
+.avatarWrap,
+.userAvatar,
+.userAvatarFallback,
+.prizeImg,
+.prizeImgFallback,
+.metaItem,
+.tableWrap,
+.storyWrap,
+.attemptCard,
+.qaItem {
+  border-color: rgba(36, 28, 54, 0.08);
+  background: #faf9fd;
+}
+
+.avatarFallback,
+.userAvatarFallback {
+  color: #008f85;
+}
+
+.metaGrid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.metaItem {
+  min-width: 0;
+}
+
+.metaValue {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #241d33;
+}
+
+.pill,
+.pillAlt,
+.timePill,
+.badgeSoft {
+  border-color: rgba(0, 169, 157, 0.16);
+  background: rgba(0, 169, 157, 0.08);
+  color: #06302c;
+}
+
+.pillAlt {
+  border-color: rgba(255, 184, 77, 0.26);
+  background: rgba(255, 184, 77, 0.16);
+}
+
+.stateActions .btnPrimary,
+.heroActions .btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+}
+
+@media (max-width: 1180px) {
+  .winnerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .container {
+    width: min(100% - 24px, 680px);
+  }
+
+  .featuredWinner {
+    grid-template-columns: 1fr;
+  }
+
+  .featuredMedia {
+    height: 210px;
+  }
+
+  .featuredAvatar {
+    position: absolute;
+    top: 180px;
+    right: 28px;
+  }
+
+  .winnerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroActions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .heroActions .btnPrimary {
+    width: 100%;
+    justify-content: center;
+  }
+}

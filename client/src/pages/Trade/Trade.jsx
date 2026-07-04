@@ -167,6 +167,11 @@ export default function Trade() {
   }, [recipientWallet, amount, pin, myWallet, myBidPoints]);
 
   const txCount = transactions.length;
+  const sentCount = useMemo(
+    () => transactions.filter((t) => String(t.sender || "") === String(myUsername || "")).length,
+    [transactions, myUsername]
+  );
+  const receivedCount = Math.max(0, txCount - sentCount);
 
   /* ---------------- actions ---------------- */
 
@@ -321,6 +326,21 @@ export default function Trade() {
                     <span>
                       History: <b>{txCount}</b>
                     </span>
+                  </div>
+                </div>
+
+                <div className={styles.heroMetrics}>
+                  <div>
+                    <span>Available balance</span>
+                    <b>{myBidPoints.toLocaleString()} coins</b>
+                  </div>
+                  <div>
+                    <span>Sent transfers</span>
+                    <b>{sentCount}</b>
+                  </div>
+                  <div>
+                    <span>Received transfers</span>
+                    <b>{receivedCount}</b>
                   </div>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import styles from "./HowItWork.module.css";
-import { FiCreditCard, FiShoppingBag, FiTrendingUp } from "react-icons/fi";
+import { FiCreditCard, FiShield, FiShoppingBag, FiTrendingUp, FiUsers } from "react-icons/fi";
 
 export default function HowItWork() {
   const sections = [
@@ -37,6 +37,16 @@ export default function HowItWork() {
         "Buy from the product modal and confirm your order.",
       ],
     },
+    {
+      title: "Win and Checkout",
+      sub: "Completed wins move into your auction cart for delivery.",
+      icon: <FiShield />,
+      steps: [
+        "Wait for the auction timer to close.",
+        "If you are the winner, review the item in your cart.",
+        "Submit delivery details so the CopUpBid team can process your prize.",
+      ],
+    },
   ];
 
   return (
@@ -57,9 +67,24 @@ export default function HowItWork() {
                 <p className={styles.heroSub}>
                   A quick guide to coins, auctions, and shopping on CopUpBid.
                 </p>
+                <div className={styles.pills}>
+                  <span className={styles.pill}><FiCreditCard /> Fund wallet</span>
+                  <span className={styles.pill}><FiTrendingUp /> Join auctions</span>
+                  <span className={styles.pillAlt}><FiUsers /> Win and checkout</span>
+                </div>
               </div>
             </div>
           </div>
+        </section>
+
+        <section className={styles.highlightRow}>
+          <div className={styles.highlight}>
+            <span className={styles.highlightLabel}>Marketplace flow</span>
+            <strong className={styles.highlightValue}>Browse, fund, bid, buy, and track everything from one account.</strong>
+          </div>
+          <button type="button" className={styles.btnPrimary} onClick={() => (window.location.href = "/shop")}>
+            Open shop
+          </button>
         </section>
 
         <section className={styles.grid}>

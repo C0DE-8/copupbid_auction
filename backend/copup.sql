@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 02, 2026 at 11:23 AM
+-- Generation Time: Jul 04, 2026 at 09:33 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -71,7 +71,9 @@ CREATE TABLE `auctions` (
   `winner_id` int(11) DEFAULT NULL,
   `end_date` datetime DEFAULT NULL,
   `created_by` int(11) NOT NULL,
-  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL DEFAULT 0,
+  `shop_category_id` int(11) DEFAULT NULL,
+  `scheduled_start_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -80,15 +82,17 @@ CREATE TABLE `auctions` (
 -- Dumping data for table `auctions`
 --
 
-INSERT INTO `auctions` (`id`, `name`, `description`, `image`, `entry_bid_points`, `minimum_users`, `category`, `status`, `current_bid_amount`, `final_price`, `highest_bidder`, `current_bidder`, `winner_id`, `end_date`, `created_by`, `product_id`, `created_at`, `updated_at`) VALUES
-(1, 'iPhone 16 Pro', 'Brand new, sealed', '/uploads/1756315404040_chatgpt-image-aug-27,-2025,-06_46_52-am.png', 10, 1, 'product', 'completed', 60, 60, NULL, NULL, NULL, '2025-08-27 11:28:54', 1, 0, '2025-08-27 17:21:24', '2025-08-27 18:34:12'),
-(2, 'iPhone 14 Pro', 'Brand new, sealed.', '/uploads/1756940865095_chatgpt-image-aug-27,-2025,-04_39_00-pm.png', 1, 1, 'product', 'completed', 55, 55, 2, 2, 2, '2025-11-27 05:50:30', 1, 0, '2025-09-03 23:07:45', '2025-11-27 13:54:20'),
-(3, 'iPhone 16 Pro', 'Brand new, sealed.', '/uploads/1756940883775_chatgpt-image-aug-27,-2025,-04_45_01-pm.png', 1, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 0, '2025-09-03 23:08:03', '2025-11-27 13:54:20'),
-(4, 'iPhone 17 Pro', 'Brand new, sealed.', '/uploads/1756940888249_chatgpt-image-aug-27,-2025,-04_45_01-pm.png', 1, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 0, '2025-09-03 23:08:08', '2025-11-27 13:54:20'),
-(5, 'iPhone 11 Pro', 'Brand new, sealed.', '/uploads/1756940893049_chatgpt-image-aug-27,-2025,-04_45_01-pm.png', 1, 1, 'product', 'completed', 5, 5, 2, 2, 2, '2025-09-03 17:01:07', 1, 0, '2025-09-03 23:08:13', '2025-09-04 23:53:30'),
-(6, 'copup', 'noted', '/uploads/1757399339802_chatgpt-image-aug-9,-2025,-11_49_10-am.png', 1, 1, 'cash', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 0, '2025-09-09 06:29:00', NULL),
-(8, 'Product 1 — Auction', 'Created from waitlist', NULL, 200, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 0, '2025-11-04 22:55:22', '2025-11-04 22:55:30'),
-(9, 'iphone flash p', 'the phone information', '/uploads/1771627597310_5.jpeg', 2, 5, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 3, '2025-11-19 02:13:38', '2026-02-20 22:46:37');
+INSERT INTO `auctions` (`id`, `name`, `description`, `image`, `entry_bid_points`, `minimum_users`, `category`, `status`, `current_bid_amount`, `final_price`, `highest_bidder`, `current_bidder`, `winner_id`, `end_date`, `created_by`, `product_id`, `shop_category_id`, `scheduled_start_at`, `created_at`, `updated_at`) VALUES
+(2, 'iPhone 14 Pro', 'Brand new, sealed.', '/uploads/1756940865095_chatgpt-image-aug-27,-2025,-04_39_00-pm.png', 1, 1, 'product', 'completed', 55, 55, 2, 2, 2, '2025-11-27 05:50:30', 1, 0, NULL, NULL, '2025-09-03 23:07:45', '2025-11-27 13:54:20'),
+(3, 'iPhone 16 Pro', 'Brand new, sealed.', '/uploads/1756940883775_chatgpt-image-aug-27,-2025,-04_45_01-pm.png', 1, 1, 'product', 'completed', 5, 5, 2, 2, 2, '2026-07-04 10:34:21', 1, 0, NULL, NULL, '2025-09-03 23:08:03', '2026-07-04 17:34:22'),
+(4, 'iPhone 17 Pro', 'Brand new, sealed.', '/uploads/1756940888249_chatgpt-image-aug-27,-2025,-04_45_01-pm.png', 1, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 0, NULL, NULL, '2025-09-03 23:08:08', '2025-11-27 13:54:20'),
+(5, 'iPhone 11 Pro', 'Brand new, sealed.', '/uploads/1756940893049_chatgpt-image-aug-27,-2025,-04_45_01-pm.png', 1, 1, 'product', 'completed', 5, 5, 2, 2, 2, '2025-09-03 17:01:07', 1, 0, NULL, NULL, '2025-09-03 23:08:13', '2025-09-04 23:53:30'),
+(6, 'copup', 'noted', '/uploads/1757399339802_chatgpt-image-aug-9,-2025,-11_49_10-am.png', 1, 1, 'cash', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 0, NULL, NULL, '2025-09-09 06:29:00', NULL),
+(8, 'Product 1 — Auction', 'Created from waitlist', NULL, 200, 1, 'product', 'completed', 5, 5, 2, 2, 2, '2026-07-04 11:43:39', 1, 0, NULL, NULL, '2025-11-04 22:55:22', '2026-07-04 18:43:39'),
+(9, 'iphone flash p', 'the phone information', '/uploads/1771627597310_5.jpeg', 2, 5, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 3, NULL, NULL, '2025-11-19 02:13:38', '2026-02-20 22:46:37'),
+(10, 'Men\'s Short Sleeved Long Pants 2-in-1 Set - Black', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n ', '/uploads/1783184562716_men\'s-short.jpg', 10, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 0, NULL, NULL, '2026-07-04 17:02:42', '2026-07-04 17:22:58'),
+(11, 'Men\'s Short', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n \r\n\r\nNotes:\r\nDue to the light and screen setting difference, the items color may be slightly different from the pictures.\r\nPlease allow slight dimension difference due to different manual measurement.\r\n\r\nWord of mouth:\r\nOur store updates promotional activities every day. Please pay more attention to our store.\r\nWe control the quality of our products during transportation to ensure that they are delivered to you with the best quality.\r\nThe products of Jihua Xiaodian are safely and free of charge delivered by JUMIA EXPRESS. If you have any questions, please call JUMIA EXPRESS.', '/uploads/1783186274734_men\'s-short3.jpg', 10, 1, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 9, 2, NULL, '2026-07-04 17:31:14', NULL),
+(12, 'Mobile Phone', 'Notes: After receiving the product, please charge it for 1 hour before turning it on for use.\r\n???? Product Overview\r\nThe MKTEL M51 is a rugged, feature phone engineered for reliability and longevity. Designed with a durable build and essential functionality, this device is perfect for users who prioritize long battery life, clear communication, and practical utility tools over complex smartphone features.\r\n\r\n???? Power & Charging\r\nLong-Lasting 2500mAh Battery: Experience extended usage with the high-capacity 2500mAh battery, providing hours of talk time and days of standby, perfect for travelers and heavy users who need reliable power on the go.\r\nModern Type-C Charging Port: Equipped with a convenient Type-C interface for faster data transfer and a reversible plug design, eliminating the hassle of incorrect insertion and ensuring quick, easy charging.\r\n???? Global Connectivity\r\nDual SIM & Quad Band Connectivity: Stay connected globally with Dual SIM Dual Standby functionality and support for Quad Band GSM networks (850/900/1800/1900 MHz), offering stable signal reception for calls, messages, and roaming in various regions.\r\n???? Multimedia & Audio\r\nEnhanced Multimedia Experience: Features a 1.77-inch clear display for comfortable viewing, combined with a high-fidelity Φ20 speaker for immersive audio, ensuring crisp sound for music and hands-free calls.\r\n???? Utility & Entertainment\r\nEssential Utility Tools: Includes a powerful LED flashlight for illumination in dark environments and pre-installed classic games like Snake and Tetris for instant entertainment during downtime.', '/uploads/1783188501733_mobile-phone-2.jpg', 10, 1, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 8, 1, '2026-07-05 11:07:00', '2026-07-04 18:08:21', NULL);
 
 -- --------------------------------------------------------
 
@@ -122,11 +126,12 @@ CREATE TABLE `auction_bid_points` (
 --
 
 INSERT INTO `auction_bid_points` (`auction_id`, `user_id`, `bid_points`, `updated_at`) VALUES
-(1, 2, 180, '2025-08-27 18:22:22'),
 (2, 2, 170, '2025-11-27 13:50:15'),
 (2, 7, 25, '2025-11-27 13:40:11'),
 (2, 8, 135, '2025-11-27 13:41:39'),
-(5, 2, 5, '2025-09-03 23:56:07');
+(3, 2, 5, '2026-07-04 17:29:21'),
+(5, 2, 5, '2025-09-03 23:56:07'),
+(8, 2, 5, '2026-07-04 18:38:39');
 
 -- --------------------------------------------------------
 
@@ -177,14 +182,15 @@ CREATE TABLE `auction_participants` (
 --
 
 INSERT INTO `auction_participants` (`auction_id`, `user_id`, `joined_at`) VALUES
-(1, 2, '2025-08-27 17:43:37'),
 (2, 2, '2025-11-27 13:37:32'),
 (2, 7, '2025-11-27 13:36:39'),
 (2, 8, '2025-11-27 13:39:49'),
 (3, 2, '2025-11-27 12:07:16'),
 (4, 2, '2025-11-27 12:07:28'),
 (5, 2, '2025-09-03 23:18:14'),
-(9, 2, '2025-11-27 12:15:00');
+(8, 2, '2026-07-04 18:34:27'),
+(9, 2, '2025-11-27 12:15:00'),
+(10, 2, '2026-07-04 17:22:49');
 
 -- --------------------------------------------------------
 
@@ -253,14 +259,6 @@ CREATE TABLE `bids_waitlist` (
   `active_key` varchar(64) GENERATED ALWAYS AS (case when `status` in ('queued','in_progress') then concat(`user_id`,'-',`product_id`) else NULL end) STORED
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `bids_waitlist`
---
-
-INSERT INTO `bids_waitlist` (`id`, `user_id`, `product_id`, `qty`, `mode`, `bid_locked`, `status`, `created_at`) VALUES
-(42, 2, 1, 1, 'auction', 20.00, 'queued', '2026-02-21 10:00:40'),
-(43, 2, 4, 1, 'auction', 20.00, 'queued', '2026-02-25 19:57:19');
-
 -- --------------------------------------------------------
 
 --
@@ -282,7 +280,9 @@ CREATE TABLE `cart` (
 
 INSERT INTO `cart` (`id`, `user_id`, `auction_id`, `price`, `status`, `created_at`) VALUES
 (2, 2, 5, 5, 'paid', '2025-09-04 23:53:30'),
-(3, 2, 2, 55, 'paid', '2025-11-27 13:54:20');
+(3, 2, 2, 55, 'paid', '2025-11-27 13:54:20'),
+(4, 2, 3, 5, 'paid', '2026-07-04 17:34:22'),
+(5, 2, 8, 5, 'paid', '2026-07-04 18:43:39');
 
 -- --------------------------------------------------------
 
@@ -557,11 +557,9 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `short_description`, `description`, `vendor_name`, `stock_status`, `shipping_cost`, `delivery_eta`, `image_path`, `is_featured`, `cash_price`, `auction_price`, `created_at`, `allow_cash`, `allow_auction`, `updated_at`) VALUES
-(1, 'iPhone 15 Pro', NULL, NULL, 'CopUp', 'in_stock', 0.00, NULL, '/uploads/1762438499025_chatgpt-image-nov-1,-2025,-06_06_52-pm.png', 1, 100.00, 20.00, '2025-11-04 16:31:08', 0, 1, '2026-02-20 19:54:16'),
-(2, 'Ledger Nano X', NULL, NULL, 'CopUp', 'in_stock', 0.00, NULL, '/uploads/1762437776448_chatgpt-image-nov-1,-2025,-04_58_39-pm.png', 0, 199.00, 170.00, '2025-11-04 16:35:14', 1, 1, '2026-02-20 19:54:09'),
-(3, 'Top', 'short thiing about this item is that is shot', ';longtest hi there love hi there love hihihihi hih hi there love hi there love hi there love hi there love hihi hih hi there love hih hih', 'CopUp', 'in_stock', 0.00, NULL, '/uploads/1762437776448_chatgpt-image-nov-1,-2025,-04_58_39-pm.png', 0, 100.00, 20.00, '2025-11-06 14:02:56', 1, 1, '2026-02-20 20:17:48'),
-(4, 'iPhone 11 Pro', NULL, NULL, 'CopUp', 'in_stock', 0.00, NULL, '/uploads/1762437952295_chatgpt-image-nov-1,-2025,-04_58_39-pm.png', 1, 100.00, 20.00, '2025-11-06 14:05:52', 1, 1, '2026-02-20 19:21:30'),
-(5, 'iPhone 11 Pro (246 Gb)', NULL, NULL, 'CopUp', 'in_stock', 0.00, NULL, '/uploads/1762438039432_chatgpt-image-nov-1,-2025,-04_58_39-pm.png', 1, 100.00, 20.00, '2025-11-06 14:07:19', 1, 1, '2026-02-20 19:21:12');
+(7, 'Smartphones', 'OUKITEL C26 Smartphones Android 16, 4GB RAM/128GB ROM, 6.63”HD+, 5150mAh Battery, Gemini AI Android Phones, 13MP+5MP Camera Smart Phone, Reverse Charging, 4G Dual SIM,Fingerprint,BT5.0,Face ID,GPS,Blue', 'Note：Same box design for all colors of one model. Actual phone color stated on back label of package！！！\r\n \r\nLaunched in January 2026, the OUKITEL C26 is a practical daily-use smartphone with Android 16.0 pre-installed—ensuring smooth multi-tasking and user-friendly new features.\r\n \r\nPowered by Unisoc T615 (T7250) CPU + G57 GPU, it delivers stable performance for browsing, video watching, and multi-app use without lag.\r\n \r\nKey highlights: Gemini AI (voice control, real-time translation for study/travel) and reverse charging (emergency power for earbuds/smartwatches).\r\n \r\nPlus, 5150mAh all-day battery, 6.63\" HD display, 13MP+5MP cameras, 185g lightweight body (4 colors), and 0.3s side fingerprint unlock—ideal for students, commuters, and value seekers.\r\n      Brand & Model      	      OUKITEL C26      \r\n      Processor	      Unisoc T615 (T7250) + G57 GPU (1Core@850MHz)\r\n      AI Assistant	      Gemini AI (Voice Control, Real-Time Translation, Photo Editing)\r\n      Display	      6.63\" HD (576*1280 Resolution)\r\n      Camera	      Rear: 13MP / Front: 5MP\r\n      Battery & Charging    	      5150mAh Capacity + 5V2A Charging + Reverse Charging\r\n      Operating System	      Android 16.0\r\n      Unlock Method	      Side Fingerprint Sensor & Face ID\r\n      Special Functions	      Gemini AI, Reverse Charging, Multi-Tasking, Low-Light Photography      \r\n      Weight	      185g (Single Phone)', 'CopUp', 'in_stock', 1000.00, '3', '/uploads/1783177820121_smartphones.jpg', 0, 1000.00, 40.00, '2026-07-04 15:10:20', 1, 1, NULL),
+(8, 'Mobile Phone', 'MKTEL M51 Gray Mobile Phone 1.77 inch Screen 2500mAh Battery Type-C Dual SIM', 'Notes: After receiving the product, please charge it for 1 hour before turning it on for use.\r\n???? Product Overview\r\nThe MKTEL M51 is a rugged, feature phone engineered for reliability and longevity. Designed with a durable build and essential functionality, this device is perfect for users who prioritize long battery life, clear communication, and practical utility tools over complex smartphone features.\r\n\r\n???? Power & Charging\r\nLong-Lasting 2500mAh Battery: Experience extended usage with the high-capacity 2500mAh battery, providing hours of talk time and days of standby, perfect for travelers and heavy users who need reliable power on the go.\r\nModern Type-C Charging Port: Equipped with a convenient Type-C interface for faster data transfer and a reversible plug design, eliminating the hassle of incorrect insertion and ensuring quick, easy charging.\r\n???? Global Connectivity\r\nDual SIM & Quad Band Connectivity: Stay connected globally with Dual SIM Dual Standby functionality and support for Quad Band GSM networks (850/900/1800/1900 MHz), offering stable signal reception for calls, messages, and roaming in various regions.\r\n???? Multimedia & Audio\r\nEnhanced Multimedia Experience: Features a 1.77-inch clear display for comfortable viewing, combined with a high-fidelity Φ20 speaker for immersive audio, ensuring crisp sound for music and hands-free calls.\r\n???? Utility & Entertainment\r\nEssential Utility Tools: Includes a powerful LED flashlight for illumination in dark environments and pre-installed classic games like Snake and Tetris for instant entertainment during downtime.', 'CopUp', 'in_stock', 10.00, '2', '/uploads/1783178168657_mobile-phone-.jpg', 0, 90.00, 10.00, '2026-07-04 15:16:08', 1, 1, NULL),
+(9, 'Men\'s Short', 'Men\'s Short Sleeved Long Pants 2-in-1 Set - Black', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n \r\n\r\nNotes:\r\nDue to the light and screen setting difference, the items color may be slightly different from the pictures.\r\nPlease allow slight dimension difference due to different manual measurement.\r\n\r\nWord of mouth:\r\nOur store updates promotional activities every day. Please pay more attention to our store.\r\nWe control the quality of our products during transportation to ensure that they are delivered to you with the best quality.\r\nThe products of Jihua Xiaodian are safely and free of charge delivered by JUMIA EXPRESS. If you have any questions, please call JUMIA EXPRESS.', 'Mja', 'in_stock', 10.00, '3', '/uploads/1783178980441_men\'s-short.jpg', 1, 100.00, 10.00, '2026-07-04 15:29:40', 1, 1, '2026-07-04 15:34:53');
 
 -- --------------------------------------------------------
 
@@ -579,11 +577,9 @@ CREATE TABLE `product_categories` (
 --
 
 INSERT INTO `product_categories` (`product_id`, `category_id`) VALUES
-(1, 1),
-(2, 1),
-(3, 2),
-(4, 1),
-(5, 1);
+(7, 1),
+(8, 1),
+(9, 2);
 
 -- --------------------------------------------------------
 
@@ -597,15 +593,6 @@ CREATE TABLE `product_favorites` (
   `product_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `product_favorites`
---
-
-INSERT INTO `product_favorites` (`id`, `user_id`, `product_id`, `created_at`) VALUES
-(18, 2, 4, '2026-02-19 17:01:16'),
-(24, 2, 3, '2026-02-19 17:44:15'),
-(27, 2, 5, '2026-02-25 20:15:13');
 
 -- --------------------------------------------------------
 
@@ -626,10 +613,13 @@ CREATE TABLE `product_images` (
 --
 
 INSERT INTO `product_images` (`id`, `product_id`, `image_path`, `sort_order`, `created_at`) VALUES
-(1, 3, '/uploads/1771614134968_photo_2026-02-17-11.48.47.jpeg', 0, '2026-02-20 19:02:15'),
-(2, 3, '/uploads/1771614134992_photo_2026-02-17-11.48.52.jpeg', 1, '2026-02-20 19:02:15'),
-(3, 3, '/uploads/1771614134992_photo_2026-02-17-12.28.52.jpeg', 2, '2026-02-20 19:02:15'),
-(4, 3, '/uploads/1771614135033_1.jpeg', 3, '2026-02-20 19:02:15');
+(5, 7, '/uploads/1783177820133_smartphones2.jpg', 0, '2026-07-04 15:10:20'),
+(6, 7, '/uploads/1783177820146_smartphones3.jpg', 1, '2026-07-04 15:10:20'),
+(7, 7, '/uploads/1783177820147_smartphones4.jpg', 2, '2026-07-04 15:10:20'),
+(8, 8, '/uploads/1783178168662_mobile-phone-2.jpg', 0, '2026-07-04 15:16:08'),
+(9, 8, '/uploads/1783178168667_mobile-phone-3.jpg', 1, '2026-07-04 15:16:08'),
+(10, 9, '/uploads/1783178980450_men\'s-short2.jpg', 0, '2026-07-04 15:29:40'),
+(11, 9, '/uploads/1783178980475_men\'s-short3.jpg', 1, '2026-07-04 15:29:40');
 
 -- --------------------------------------------------------
 
@@ -660,26 +650,6 @@ CREATE TABLE `shop_cart_items` (
   `mode` enum('cash') NOT NULL DEFAULT 'cash',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `shop_cart_items`
---
-
-INSERT INTO `shop_cart_items` (`id`, `user_id`, `product_id`, `qty`, `price`, `subtotal`, `mode`, `created_at`) VALUES
-(6, 2, 4, 1, 100.00, 100.00, 'cash', '2026-02-21 02:20:40'),
-(7, 2, 5, 1, 100.00, 100.00, 'cash', '2026-02-21 02:23:40'),
-(8, 2, 5, 1, 100.00, 100.00, 'cash', '2026-02-21 02:23:46'),
-(9, 2, 5, 1, 100.00, 100.00, 'cash', '2026-02-21 02:23:49'),
-(10, 2, 2, 2, 199.00, 398.00, 'cash', '2026-02-21 03:25:46'),
-(11, 2, 5, 1, 100.00, 100.00, 'cash', '2026-02-21 03:27:13'),
-(12, 2, 5, 1, 100.00, 100.00, 'cash', '2026-02-21 10:01:06'),
-(13, 2, 5, 1, 100.00, 100.00, 'cash', '2026-02-21 10:01:10'),
-(14, 2, 4, 2, 100.00, 200.00, 'cash', '2026-02-25 19:57:32'),
-(15, 2, 4, 1, 100.00, 100.00, 'cash', '2026-02-25 20:14:44'),
-(16, 2, 3, 1, 100.00, 100.00, 'cash', '2026-02-25 20:14:53'),
-(17, 2, 3, 1, 100.00, 100.00, 'cash', '2026-02-25 20:14:57'),
-(18, 2, 3, 1, 100.00, 100.00, 'cash', '2026-02-25 20:15:00'),
-(19, 2, 3, 2, 100.00, 200.00, 'cash', '2026-02-25 20:15:03');
 
 -- --------------------------------------------------------
 
@@ -791,7 +761,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `email`, `username`, `full_name`, `profile`, `password_hash`, `pin`, `bid_points`, `task_coin`, `role`, `is_verified`, `is_blocked`, `referral_code`, `wallet_address`, `game_id`, `created_at`, `updated_at`) VALUES
 (1, 'admin@copupbid.com', 'admin', 'one user', NULL, '$2b$12$fdWqjDpx5HfBy07mNRdQBeqJZRCQR.DdTv/QQejaS5vUbbTUgqvXC', '0000', 10, 0, 'admin', 1, 0, 'rdyb9o', 'copqy0FwMBB0wmnJ1v1hcz1', 'TVEA-23E7-HYWF', '2025-08-27 16:35:15', '2025-09-09 05:03:52'),
-(2, '8amlight@gmail.com', 'potato', 'light habibi', 'uploads/user-rave-faq-1772051540676-695524335.jpeg', '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 46300, 0, 'user', 1, 0, 'ylpg48', 'copio7DCqxF3UQ9F0W4z261', '3Z8G-GJSN-KDFB', '2025-08-27 16:56:37', '2026-03-01 00:05:59'),
+(2, '8amlight@gmail.com', 'potato', 'light habibi', 'uploads/user-rave-faq-1772051540676-695524335.jpeg', '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 46080, 0, 'user', 1, 0, 'ylpg48', 'copio7DCqxF3UQ9F0W4z261', '3Z8G-GJSN-KDFB', '2025-08-27 16:56:37', '2026-07-04 18:38:38'),
 (7, 'jossycode0@gmail.com', 'jay', 'dbill jay', NULL, '$2b$12$G70VFVOg9wow8H7BHGGNYe0ypHn5AExM.iNT.RnHY0nEswFUzVH0q', '0000', 60, 0, 'user', 1, 0, '8gzacr', 'copDwaSf1gGaYaJdeSNhAcB', 'FT5M-32ZV-9RGB', '2025-08-30 15:37:41', '2025-11-27 13:54:20'),
 (8, '8amjoker@gmail.com', 'joker', 'joker jay', NULL, '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 104702, 0, 'user', 1, 0, '8gzaco', 'copDwaSf1gGaYaJdeSNhAcc', 'FT5M-32ZV-9RGU', '2025-08-30 15:37:41', '2026-03-01 00:05:59');
 
@@ -828,7 +798,9 @@ ALTER TABLE `auctions`
   ADD KEY `idx_auction_highest` (`highest_bidder`),
   ADD KEY `idx_auction_current` (`current_bidder`),
   ADD KEY `idx_auction_winner` (`winner_id`),
-  ADD KEY `idx_auctions_product` (`product_id`);
+  ADD KEY `idx_auctions_product` (`product_id`),
+  ADD KEY `idx_auctions_shop_category` (`shop_category_id`),
+  ADD KEY `idx_auctions_scheduled_start` (`scheduled_start_at`);
 
 --
 -- Indexes for table `auction_affiliates`
@@ -1047,7 +1019,7 @@ ALTER TABLE `affiliate_referrals`
 -- AUTO_INCREMENT for table `auctions`
 --
 ALTER TABLE `auctions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `auction_orders`
@@ -1083,7 +1055,7 @@ ALTER TABLE `bids_waitlist`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -1113,7 +1085,7 @@ ALTER TABLE `payouts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `product_favorites`
@@ -1125,7 +1097,7 @@ ALTER TABLE `product_favorites`
 -- AUTO_INCREMENT for table `product_images`
 --
 ALTER TABLE `product_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `referrals`
@@ -1189,6 +1161,7 @@ ALTER TABLE `auctions`
   ADD CONSTRAINT `fk_auctions_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `fk_auctions_current_bidder` FOREIGN KEY (`current_bidder`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_auctions_highest_bidder` FOREIGN KEY (`highest_bidder`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_auctions_shop_category` FOREIGN KEY (`shop_category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_auctions_winner` FOREIGN KEY (`winner_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
