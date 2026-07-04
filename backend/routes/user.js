@@ -226,7 +226,7 @@ router.get("/auctions",authenticateToken,
         where.push("category = ?");
         params.push(String(category).toLowerCase());
       }
-      if (status && ["pending", "active", "completed", "cancelled"].includes(String(status).toLowerCase())) {
+      if (status && ["pending", "active", "hold", "completed", "cancelled"].includes(String(status).toLowerCase())) {
         where.push("status = ?");
         params.push(String(status).toLowerCase());
       }
@@ -240,12 +240,17 @@ router.get("/auctions",authenticateToken,
 
       const [rows] = await pool.query(
         `SELECT id, name, description, image, entry_bid_points, minimum_users,
-                category, status, created_by, created_at, updated_at
+                category, status, created_by, created_at, updated_at,
+                (SELECT COUNT(*) FROM auction_participants ap WHERE ap.auction_id = auctions.id) AS participant_count,
+                EXISTS(
+                  SELECT 1 FROM auction_participants ap
+                  WHERE ap.auction_id = auctions.id AND ap.user_id = ?
+                ) AS is_joined
          FROM auctions
          ${whereSql}
          ORDER BY id DESC
          LIMIT ? OFFSET ?`,
-        [...params, lim, offset]
+        [req.user.id, ...params, lim, offset]
       );
 
       const data = rows.map(r => ({
@@ -278,6 +283,10 @@ router.post("/pay-entry/:id", authenticateToken, async (req, res) => {
     if (!auction) {
       await conn.rollback();
       return res.status(404).json({ message: "Auction not found" });
+    }
+    if (!["pending", "active", "hold"].includes(String(auction.status).toLowerCase())) {
+      await conn.rollback();
+      return res.status(400).json({ message: "Auction is not open for entry" });
     }
 
     // Already paid?
@@ -448,13 +457,19 @@ router.post("/bid/:id", authenticateToken, async (req, res) => {
 router.get("/auction/:id", authenticateToken, async (req, res) => {
   try {
     const id = Number(req.params.id);
+    const userId = req.user.id;
 
     const [rows] = await pool.query(
-      `SELECT a.*, u.username AS highestBidderName, u.profile AS highestBidderProfile
+      `SELECT a.*, u.username AS highestBidderName, u.profile AS highestBidderProfile,
+              EXISTS(
+                SELECT 1 FROM auction_participants ap
+                WHERE ap.auction_id = a.id AND ap.user_id = ?
+              ) AS isJoined,
+              (SELECT COUNT(*) FROM auction_participants ap WHERE ap.auction_id = a.id) AS participantCount
        FROM auctions a
        LEFT JOIN users u ON a.highest_bidder = u.id
        WHERE a.id = ?`,
-      [id]
+      [userId, id]
     );
 
     const auction = rows[0];
@@ -467,6 +482,8 @@ router.get("/auction/:id", authenticateToken, async (req, res) => {
 
     res.json({
       ...auction,
+      isJoined: Boolean(auction.isJoined),
+      participantCount: Number(auction.participantCount || 0),
       highestBidderName: auction.highestBidderName || null,
       highestBidderProfile: auction.highestBidderProfile || null,
     });
@@ -540,6 +557,16 @@ router.get("/:id/stats", authenticateToken, async (req, res) => {
       [id]
     );
 
+    const [[myParticipation]] = await pool.query(
+      "SELECT COUNT(*) AS joined FROM auction_participants WHERE auction_id = ? AND user_id = ?",
+      [id, req.user.id]
+    );
+
+    const [[myBidSpend]] = await pool.query(
+      "SELECT COALESCE(SUM(bid_points),0) AS spent FROM auction_bid_points WHERE auction_id = ? AND user_id = ?",
+      [id, req.user.id]
+    );
+
     // 3) Unique bidders + total spent
     const [[agg]] = await pool.query(
       "SELECT COUNT(DISTINCT user_id) AS uniqueBidders, COALESCE(SUM(bid_points),0) AS totalSpent FROM auction_bid_points WHERE auction_id = ?",
@@ -602,6 +629,8 @@ router.get("/:id/stats", authenticateToken, async (req, res) => {
       endDate: a.end_date, // server time (MySQL DATETIME)
       remainingSeconds,
       participants,
+      isJoined: Boolean(myParticipation.joined),
+      myTotalSpent: Number(myBidSpend.spent || 0),
       uniqueBidders,
       totalSpent,
       highestSpender,

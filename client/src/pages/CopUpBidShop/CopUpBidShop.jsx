@@ -20,14 +20,12 @@ import {
   FiRefreshCw,
   FiRotateCcw,
   FiShoppingCart,
-  FiGrid,
 } from "react-icons/fi";
 import {
   CreditCard,
   Headphones,
   MapPin,
   ShieldCheck,
-  ShoppingBag,
   Truck,
   Zap,
 } from "lucide-react";

@@ -128,28 +128,6 @@
   border-color: rgba(0, 169, 157, 0.46);
 }
 
-.settingsFab {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 9600;
-  min-height: 40px;
-  padding: 0 13px;
-  border: 1px solid rgba(0, 169, 157, 0.24);
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #06302c;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 14px 38px rgba(5, 36, 33, 0.18);
-  backdrop-filter: blur(14px);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
 .overlay {
   position: fixed;
   inset: 0;
@@ -315,15 +293,6 @@
   .ghostBtn {
     width: 100%;
     min-height: 43px;
-  }
-
-  .settingsFab {
-    right: 10px;
-    bottom: 10px;
-  }
-
-  .settingsFab span {
-    display: none;
   }
 
   .modal {

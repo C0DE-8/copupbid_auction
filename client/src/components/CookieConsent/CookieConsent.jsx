@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Check, Cookie, Settings, ShieldCheck, X } from "lucide-react";
 import styles from "./CookieConsent.module.css";
 
@@ -61,14 +61,6 @@ export default function CookieConsent() {
     };
   }, []);
 
-  const summary = useMemo(() => {
-    if (!consent?.preferences) return "Cookie settings";
-    const enabled = Object.entries(consent.preferences)
-      .filter(([, value]) => value)
-      .map(([key]) => key);
-    return `Cookies: ${enabled.join(", ")}`;
-  }, [consent]);
-
   const closeWith = (choice, nextPrefs) => {
     const saved = saveConsent(choice, nextPrefs);
     setConsent(saved);
@@ -124,18 +116,7 @@ export default function CookieConsent() {
             </button>
           </div>
         </section>
-      ) : (
-        <button
-          type="button"
-          className={styles.settingsFab}
-          onClick={() => setPanelOpen(true)}
-          aria-label="Manage cookie settings"
-          title={summary}
-        >
-          <Cookie size={18} />
-          <span>Cookie settings</span>
-        </button>
-      )}
+      ) : null}
 
       {panelOpen ? (
         <div className={styles.overlay} role="presentation">

@@ -89,6 +89,10 @@ export default function App() {
           <Route path="/auctions" element={<Auctions />} />
         </Route>
 
+        <Route element={<UserRoute />}>
+          <Route path="/auctions/:auctionId" element={<Auctions />} />
+        </Route>
+
          <Route element={<UserRoute />}>
           <Route path="/cart" element={<Cart />} />
         </Route>
