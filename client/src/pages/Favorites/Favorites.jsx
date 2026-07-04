@@ -4,6 +4,7 @@ import styles from "./Favorites.module.css";
 
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import LoginRequiredModal from "../../components/LoginRequiredModal/LoginRequiredModal";
 import SkeletonGrid from "../../components/SkeletonGrid/SkeletonGrid";
 import ProductCard from "../../components/ProductCard/ProductCard";
@@ -323,6 +324,7 @@ export default function Favorites() {
 
       <Header />
 
+      <SidebarFrame active="favorites">
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.heroCard}>
@@ -552,6 +554,7 @@ export default function Favorites() {
           )}
         </div>
       </section>
+      </SidebarFrame>
 
       <Footer />
 

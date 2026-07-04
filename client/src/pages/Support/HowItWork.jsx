@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import styles from "./HowItWork.module.css";
 import { FiCreditCard, FiShoppingBag, FiTrendingUp } from "react-icons/fi";
 
@@ -42,7 +43,9 @@ export default function HowItWork() {
     <div className={styles.page}>
       <Header />
 
-      <main className={styles.container}>
+      <main>
+        <SidebarFrame active="help">
+        <div className={styles.container}>
         <section className={styles.hero}>
           <div className={styles.heroCard}>
             <div className={styles.heroTop}>
@@ -84,6 +87,8 @@ export default function HowItWork() {
             </article>
           ))}
         </section>
+        </div>
+        </SidebarFrame>
       </main>
 
       <Footer />

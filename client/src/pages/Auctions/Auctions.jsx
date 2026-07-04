@@ -2,6 +2,9 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Auctions.module.css";
 import coinImg from "../../assets/copupcoin.png";
+import Header from "../../components/Header/Header";
+import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 
 export default function Auctions() {
 
@@ -39,8 +42,11 @@ export default function Auctions() {
 
   return (
     <div className={styles.page}>
+      <Header />
       <div className={styles.glow} aria-hidden="true" />
 
+      <main className={styles.content}>
+        <SidebarFrame active="auctions">
       <div className={styles.card}>
         <img src={coinImg} alt="CopUpCoin" className={styles.logo} />
 
@@ -169,6 +175,9 @@ export default function Auctions() {
           and real-time competition. 🛡️
         </p>
       </div>
+        </SidebarFrame>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./Cart.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import LoginRequiredModal from "../../components/LoginRequiredModal/LoginRequiredModal";
 import SkeletonGrid from "../../components/SkeletonGrid/SkeletonGrid";
 import { api } from "../../lib/api";
@@ -379,6 +380,7 @@ export default function Cart() {
 
       <Header />
 
+      <SidebarFrame active="cart">
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.heroCard}>
@@ -741,6 +743,7 @@ export default function Cart() {
           )}
         </div>
       </section>
+      </SidebarFrame>
 
       <Footer />
 

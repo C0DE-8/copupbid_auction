@@ -1,9 +1,10 @@
 // jobs/auctionStatus.cron.js
-const cron = require("node-cron");
 const { pool } = require("../db");
 
 let isPendingToHoldRunning = false;
 let isClosingJobRunning = false;
+let pendingToHoldTimer = null;
+let closeAuctionTimer = null;
 
 // lightweight runtime status you can read from elsewhere
 const cronStatus = {
@@ -27,7 +28,9 @@ const cronStatus = {
 /*   If participants >= minimum_users → set status = 'hold' (every 10 sec)    */
 /* -------------------------------------------------------------------------- */
 const startAuctionPendingToHoldJob = () => {
-  cron.schedule("*/10 * * * * *", async () => {
+  if (pendingToHoldTimer) return pendingToHoldTimer;
+
+  const runPendingToHold = async () => {
     if (isPendingToHoldRunning) return;
     isPendingToHoldRunning = true;
     cronStatus.pendingToHold.running = true;
@@ -56,7 +59,12 @@ const startAuctionPendingToHoldJob = () => {
       isPendingToHoldRunning = false;
       cronStatus.pendingToHold.running = false;
     }
-  });
+  };
+
+  pendingToHoldTimer = setInterval(runPendingToHold, 10_000);
+  pendingToHoldTimer.unref?.();
+  runPendingToHold();
+  return pendingToHoldTimer;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -67,8 +75,9 @@ const startAuctionPendingToHoldJob = () => {
 /*   - Winner gets cart item marked 'paid'                                    */
 /* -------------------------------------------------------------------------- */
 const startAuctionCloseJob = () => {
-  // Runs every second now
-  cron.schedule("* * * * * *", async () => {
+  if (closeAuctionTimer) return closeAuctionTimer;
+
+  const runCloseAuctions = async () => {
     if (isClosingJobRunning) return;
     isClosingJobRunning = true;
     cronStatus.closeAuctions.running = true;
@@ -174,7 +183,12 @@ const startAuctionCloseJob = () => {
       isClosingJobRunning = false;
       cronStatus.closeAuctions.running = false;
     }
-  });
+  };
+
+  closeAuctionTimer = setInterval(runCloseAuctions, 1_000);
+  closeAuctionTimer.unref?.();
+  runCloseAuctions();
+  return closeAuctionTimer;
 };
 
 

@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import styles from "./Winner.module.css";
 import { Trophy } from "lucide-react";
 
@@ -8,7 +9,9 @@ export default function Winner() {
   return (
     <div className={styles.page}>
       <Header />
-      <main className={styles.container}>
+      <main>
+        <SidebarFrame active="winners">
+        <div className={styles.container}>
         <section className={styles.hero}>
           <div className={styles.heroCard}>
             <div className={styles.heroTop}>
@@ -24,6 +27,8 @@ export default function Winner() {
             </div>
           </div>
         </section>
+        </div>
+        </SidebarFrame>
       </main>
       <Footer />
     </div>

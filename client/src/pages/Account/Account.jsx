@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./Account.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 
 import coinImg from "../../assets/copupcoin.png";
 import { api } from "../../lib/api";
@@ -628,6 +629,7 @@ export default function Account() {
       <Header />
 
       <main className={styles.main}>
+        <SidebarFrame active="account">
         <div className={styles.container}>
           <div className={styles.topBar}>
             <button
@@ -1250,6 +1252,7 @@ export default function Account() {
             </button>
           </div>
         </div>
+        </SidebarFrame>
       </main>
 
       <Footer />

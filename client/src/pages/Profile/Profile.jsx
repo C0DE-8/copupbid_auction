@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import styles from "./Profile.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import LoginRequiredModal from "../../components/LoginRequiredModal/LoginRequiredModal";
 import coinImg from "../../assets/copupcoin.png";
 import { api, imgUrl } from "../../lib/api";
@@ -445,6 +446,7 @@ export default function Profile() {
       <Header />
 
       <main className={styles.main}>
+        <SidebarFrame active="profile">
         <div className={styles.container}>
           {/* Header row */}
           <div className={styles.topRow}>
@@ -783,6 +785,7 @@ export default function Profile() {
             </div>
           )}
         </div>
+        </SidebarFrame>
       </main>
 
       <Footer />

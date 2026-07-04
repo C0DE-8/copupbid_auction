@@ -1,0 +1,131 @@
+.sidebar {
+  position: sticky;
+  top: 96px;
+  min-height: calc(100vh - 112px);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(36, 28, 54, 0.08);
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.09);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sideBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 950;
+  color: #211a32;
+}
+
+.sideBrand svg {
+  color: #00a99d;
+}
+
+.sideNav,
+.categoryBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.sideItem,
+.categoryItem {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: transparent;
+  color: #5f586f;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.sideItem:hover,
+.categoryItem:hover {
+  background: rgba(0, 169, 157, 0.09);
+  color: #2d2540;
+}
+
+.sideItem:active,
+.categoryItem:active {
+  transform: scale(0.99);
+}
+
+.sideItemActive {
+  color: #fff;
+  background: linear-gradient(135deg, #00a99d, #008f85);
+  box-shadow: 0 14px 34px rgba(0, 169, 157, 0.28);
+}
+
+.sideDivider {
+  height: 1px;
+  background: rgba(36, 28, 54, 0.08);
+}
+
+.sideLabel {
+  padding: 0 4px;
+  color: #008f85;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.categoryItem {
+  min-height: 38px;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.offerCard {
+  margin-top: auto;
+  border-radius: 18px;
+  padding: 16px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 80% 75%, rgba(255, 203, 96, 0.55), transparent 32%),
+    linear-gradient(135deg, #00a99d, #13c8ba);
+  box-shadow: 0 18px 45px rgba(0, 169, 157, 0.28);
+}
+
+.offerCard span {
+  display: block;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.offerCard strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.offerCard button {
+  margin-top: 14px;
+  height: 36px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 14px;
+  color: #06302c;
+  background: #fff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+@media (max-width: 1120px) {
+  .sidebar {
+    display: none;
+  }
+}

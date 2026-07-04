@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import styles from "./Dashboard.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import SidebarFrame from "../../components/SidebarFrame/SidebarFrame";
 import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
 
@@ -190,6 +191,7 @@ export default function Dashboard() {
       <Header />
 
       <main className={styles.main}>
+        <SidebarFrame active="home">
         <div className={styles.container}>
           {/* HERO */}
           <div className={styles.hero}>
@@ -362,6 +364,7 @@ export default function Dashboard() {
             })}
           </div>
         </div>
+        </SidebarFrame>
       </main>
 
       <Footer />

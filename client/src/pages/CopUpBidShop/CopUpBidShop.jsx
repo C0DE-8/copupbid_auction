@@ -11,6 +11,7 @@ import SkeletonGrid from "../../components/SkeletonGrid/SkeletonGrid";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductModal from "../../components/ProductModal/ProductModal";
 import LoginRequiredModal from "../../components/LoginRequiredModal/LoginRequiredModal";
+import ShopSidebar from "../../components/ShopSidebar/ShopSidebar";
 import { COPUP_EVENTS, emitBalanceUpdated, emitCartUpdated } from "../../lib/copupEvents";
 import BannerCarousel from "./components/BannerCarousel/BannerCarousel";
 
@@ -24,15 +25,12 @@ import {
 import {
   BadgePercent,
   Boxes,
-  CircleUserRound,
   CreditCard,
   Gift,
   Headphones,
-  Heart,
   Home,
   MapPin,
   PackageCheck,
-  Settings,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -684,54 +682,17 @@ export default function CopUpBidShop() {
     { label: "Winners", icon: Star, onClick: () => goProtected("/winners") },
   ];
 
-  const accountItems = [
-    { label: "Cart", icon: ShoppingBag, onClick: () => goProtected("/cart") },
-    { label: "Favorites", icon: Heart, onClick: () => goProtected("/favorites") },
-    { label: "Profile", icon: CircleUserRound, onClick: () => goProtected("/profile") },
-    { label: "Account", icon: Settings, onClick: () => goProtected("/account") },
-  ];
-
   return (
     <div className={styles.page}>
       <Header />
       <div className={styles.shell}>
-        <aside className={styles.sidebar} aria-label="Shop navigation">
-          <div className={styles.sideBrand}>
-            <ShoppingBag size={22} />
-            <span>CopUpBid</span>
-          </div>
-
-          <nav className={styles.sideNav}>
-            {navItems.map(({ label, icon, active, onClick }) => (
-              <button
-                key={label}
-                type="button"
-                className={`${styles.sideItem} ${active ? styles.sideItemActive : ""}`}
-                onClick={onClick}
-              >
-                {React.createElement(icon, { size: 17 })}
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
-
-          <div className={styles.sideDivider} />
-
-          <nav className={styles.sideNav}>
-            {accountItems.map(({ label, icon, onClick }) => (
-              <button key={label} type="button" className={styles.sideItem} onClick={onClick}>
-                {React.createElement(icon, { size: 17 })}
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
-
-          <div className={styles.offerCard}>
-            <span>Special offer</span>
-            <strong>Shop featured drops</strong>
-            <button type="button" onClick={scrollToCategories}>Browse</button>
-          </div>
-        </aside>
+        <ShopSidebar
+          active="home"
+          onHomeClick={resetFilters}
+          onCategoriesClick={scrollToCategories}
+          onDealsClick={scrollToCategories}
+          onBrowseClick={scrollToCategories}
+        />
 
         <main className={styles.main}>
           <section className={styles.mobileNav} aria-label="Quick navigation">

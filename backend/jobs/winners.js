@@ -1,7 +1,8 @@
 'use strict';
 
-const cron = require('node-cron');
 const { pool } = require('../db'); 
+
+let winnersTimer = null;
 
 // Winner -> 'won'; all other participants -> 'fulfilled'
 async function applyOutcomeForEvent(conn, { productId, mode, winnerId, participantIds }) {
@@ -88,11 +89,15 @@ async function scanAndFulfillWinners() {
 
 // Run every second
 function start() {
-  // node-cron with seconds: '* * * * * *' = every second
-  cron.schedule('* * * * * *', () => {
+  if (winnersTimer) return winnersTimer;
+
+  winnersTimer = setInterval(() => {
     scanAndFulfillWinners().catch((e) => console.error('[cron] task error:', e));
-  });
-  console.log('[cron] winners cron scheduled: every 1 second');
+  }, 1_000);
+  winnersTimer.unref?.();
+  scanAndFulfillWinners().catch((e) => console.error('[cron] task error:', e));
+  console.log('[cron] winners job scheduled: every 1 second');
+  return winnersTimer;
 }
 
 module.exports = { start };
