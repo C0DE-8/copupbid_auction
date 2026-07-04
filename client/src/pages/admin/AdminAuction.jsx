@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./AdminAuction.module.css";
 import { api } from "../../lib/api";
 import AdminNavbar from "../../components/admin/Navbar";
+import { useToast } from "../../components/Toast/ToastContext";
 const CATEGORIES = ["cash", "product", "coupon"];
 const AUCTION_STATUSES = ["pending", "active", "completed", "cancelled", "hold"]; // you use hold in start route
 const ORDER_STATUSES = [
@@ -33,16 +34,17 @@ function isFile(x) {
 }
 
 export default function AdminAuction() {
+  const toastApi = useToast();
   const [tab, setTab] = React.useState("auctions"); // "auctions" | "orders"
 
   // ---------- shared ui ----------
-  const [toast, setToast] = React.useState("");
   const [err, setErr] = React.useState("");
   const [busy, setBusy] = React.useState(false);
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 1600);
+  const showToast = (msg, type = "success") => {
+    const clean = String(msg || "").replace(/^[✅🚀🗑️⚠️]\s*/u, "");
+    const fn = toastApi[type] || toastApi.info;
+    fn(clean);
   };
 
   // ==========================
@@ -138,13 +140,15 @@ export default function AdminAuction() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      showToast("✅ Auction created");
+      showToast("Auction created");
       setCreateOpen(false);
       resetCreate();
       await loadAuctions();
     } catch (e) {
       console.error("create auction error:", e);
-      setErr(e?.response?.data?.message || e?.message || "Failed to create auction");
+      const msg = e?.response?.data?.message || e?.message || "Failed to create auction";
+      setErr(msg);
+      toastApi.error(msg);
     } finally {
       setCSaving(false);
       setBusy(false);
@@ -231,12 +235,14 @@ export default function AdminAuction() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      showToast("✅ Auction updated");
+      showToast("Auction updated");
       closeEdit();
       await loadAuctions();
     } catch (e) {
       console.error("submitEdit error:", e);
-      setErr(e?.response?.data?.message || e?.message || "Failed to update auction");
+      const msg = e?.response?.data?.message || e?.message || "Failed to update auction";
+      setErr(msg);
+      toastApi.error(msg);
     } finally {
       setESaving(false);
       setBusy(false);
@@ -253,11 +259,13 @@ export default function AdminAuction() {
     setErr("");
     try {
       await api.delete(`/admin/auctions/${aid}`);
-      showToast("🗑️ Auction deleted");
+      showToast("Auction deleted", "info");
       await loadAuctions();
     } catch (e) {
       console.error("deleteAuction error:", e);
-      setErr(e?.response?.data?.message || e?.message || "Failed to delete auction");
+      const msg = e?.response?.data?.message || e?.message || "Failed to delete auction";
+      setErr(msg);
+      toastApi.error(msg);
     } finally {
       setBusy(false);
     }
@@ -275,7 +283,7 @@ export default function AdminAuction() {
         params: force ? { force: "true" } : {},
       });
 
-      showToast("🚀 Auction started");
+      showToast("Auction started");
       // optional: show end date
       if (res.data?.end_date_in_utc) {
         console.log("Auction ends:", res.data.end_date_in_utc);
@@ -283,7 +291,9 @@ export default function AdminAuction() {
       await loadAuctions();
     } catch (e) {
       console.error("startAuction error:", e);
-      setErr(e?.response?.data?.message || e?.message || "Failed to start auction");
+      const msg = e?.response?.data?.message || e?.message || "Failed to start auction";
+      setErr(msg);
+      toastApi.error(msg);
     } finally {
       setBusy(false);
     }
@@ -364,18 +374,20 @@ export default function AdminAuction() {
     payload.notify = draft.notify === undefined ? true : !!draft.notify;
 
     if (!payload.status && payload.trackingNumber === undefined) {
-      return showToast("⚠️ Add status and/or tracking number");
+      return showToast("Add status and/or tracking number", "warning");
     }
 
     setBusy(true);
     setErr("");
     try {
       await api.patch(`/admin/auction/orders/${oid}`, payload);
-      showToast("✅ Order updated");
+      showToast("Order updated");
       await loadOrders();
     } catch (e) {
       console.error("submitOrderUpdate error:", e);
-      setErr(e?.response?.data?.message || e?.message || "Failed to update order");
+      const msg = e?.response?.data?.message || e?.message || "Failed to update order";
+      setErr(msg);
+      toastApi.error(msg);
     } finally {
       setBusy(false);
     }
@@ -397,11 +409,13 @@ export default function AdminAuction() {
       await api.delete(`/admin/auction/orders/${oid}`, {
         params: force ? { force: "1" } : {},
       });
-      showToast("🗑️ Order deleted");
+      showToast("Order deleted", "info");
       await loadOrders();
     } catch (e) {
       console.error("deleteOrder error:", e);
-      setErr(e?.response?.data?.message || e?.message || "Failed to delete order");
+      const msg = e?.response?.data?.message || e?.message || "Failed to delete order";
+      setErr(msg);
+      toastApi.error(msg);
     } finally {
       setBusy(false);
     }
@@ -473,7 +487,6 @@ export default function AdminAuction() {
           </button>
         </div>
 
-        {toast ? <div className={styles.toast}>{toast}</div> : null}
         {err ? <div className={styles.alert}>{err}</div> : null}
 
         {/* ====================== AUCTIONS TAB ====================== */}

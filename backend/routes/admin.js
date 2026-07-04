@@ -636,7 +636,7 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
   upload.single("image"),
   async (req, res) => {
     try {
-      const { name, description = "", entry_bid_points, minimum_users, category } = req.body;
+      const { name, description = "", entry_bid_points, minimum_users, category, product_id } = req.body;
 
       // Basic validation
       if (!name || entry_bid_points == null || minimum_users == null || !category) {
@@ -657,14 +657,22 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
         return res.status(400).json({ message: "minimum_users must be an integer >= 1" });
       }
 
+      let productId = 0;
+      if (product_id != null && product_id !== "") {
+        productId = Number(product_id);
+        if (!Number.isInteger(productId) || productId < 1) {
+          return res.status(400).json({ message: "product_id must be a positive integer when provided" });
+        }
+      }
+
       const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
       const [result] = await pool.query(
         `INSERT INTO auctions
-          (name, description, image, entry_bid_points, minimum_users, category, status, created_by)
+          (name, description, image, entry_bid_points, minimum_users, category, status, created_by, product_id)
          VALUES
-          (?, ?, ?, ?, ?, ?, 'pending', ?)`,
-        [name, description, imagePath, entry, minUsers, category.toLowerCase(), req.user.id]
+          (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+        [name, description, imagePath, entry, minUsers, category.toLowerCase(), req.user.id, productId]
       );
 
       res.status(201).json({

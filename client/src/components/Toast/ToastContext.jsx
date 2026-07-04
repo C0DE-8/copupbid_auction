@@ -33,6 +33,8 @@ export function ToastProvider({ children }) {
     success: (msg, duration) => pushToast("success", msg, duration),
     error: (msg, duration) => pushToast("error", msg, duration),
     info: (msg, duration) => pushToast("info", msg, duration),
+    warning: (msg, duration) => pushToast("warning", msg, duration),
+    warn: (msg, duration) => pushToast("warning", msg, duration),
   }), [pushToast]);
 
   return (
@@ -47,6 +49,7 @@ export function ToastProvider({ children }) {
               {t.type === "success" && <FiCheckCircle />}
               {t.type === "error" && <FiAlertCircle />}
               {t.type === "info" && <FiInfo />}
+              {t.type === "warning" && <FiAlertCircle />}
             </div>
 
             <div className={styles.message}>{t.message}</div>
