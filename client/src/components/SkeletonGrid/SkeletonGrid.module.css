@@ -29,11 +29,6 @@
 .loader {
   display: grid;
   place-items: center;
-  gap: 10px;
-  color: #008f85;
-  font-size: 12px;
-  font-weight: 950;
-  text-transform: uppercase;
 }
 
 .loader img {

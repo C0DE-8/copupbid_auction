@@ -12,7 +12,6 @@ export default function SkeletonGrid({ count = 9 }) {
           <div className={styles.top}>
             <div className={styles.loader}>
               <img src={coinGif} alt="Loading CopUpBid content" />
-              <span>Loading</span>
             </div>
           </div>
           <div className={styles.body}>

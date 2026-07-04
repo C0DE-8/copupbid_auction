@@ -104,7 +104,6 @@ export default function BannerCarousel({
       <div className={styles.wrap}>
         <div className={styles.skeleton}>
           <img src={coinGif} alt="Loading CopUpBid banner" />
-          <span>Loading featured drops</span>
         </div>
       </div>
     );

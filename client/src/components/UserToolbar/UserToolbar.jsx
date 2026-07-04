@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import {
   X,
   Store,
+  Boxes,
+  ChevronDown,
   Gavel,
   ShoppingCart,
   TrendingUp,
@@ -12,6 +14,7 @@ import {
   Users,
   Trophy,
   HelpCircle,
+  Cookie,
   LogOut,
   UserRound,
   Coins,
@@ -21,6 +24,14 @@ import styles from "./UserToolbar.module.css";
 import { api, imgUrl } from "../../lib/api";
 import { COPUP_EVENTS, emitAuthChanged } from "../../lib/copupEvents";
 
+function buildShopUrl(path) {
+  const clean = String(path || "").replace(/^\/+/, "");
+  const base = String(api?.defaults?.baseURL || "").toLowerCase();
+  const baseHasShop =
+    base.includes("/shop") || base.endsWith("/shop") || base.includes("/shop/");
+  return baseHasShop ? clean : `shop/${clean}`;
+}
+
 export default function UserToolbar() {
   const nav = useNavigate();
 
@@ -28,6 +39,8 @@ export default function UserToolbar() {
   const [token, setToken] = useState(() => localStorage.getItem("token") || localStorage.getItem("accessToken"));
 
   const [open, setOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +55,17 @@ export default function UserToolbar() {
   const go = (path) => {
     setOpen(false);
     nav(path);
+  };
+
+  const goCategory = (category) => {
+    const id = category?.id ?? category?.category_id;
+    setOpen(false);
+    nav(id ? `/shop?category=${encodeURIComponent(id)}` : "/shop");
+  };
+
+  const openCookieSettings = () => {
+    setOpen(false);
+    window.dispatchEvent(new Event("copup-open-cookie-settings"));
   };
 
   const logout = useCallback(() => {
@@ -117,6 +141,24 @@ export default function UserToolbar() {
     if (!token) return;
     fetchProfile();
   }, [token, fetchProfile]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get(buildShopUrl("public/categories"));
+        if (mounted) setCategories(Array.isArray(data) ? data : []);
+      } catch (_) {
+        if (mounted) setCategories([]);
+      }
+    };
+
+    fetchCategories();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // ✅ 3) listen for balance updates (buy/bid) and refetch immediately
   useEffect(() => {
@@ -211,6 +253,40 @@ export default function UserToolbar() {
             <Store size={16} /> Shop
           </button>
 
+          <div className={styles.categoryGroup}>
+            <button
+              type="button"
+              className={styles.item}
+              onClick={() => setCategoryOpen((value) => !value)}
+              aria-expanded={categoryOpen}
+            >
+              <Boxes size={16} />
+              Categories
+              <ChevronDown
+                size={16}
+                className={`${styles.chevron} ${categoryOpen ? styles.chevronOpen : ""}`}
+              />
+            </button>
+
+            {categoryOpen ? (
+              <div className={styles.categoryList}>
+                <button type="button" className={styles.categoryLink} onClick={() => go("/shop")}>
+                  All products
+                </button>
+                {categories.map((category) => (
+                  <button
+                    type="button"
+                    key={category?.id ?? category?.category_id ?? category?.name}
+                    className={styles.categoryLink}
+                    onClick={() => goCategory(category)}
+                  >
+                    {category?.name || "Category"}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
           <button className={styles.item} onClick={() => go("/auctions")}>
             <Gavel size={16} /> Auctions
           </button>
@@ -241,6 +317,10 @@ export default function UserToolbar() {
 
           <button className={styles.item} onClick={() => go("/how-to-play")}>
             <HelpCircle size={16} /> How to play
+          </button>
+
+          <button className={styles.item} onClick={openCookieSettings}>
+            <Cookie size={16} /> Cookie settings
           </button>
         </div>
 

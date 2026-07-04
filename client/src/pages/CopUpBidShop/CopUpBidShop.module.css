@@ -146,12 +146,7 @@
   cursor: pointer;
 }
 
-.mobileNav {
-  display: none;
-}
-
 .searchPanel,
-.categoryTiles,
 .promoGrid,
 .railCard,
 .serviceGrid {
@@ -167,48 +162,6 @@
 
 .bannerSection {
   min-width: 0;
-}
-
-.categoryTiles {
-  padding: 14px;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.categoryTile {
-  min-width: 0;
-  min-height: 88px;
-  border: 0;
-  border-radius: 16px;
-  background: #faf9fd;
-  color: #352b48;
-  display: grid;
-  place-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 900;
-  box-shadow: inset 0 0 0 1px rgba(36, 28, 54, 0.06);
-}
-
-.categoryTile span {
-  width: 42px;
-  height: 42px;
-  border-radius: 15px;
-  display: grid;
-  place-items: center;
-  color: #00a99d;
-  background: rgba(0, 169, 157, 0.1);
-}
-
-.categoryTile strong {
-  width: 100%;
-  padding: 0 4px;
-  font-size: 12px;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .promoGrid {
@@ -261,6 +214,11 @@
 
 .products {
   padding-bottom: 42px;
+}
+
+.scrollAnchor {
+  height: 0;
+  scroll-margin-top: 96px;
 }
 
 .aboutSeo {
@@ -796,36 +754,6 @@
     display: none;
   }
 
-  .mobileNav {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .mobileNavItem {
-    min-width: 0;
-    border: 1px solid rgba(36, 28, 54, 0.08);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.88);
-    color: #5f586f;
-    height: 54px;
-    display: grid;
-    place-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 900;
-    cursor: pointer;
-  }
-
-  .mobileNavActive {
-    color: #fff;
-    background: #00a99d;
-  }
-
-  .categoryTiles {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -849,23 +777,12 @@
   }
 
   .searchPanel,
-  .categoryTiles,
   .promoGrid,
   .railCard,
   .serviceGrid,
   .stateCard,
   .pagination {
     border-radius: 16px;
-  }
-
-  .categoryTiles {
-    padding: 10px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .categoryTile {
-    min-height: 76px;
   }
 
   .promoGrid {
@@ -883,7 +800,8 @@
   }
 
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .aboutSeo {
@@ -967,12 +885,8 @@
   }
 }
 
-@media (max-width: 390px) {
-  .mobileNav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .categoryTiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 360px) {
+  .grid {
+    grid-template-columns: 1fr;
   }
 }

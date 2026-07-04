@@ -23,6 +23,8 @@ import {
   FiRefreshCw,
   FiShoppingCart,
   FiHeart,
+  FiMaximize2,
+  FiX,
 } from "react-icons/fi";
 
 /* --------------------------- Helpers (same style) --------------------------- */
@@ -80,16 +82,30 @@ export default function CopUpBidShopD() {
   // image loader (same vibe as ProductCard)
   const [imgReady, setImgReady] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
+  const [showroomOpen, setShowroomOpen] = useState(false);
 
-  const imageSrc = useMemo(() => {
-    return (
-      product?.image_url ||
-      product?.image ||
-      product?.photo_url ||
-      ""
-    );
+  const galleryImages = useMemo(() => {
+    if (!product) return [];
+    const primary = product?.image_url || product?.image || product?.photo_url || "";
+    const gallery = Array.isArray(product?.gallery) ? product.gallery : [];
+    const rows = [
+      primary ? { image_url: primary, label: "Main image" } : null,
+      ...gallery.map((img, index) => ({
+        image_url: img?.image_url || img?.image || img?.url || "",
+        label: `Image ${index + 2}`,
+      })),
+    ].filter((img) => img?.image_url);
+
+    const seen = new Set();
+    return rows.filter((img) => {
+      if (seen.has(img.image_url)) return false;
+      seen.add(img.image_url);
+      return true;
+    });
   }, [product]);
 
+  const imageSrc = galleryImages[activeImg]?.image_url || "";
   const showFallback = !imageSrc || imgFailed;
 
   // login required modal
@@ -141,6 +157,8 @@ export default function CopUpBidShopD() {
     // reset image loader each fetch
     setImgReady(false);
     setImgFailed(false);
+    setActiveImg(0);
+    setShowroomOpen(false);
 
     try {
       const { data } = await api.get(buildShopUrl(`public/products/${productId}`));
@@ -175,6 +193,11 @@ export default function CopUpBidShopD() {
     fetchProduct();
     fetchFavState();
   }, [fetchProduct, fetchFavState]);
+
+  useEffect(() => {
+    setImgReady(false);
+    setImgFailed(false);
+  }, [activeImg]);
 
   /* --------------------------------- Actions -------------------------------- */
 
@@ -336,7 +359,15 @@ export default function CopUpBidShopD() {
             <div className={styles.loadingCard}>Product not found.</div>
           ) : (
             <div className={styles.detailCard}>
-              <div className={styles.media}>
+              <div className={styles.galleryShell}>
+              <button
+                type="button"
+                className={styles.media}
+                onClick={() => {
+                  if (!showFallback) setShowroomOpen(true);
+                }}
+                aria-label="Open product image showroom"
+              >
                 {!imgReady && !showFallback ? (
                   <div className={styles.imgLoader}>
                     <img src={coinGif} alt="Loading..." />
@@ -367,6 +398,30 @@ export default function CopUpBidShopD() {
                 ) : null}
 
                 <div className={styles.imgOverlay} />
+
+                {!showFallback ? (
+                  <span className={styles.zoomHint}>
+                    <FiMaximize2 />
+                    View images
+                  </span>
+                ) : null}
+              </button>
+
+              {galleryImages.length > 1 ? (
+                <div className={styles.thumbRail} aria-label="Product images">
+                  {galleryImages.map((img, index) => (
+                    <button
+                      key={`${img.image_url}-${index}`}
+                      type="button"
+                      className={`${styles.thumbBtn} ${index === activeImg ? styles.thumbActive : ""}`}
+                      onClick={() => setActiveImg(index)}
+                      aria-label={`Show product image ${index + 1}`}
+                    >
+                      <img src={img.image_url} alt="" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               </div>
 
               <div className={styles.info}>
@@ -452,6 +507,40 @@ export default function CopUpBidShopD() {
         message={loginModalMeta.message}
         redirectTo={loginModalMeta.redirectTo}
       />
+
+      {showroomOpen ? (
+        <div className={styles.showroom} role="dialog" aria-modal="true" aria-label="Product image showroom">
+          <button type="button" className={styles.showroomBackdrop} onClick={() => setShowroomOpen(false)} />
+          <div className={styles.showroomPanel}>
+            <button
+              type="button"
+              className={styles.showroomClose}
+              onClick={() => setShowroomOpen(false)}
+              aria-label="Close showroom"
+            >
+              <FiX />
+            </button>
+            <div className={styles.showroomImageWrap}>
+              <img src={imageSrc} alt={product?.name || "Product"} />
+            </div>
+            {galleryImages.length > 1 ? (
+              <div className={styles.showroomThumbs}>
+                {galleryImages.map((img, index) => (
+                  <button
+                    key={`showroom-${img.image_url}-${index}`}
+                    type="button"
+                    className={`${styles.thumbBtn} ${index === activeImg ? styles.thumbActive : ""}`}
+                    onClick={() => setActiveImg(index)}
+                    aria-label={`Show product image ${index + 1}`}
+                  >
+                    <img src={img.image_url} alt="" />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

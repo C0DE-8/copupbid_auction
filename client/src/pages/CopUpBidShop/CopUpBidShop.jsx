@@ -23,19 +23,11 @@ import {
   FiGrid,
 } from "react-icons/fi";
 import {
-  BadgePercent,
-  Boxes,
   CreditCard,
-  Gift,
   Headphones,
-  Home,
   MapPin,
-  PackageCheck,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
-  Star,
-  Tags,
   Truck,
   Zap,
 } from "lucide-react";
@@ -579,8 +571,6 @@ export default function CopUpBidShop() {
     return applyFilterSort(products);
   }, [products, applyFilterSort, selectedCategoryId]);
 
-  const categoryIsEmpty = selectedCategoryId !== null && filteredCategoryProducts.length === 0;
-
   const filteredAllProducts = useMemo(() => {
     const featuredIds = new Set((showFeatured ? filteredFeatured : []).map((x) => String(x.id)));
     const base = (Array.isArray(allProducts) ? allProducts : []).filter(
@@ -591,17 +581,14 @@ export default function CopUpBidShop() {
 
   const effectiveList = useMemo(() => {
     if (selectedCategoryId === null) return filteredAllProducts;
-    if (!categoryIsEmpty) return filteredCategoryProducts;
-    return filteredAllProducts;
-  }, [selectedCategoryId, filteredAllProducts, filteredCategoryProducts, categoryIsEmpty]);
+    return filteredCategoryProducts;
+  }, [selectedCategoryId, filteredAllProducts, filteredCategoryProducts]);
 
   const nothingFound = showFeatured
     ? filteredFeatured.length === 0 && filteredAllProducts.length === 0
     : selectedCategoryId === null
     ? filteredAllProducts.length === 0
-    : !categoryIsEmpty
-    ? filteredCategoryProducts.length === 0
-    : filteredAllProducts.length === 0;
+    : filteredCategoryProducts.length === 0;
 
   // pagination
   const totalItems = effectiveList.length;
@@ -620,8 +607,6 @@ export default function CopUpBidShop() {
     (showFeatured ? filteredFeatured.length : 0) +
     (selectedCategoryId === null
       ? filteredAllProducts.length
-      : categoryIsEmpty
-      ? filteredAllProducts.length
       : filteredCategoryProducts.length);
 
   const scrollToCategories = useCallback(() => {
@@ -629,17 +614,16 @@ export default function CopUpBidShop() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
-  const primaryCategoryCards = useMemo(() => {
-    const source = Array.isArray(categories) ? categories.slice(0, 6) : [];
-    const fallback = ["Auctions", "Fashion", "Electronics", "Home", "Collectibles", "Gaming"];
-    const labels = source.length ? source.map((c) => c?.name || "Category") : fallback;
-    const icons = [ShoppingBag, Sparkles, Headphones, PackageCheck, Boxes, Gift];
-    return labels.slice(0, 6).map((label, index) => ({
-      label,
-      icon: icons[index] || Boxes,
-      id: source[index]?.id ?? source[index]?.category_id ?? null,
-    }));
-  }, [categories]);
+  const scrollToFeatured = useCallback(() => {
+    setSelectedCategoryId(null);
+    setSearchQuery("");
+    setPage(1);
+
+    window.setTimeout(() => {
+      const el = document.getElementById("shop-featured");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }, []);
 
   const realCartItems = useMemo(() => {
     const shop = (Array.isArray(shopCart) ? shopCart : []).map((item) => ({
@@ -674,14 +658,6 @@ export default function CopUpBidShop() {
     [allProducts]
   );
 
-  const navItems = [
-    { label: "Home", icon: Home, active: true, onClick: resetFilters },
-    { label: "Categories", icon: Boxes, onClick: scrollToCategories },
-    { label: "Deals", icon: BadgePercent, onClick: scrollToCategories },
-    { label: "Auctions", icon: Tags, onClick: () => goProtected("/auctions") },
-    { label: "Winners", icon: Star, onClick: () => goProtected("/winners") },
-  ];
-
   return (
     <div className={styles.page}>
       <Header />
@@ -690,25 +666,11 @@ export default function CopUpBidShop() {
           active="home"
           onHomeClick={resetFilters}
           onCategoriesClick={scrollToCategories}
-          onDealsClick={scrollToCategories}
+          onDealsClick={scrollToFeatured}
           onBrowseClick={scrollToCategories}
         />
 
         <main className={styles.main}>
-          <section className={styles.mobileNav} aria-label="Quick navigation">
-            {navItems.slice(0, 4).map(({ label, icon, active, onClick }) => (
-              <button
-                key={label}
-                type="button"
-                className={`${styles.mobileNavItem} ${active ? styles.mobileNavActive : ""}`}
-                onClick={onClick}
-              >
-                {React.createElement(icon, { size: 16 })}
-                <span>{label}</span>
-              </button>
-            ))}
-          </section>
-
           <section className={styles.searchPanel} id="shop-categories">
             <CategoryChips
               categories={categories}
@@ -738,30 +700,13 @@ export default function CopUpBidShop() {
               subtitle="Discover featured drops, limited stock, and premium deals."
               autoPlay
               intervalMs={5500}
-              onBrowse={scrollToCategories}
+              onBrowse={scrollToFeatured}
               showSubtitle
             />
           </section>
 
-          <section className={styles.categoryTiles} aria-label="Featured categories">
-            {primaryCategoryCards.map(({ label, icon, id }) => (
-              <button
-                key={`${label}-${id ?? "fallback"}`}
-                type="button"
-                className={styles.categoryTile}
-                onClick={() => {
-                  setSelectedCategoryId(toNumberOrNull(id));
-                  setPage(1);
-                }}
-              >
-                <span>{React.createElement(icon, { size: 20 })}</span>
-                <strong>{label}</strong>
-              </button>
-            ))}
-          </section>
-
           <section className={styles.promoGrid}>
-            <button type="button" className={styles.promoCard} onClick={scrollToCategories}>
+            <button type="button" className={styles.promoCard} onClick={scrollToFeatured}>
               <span>Flash deals</span>
               <strong>{visibleCount} live products</strong>
               <small>Shop now</small>
@@ -834,8 +779,14 @@ export default function CopUpBidShop() {
                   <FiShoppingCart />
                 </div>
                 <div>
-                  <div className={styles.stateTitle}>No products found</div>
-                  <div className={styles.stateSub}>Nothing matches your current filters.</div>
+                  <div className={styles.stateTitle}>
+                    {selectedCategoryId ? `${selectedCategoryName} is empty` : "No products found"}
+                  </div>
+                  <div className={styles.stateSub}>
+                    {selectedCategoryId
+                      ? "There are no products listed in this category yet."
+                      : "Nothing matches your current filters."}
+                  </div>
                 </div>
               </div>
 
@@ -874,6 +825,8 @@ export default function CopUpBidShop() {
             </div>
           ) : (
             <>
+              <div id="shop-featured" className={styles.scrollAnchor} />
+
               {showFeatured && filteredFeatured.length > 0 ? (
                 <div className={styles.featuredWrap}>
                   <div className={styles.featuredHeader}>

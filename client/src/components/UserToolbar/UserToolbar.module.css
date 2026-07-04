@@ -25,8 +25,8 @@
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: rgba(57, 217, 138, 0.12);
-  border: 1px solid rgba(57, 217, 138, 0.35);
+  background: rgba(0, 169, 157, 0.12);
+  border: 1px solid rgba(0, 169, 157, 0.28);
   overflow: hidden;
 }
 
@@ -63,8 +63,8 @@
 }
 
 .taskBadge {
-  background: rgba(57, 217, 138, 0.15);
-  border: 1px solid rgba(57, 217, 138, 0.35);
+  background: rgba(0, 169, 157, 0.15);
+  border: 1px solid rgba(0, 169, 157, 0.28);
   color: #00a99d;
 }
 
@@ -90,7 +90,11 @@
   top: 0;
   right: 0;
   width: min(360px, 92vw);
-  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   background: rgba(248, 247, 251, 0.98);
   border-left: 1px solid rgba(36, 28, 54, 0.08);
   backdrop-filter: blur(12px);
@@ -101,15 +105,35 @@
   flex-direction: column;
 }
 
+.drawer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.drawer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  background: rgba(0, 143, 133, 0.28);
+}
+
 .drawerOpen {
   transform: translateX(0);
 }
 
 .drawerTop {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   padding: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: rgba(248, 247, 251, 0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(36, 28, 54, 0.08);
 }
 
 .drawerTitle {
@@ -203,6 +227,67 @@
   font-weight: 800;
 }
 
+.categoryGroup {
+  display: grid;
+  gap: 6px;
+}
+
+.categoryGroup .item {
+  justify-content: flex-start;
+}
+
+.chevron {
+  margin-left: auto;
+  opacity: 0.72;
+  transition: transform 140ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.categoryList {
+  max-height: min(260px, 38dvh);
+  overflow: auto;
+  margin-left: 16px;
+  padding: 4px 0 4px 10px;
+  display: grid;
+  gap: 5px;
+  border-left: 1px solid rgba(0, 169, 157, 0.18);
+}
+
+.categoryList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categoryList::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(0, 143, 133, 0.26);
+}
+
+.categoryLink {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  color: #5f586f;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+}
+
+.categoryLink:hover {
+  color: #06302c;
+  border-color: rgba(0, 169, 157, 0.1);
+  background: rgba(0, 169, 157, 0.07);
+}
+
 .item:hover {
   color: #008f85;
   background: rgba(0, 169, 157, 0.08);
@@ -218,6 +303,7 @@
 .drawerBottom {
   margin-top: auto;
   padding: 18px;
+  background: linear-gradient(180deg, rgba(248, 247, 251, 0), rgba(248, 247, 251, 0.98) 28%);
 }
 
 .logoutBtn {
@@ -255,5 +341,30 @@
   .avatar {
     width: 30px;
     height: 30px;
+  }
+
+  .drawer {
+    width: min(340px, 94vw);
+  }
+
+  .drawerTop {
+    padding: 14px;
+  }
+
+  .profileBlock {
+    padding: 12px 14px 14px;
+  }
+
+  .section {
+    padding: 6px 8px;
+  }
+
+  .item {
+    min-height: 44px;
+    padding: 11px;
+  }
+
+  .drawerBottom {
+    padding: 14px;
   }
 }

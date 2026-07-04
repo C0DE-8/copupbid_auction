@@ -2,10 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   BadgePercent,
   Boxes,
+  ChevronDown,
   CircleUserRound,
   Heart,
   HelpCircle,
   Home,
+  Cookie,
   Settings,
   ShoppingBag,
   Star,
@@ -38,6 +40,7 @@ export default function ShopSidebar({
   const navigate = useNavigate();
   const location = useLocation();
   const [categories, setCategories] = useState([]);
+  const [categoryOpen, setCategoryOpen] = useState(true);
   const [loginModal, setLoginModal] = useState({
     open: false,
     title: "",
@@ -51,7 +54,7 @@ export default function ShopSidebar({
     const fetchCategories = async () => {
       try {
         const { data } = await api.get(buildShopUrl("public/categories"));
-        if (mounted) setCategories(Array.isArray(data) ? data.slice(0, 8) : []);
+        if (mounted) setCategories(Array.isArray(data) ? data : []);
       } catch (_) {
         if (mounted) setCategories([]);
       }
@@ -66,6 +69,7 @@ export default function ShopSidebar({
   const currentActive = useMemo(() => {
     if (active) return active;
     const path = location.pathname;
+    if ((path === "/" || path === "/shop") && location.search.includes("category=")) return "categories";
     if (path === "/" || path === "/shop") return "home";
     if (path.includes("auction")) return "auctions";
     if (path.includes("winner")) return "winners";
@@ -96,14 +100,17 @@ export default function ShopSidebar({
     navigate(id ? `/shop?category=${encodeURIComponent(id)}` : "/shop");
   };
 
+  const openCookieSettings = () => {
+    window.dispatchEvent(new Event("copup-open-cookie-settings"));
+  };
+
+  const selectedCategoryId = useMemo(() => {
+    const raw = new URLSearchParams(location.search).get("category");
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [location.search]);
+
   const navItems = [
-    { key: "home", label: "Home", icon: Home, onClick: onHomeClick || (() => goPublic("/shop")) },
-    {
-      key: "categories",
-      label: "Categories",
-      icon: Boxes,
-      onClick: onCategoriesClick || (() => goPublic("/shop")),
-    },
     {
       key: "deals",
       label: "Deals",
@@ -120,6 +127,7 @@ export default function ShopSidebar({
     { key: "favorites", label: "Favorites", icon: Heart, onClick: () => goProtected("/favorites", "view favorites") },
     { key: "profile", label: "Profile", icon: CircleUserRound, onClick: () => goProtected("/profile", "view your profile") },
     { key: "account", label: "Account", icon: Settings, onClick: () => goProtected("/account", "manage your account") },
+    { key: "cookies", label: "Cookie settings", icon: Cookie, onClick: openCookieSettings },
   ];
 
   return (
@@ -131,6 +139,58 @@ export default function ShopSidebar({
         </div>
 
         <nav className={styles.sideNav}>
+          <button
+            type="button"
+            className={`${styles.sideItem} ${currentActive === "home" ? styles.sideItemActive : ""}`}
+            onClick={onHomeClick || (() => goPublic("/shop"))}
+          >
+            <Home size={17} />
+            <span>Home</span>
+          </button>
+
+          <div className={styles.categoryGroup}>
+            <button
+              type="button"
+              className={`${styles.sideItem} ${currentActive === "categories" ? styles.sideItemActive : ""}`}
+              onClick={() => {
+                setCategoryOpen((open) => !open);
+                onCategoriesClick?.();
+              }}
+              aria-expanded={categoryOpen}
+            >
+              <Boxes size={17} />
+              <span>Categories</span>
+              <ChevronDown className={`${styles.chevron} ${categoryOpen ? styles.chevronOpen : ""}`} size={16} />
+            </button>
+
+            {categoryOpen ? (
+              <div className={styles.subcategoryList}>
+                <button
+                  type="button"
+                  className={`${styles.subcategoryItem} ${selectedCategoryId === null ? styles.subcategoryActive : ""}`}
+                  onClick={() => goPublic("/shop")}
+                >
+                  All products
+                </button>
+                {categories.map((category) => {
+                  const id = category?.id ?? category?.category_id;
+                  const n = Number(id);
+                  const activeCategory = Number.isFinite(n) && selectedCategoryId === n;
+                  return (
+                    <button
+                      key={id ?? category?.name}
+                      type="button"
+                      className={`${styles.subcategoryItem} ${activeCategory ? styles.subcategoryActive : ""}`}
+                      onClick={() => goCategory(category)}
+                    >
+                      {category?.name || "Category"}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+
           {navItems.map(({ key, label, icon, onClick }) => (
             <button
               key={key}
@@ -143,25 +203,6 @@ export default function ShopSidebar({
             </button>
           ))}
         </nav>
-
-        <div className={styles.sideDivider} />
-
-        <div className={styles.categoryBlock}>
-          <div className={styles.sideLabel}>Shop Categories</div>
-          <button type="button" className={styles.categoryItem} onClick={() => goPublic("/shop")}>
-            All products
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category?.id ?? category?.category_id ?? category?.name}
-              type="button"
-              className={styles.categoryItem}
-              onClick={() => goCategory(category)}
-            >
-              {category?.name || "Category"}
-            </button>
-          ))}
-        </div>
 
         <div className={styles.sideDivider} />
 

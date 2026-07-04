@@ -8,38 +8,39 @@
    CARD
 ========================= */
 .card {
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(36, 28, 54, 0.09);
   background: #ffffff;
   color: #241d33;
   backdrop-filter: blur(10px);
   cursor: pointer;
-  transition: border-color 140ms ease, transform 140ms ease, box-shadow 180ms ease;
-  box-shadow: 0 18px 48px rgba(48, 38, 83, 0.09);
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 220ms ease;
+  box-shadow: 0 14px 34px rgba(48, 38, 83, 0.08);
 }
 .card:hover {
-  border-color: rgba(0, 169, 157, 0.22);
-  transform: translateY(-2px);
-  box-shadow: 0 26px 70px rgba(48, 38, 83, 0.14);
+  border-color: rgba(0, 169, 157, 0.24);
+  transform: translateY(-3px);
+  box-shadow: 0 24px 62px rgba(48, 38, 83, 0.15);
 }
 
 .homeCard {
-  border-radius: 16px;
+  border-radius: 15px;
   border-color: rgba(36, 28, 54, 0.08);
-  background: #fff;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #ffffff 64%, #fbfafd 100%);
   color: #241d33;
-  box-shadow: 0 18px 44px rgba(48, 38, 83, 0.08);
+  box-shadow: 0 12px 34px rgba(48, 38, 83, 0.08);
 }
 
 .homeCard:hover {
-  border-color: rgba(0, 169, 157, 0.22);
-  box-shadow: 0 22px 56px rgba(48, 38, 83, 0.12);
+  border-color: rgba(0, 169, 157, 0.26);
+  box-shadow: 0 24px 62px rgba(48, 38, 83, 0.15);
 }
 
 .cardImg {
   position: relative;
-  height: 232px;
+  height: 236px;
   background: linear-gradient(
     135deg,
     rgba(0, 169, 157, 0.1),
@@ -49,10 +50,31 @@
 }
 
 .homeCard .cardImg {
-  height: 210px;
-  margin: 10px 10px 0;
-  border-radius: 14px;
-  background: #f4f2f8;
+  height: 218px;
+  margin: 8px 8px 0;
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.8), transparent 34%),
+    #f4f2f8;
+}
+
+.cardImg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0.28) 48%, rgba(255, 255, 255, 0) 68%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 54%, rgba(6, 48, 44, 0.12) 100%);
+  opacity: 0;
+  transform: translateX(-42%);
+  transition: opacity 220ms ease, transform 620ms ease;
+}
+
+.card:hover .cardImg::after {
+  opacity: 1;
+  transform: translateX(42%);
 }
 
 .mainImg {
@@ -62,11 +84,17 @@
   object-fit: cover;
   opacity: 0;
   transform: scale(1.02);
-  transition: opacity 240ms ease, transform 520ms ease;
+  transition: opacity 240ms ease, transform 620ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease;
 }
 .imgReady {
   opacity: 0.95;
   transform: scale(1);
+}
+
+.card:hover .imgReady {
+  opacity: 1;
+  transform: scale(1.075);
+  filter: saturate(1.08) contrast(1.04);
 }
 
 /* loader overlay */
@@ -106,8 +134,8 @@
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.68),
-    rgba(0, 0, 0, 0.16),
+    rgba(6, 48, 44, 0.46),
+    rgba(6, 48, 44, 0.1),
     rgba(0, 0, 0, 0)
   );
   pointer-events: none;
@@ -129,7 +157,7 @@
   font-weight: 900;
   letter-spacing: 0.2px;
   color: rgba(255, 255, 255, 0.9);
-  z-index: 4;
+  z-index: 5;
 }
 .topLeftChip img {
   width: 16px;
@@ -154,7 +182,7 @@
   font-size: 12px;
   font-weight: 800;
   color: #352b48;
-  z-index: 4;
+  z-index: 5;
 }
 
 /* ✅ Favorite button */
@@ -162,7 +190,7 @@
   position: absolute;
   top: 14px;
   right: 14px;
-  z-index: 6;
+  z-index: 7;
   width: 38px;
   height: 38px;
   border-radius: 999px;
@@ -199,7 +227,7 @@
   left: 14px;
   right: 14px;
   bottom: 14px;
-  z-index: 4;
+  z-index: 5;
 }
 .bottomBarInner {
   border-radius: 15px;
@@ -253,11 +281,11 @@
 
 /* body */
 .cardBody {
-  padding: 16px;
+  padding: 15px;
 }
 
 .homeCard .cardBody {
-  padding: 12px 14px 14px;
+  padding: 13px 14px 14px;
 }
 
 .homeCard .bottomBar {
@@ -267,8 +295,8 @@
 }
 
 .homeCard .bottomBarInner {
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.86);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.92);
   border-color: rgba(36, 28, 54, 0.08);
   color: #241d33;
   box-shadow: 0 12px 28px rgba(48, 38, 83, 0.12);
@@ -288,7 +316,8 @@
 .homeCard .metaPill,
 .homeCard .priceBox {
   border-color: rgba(36, 28, 54, 0.08);
-  background: #faf9fd;
+  background:
+    linear-gradient(180deg, #ffffff, #faf9fd);
   color: #5f586f;
 }
 
@@ -297,7 +326,7 @@
 }
 
 .homeCard .priceCash {
-  color: #241d33;
+  color: #008f85;
 }
 
 .homeCard .btnGhost {
@@ -341,10 +370,11 @@
   font-size: 12px;
 }
 .priceBox {
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 12px;
   border: 1px solid rgba(36, 28, 54, 0.08);
-  background: #faf9fd;
+  background:
+    linear-gradient(180deg, #ffffff, #faf9fd);
 }
 .priceLabel {
   color: #756d82;
@@ -434,15 +464,134 @@
   color: #756d82;
 }
 
-/* small screens polish */
-@media (max-width: 420px) {
-  .cardImg {
-    height: 220px;
+@media (max-width: 640px) {
+  .card {
+    border-radius: 14px;
   }
-  .cardBody {
-    padding: 14px;
+
+  .cardImg,
+  .homeCard .cardImg {
+    height: 168px;
   }
+
+  .homeCard .cardImg {
+    margin: 6px 6px 0;
+    border-radius: 12px;
+  }
+
+  .cardBody,
+  .homeCard .cardBody {
+    padding: 10px;
+  }
+
+  .topLeftChip {
+    top: 9px;
+    left: 9px;
+    gap: 5px;
+    padding: 5px 7px;
+    font-size: 10px;
+  }
+
+  .topLeftChip img {
+    width: 13px;
+    height: 13px;
+  }
+
+  .topRightChip {
+    display: none;
+  }
+
+  .favBtn {
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .bottomBar {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
+
   .bottomBarInner {
-    padding: 10px 10px;
+    padding: 8px;
+    border-radius: 11px;
+    gap: 8px;
+  }
+
+  .cardTitle {
+    font-size: 12.5px;
+  }
+
+  .cardSub {
+    font-size: 10.5px;
+  }
+
+  .cardDesc {
+    display: none;
+  }
+
+  .viewPill {
+    padding: 6px 7px;
+    border-radius: 10px;
+    font-size: 10.5px;
+  }
+
+  .metaRow {
+    margin-bottom: 8px;
+  }
+
+  .metaPill {
+    max-width: 100%;
+    padding: 6px 8px;
+    font-size: 10.5px;
+  }
+
+  .metaPill span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .priceBox {
+    padding: 9px;
+    border-radius: 12px;
+  }
+
+  .priceLabel {
+    font-size: 10.5px;
+  }
+
+  .priceCash {
+    font-size: 12px;
+  }
+
+  .actionsRow {
+    margin-top: 9px;
+  }
+
+  .btnGhost {
+    min-height: 38px;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cardImg,
+  .homeCard .cardImg {
+    height: 214px;
+  }
+
+  .cardBody,
+  .homeCard .cardBody {
+    padding: 13px;
+  }
+
+  .topRightChip {
+    display: block;
   }
 }

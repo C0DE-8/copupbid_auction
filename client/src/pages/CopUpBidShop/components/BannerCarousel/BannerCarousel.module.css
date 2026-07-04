@@ -30,12 +30,6 @@
   box-shadow: 0 24px 70px rgba(48, 38, 83, 0.12);
   display: grid;
   place-items: center;
-  align-content: center;
-  gap: 10px;
-  color: #008f85;
-  font-size: 12px;
-  font-weight: 950;
-  text-transform: uppercase;
 }
 
 .skeleton img {
