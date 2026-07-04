@@ -268,6 +268,7 @@ export default function Cart() {
   const fiatShop = useMemo(() => coinsToFiat(shopTotals.coins, rate), [shopTotals, rate]);
   const fiatAuction = useMemo(() => coinsToFiat(auctionTotals.coins, rate), [auctionTotals, rate]);
   const fiatGrand = useMemo(() => coinsToFiat(grandTotals.coins, rate), [grandTotals, rate]);
+  const totalItems = shopTotals.items + auctionTotals.items;
 
   const nothingInCarts = normalizedShop.length === 0 && normalizedAuction.length === 0;
 
@@ -407,7 +408,7 @@ export default function Cart() {
               <button
                 type="button"
                 className={styles.btnGhost}
-                onClick={() => (window.location.href = "/shop")}
+                onClick={() => (window.location.href = "/app/shop")}
               >
                 <FiPackage style={{ marginRight: 8 }} />
                 Back to Shop
@@ -427,6 +428,21 @@ export default function Cart() {
                 <FiRotateCcw style={{ marginRight: 8 }} />
                 Clear form
               </button>
+            </div>
+
+            <div className={styles.heroMetrics}>
+              <div>
+                <span>Total items</span>
+                <b>{totalItems}</b>
+              </div>
+              <div>
+                <span>Coins due</span>
+                <b>{money(grandTotals.coins)}</b>
+              </div>
+              <div>
+                <span>Estimated value</span>
+                <b>{fiatGrand !== null ? `${money(fiatGrand)} ${rate.currency}` : "Rate unavailable"}</b>
+              </div>
             </div>
 
             {!isProd && error ? (
@@ -521,6 +537,9 @@ export default function Cart() {
                         const fiat = coinsToFiat(it._subtotalCoins, rate);
                         return (
                           <div className={styles.itemRow} key={`shop-${it.id}`}>
+                            <div className={styles.itemAvatar}>
+                              <FiPackage />
+                            </div>
                             <div className={styles.itemMain}>
                               <div className={styles.itemName}>{it._name}</div>
                               <div className={styles.itemMeta}>
@@ -587,6 +606,9 @@ export default function Cart() {
                         const fiat = coinsToFiat(it._coins, rate);
                         return (
                           <div className={styles.itemRow} key={`auc-${it.id}`}>
+                            <div className={styles.itemAvatar}>
+                              <FiShoppingCart />
+                            </div>
                             <div className={styles.itemMain}>
                               <div className={styles.itemName}>{it._name}</div>
                               <div className={styles.itemMeta}>

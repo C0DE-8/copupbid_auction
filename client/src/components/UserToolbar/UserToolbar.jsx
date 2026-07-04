@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   X,
+  BadgePercent,
   Store,
   Boxes,
   ChevronDown,
@@ -55,6 +56,11 @@ export default function UserToolbar() {
   const go = (path) => {
     setOpen(false);
     nav(path);
+  };
+
+  const goDeals = () => {
+    setOpen(false);
+    nav("/shop?deal=featured#shop-featured");
   };
 
   const goCategory = (category) => {
@@ -251,6 +257,10 @@ export default function UserToolbar() {
         <div className={styles.section}>
           <button className={styles.item} onClick={() => go("/shop")}>
             <Store size={16} /> Shop
+          </button>
+
+          <button className={styles.item} onClick={goDeals}>
+            <BadgePercent size={16} /> Deals
           </button>
 
           <div className={styles.categoryGroup}>

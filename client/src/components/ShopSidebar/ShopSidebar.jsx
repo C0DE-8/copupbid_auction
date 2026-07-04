@@ -69,8 +69,9 @@ export default function ShopSidebar({
   const currentActive = useMemo(() => {
     if (active) return active;
     const path = location.pathname;
-    if ((path === "/" || path === "/shop") && location.search.includes("category=")) return "categories";
-    if (path === "/" || path === "/shop") return "home";
+    if ((path === "/" || path === "/shop" || path === "/app/shop") && location.search.includes("category=")) return "categories";
+    if ((path === "/" || path === "/shop" || path === "/app/shop") && location.search.includes("deal=featured")) return "deals";
+    if (path === "/" || path === "/shop" || path === "/app/shop") return "home";
     if (path.includes("auction")) return "auctions";
     if (path.includes("winner")) return "winners";
     return path.replace("/", "") || "home";
@@ -115,7 +116,7 @@ export default function ShopSidebar({
       key: "deals",
       label: "Deals",
       icon: BadgePercent,
-      onClick: onDealsClick || onCategoriesClick || (() => goPublic("/shop")),
+      onClick: onDealsClick || onCategoriesClick || (() => goPublic("/shop?deal=featured#shop-featured")),
     },
     { key: "auctions", label: "Auctions", icon: Tags, onClick: () => goProtected("/auctions", "view auctions") },
     { key: "winners", label: "Winners", icon: Star, onClick: () => goProtected("/winners", "view winners") },
@@ -142,7 +143,7 @@ export default function ShopSidebar({
           <button
             type="button"
             className={`${styles.sideItem} ${currentActive === "home" ? styles.sideItemActive : ""}`}
-            onClick={onHomeClick || (() => goPublic("/shop"))}
+            onClick={onHomeClick || (() => goPublic("/"))}
           >
             <Home size={17} />
             <span>Home</span>

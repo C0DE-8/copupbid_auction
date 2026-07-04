@@ -76,9 +76,10 @@ function authConfig(token) {
   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
-export default function CopUpBidShop() {
+export default function CopUpBidShop({ mode = "home" }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isHomeMode = mode === "home";
 
   const isProd =
     (typeof import.meta !== "undefined" &&
@@ -86,11 +87,9 @@ export default function CopUpBidShop() {
       import.meta.env.MODE === "production") ||
     process.env.NODE_ENV === "production";
 
-  // ✅ banner state
-  const [banners, setBanners] = useState([]);
-  const [bannerLoading, setBannerLoading] = useState(true);
-
   // data
+  const [banners, setBanners] = useState([]);
+  const [bannerLoading, setBannerLoading] = useState(isHomeMode);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
@@ -200,19 +199,26 @@ export default function CopUpBidShop() {
     return Array.isArray(data) ? data : [];
   }, []);
 
-  // ✅ fetch banners
   const fetchBanners = useCallback(async () => {
+    if (!isHomeMode) {
+      setBanners([]);
+      setBannerLoading(false);
+      return [];
+    }
+
     setBannerLoading(true);
     try {
       const { data } = await api.get(buildShopUrl("banner"));
       const arr = Array.isArray(data?.banners) ? data.banners : [];
       setBanners(arr);
+      return arr;
     } catch (_) {
       setBanners([]);
+      return [];
     } finally {
       setBannerLoading(false);
     }
-  }, []);
+  }, [isHomeMode]);
 
   const fetchProducts = useCallback(
     async (forcedCategoryId = undefined) => {
@@ -601,12 +607,6 @@ export default function CopUpBidShop() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [safePage]);
 
-  const visibleCount =
-    (showFeatured ? filteredFeatured.length : 0) +
-    (selectedCategoryId === null
-      ? filteredAllProducts.length
-      : filteredCategoryProducts.length);
-
   const scrollToCategories = useCallback(() => {
     const el = document.getElementById("shop-categories");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -622,6 +622,12 @@ export default function CopUpBidShop() {
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 60);
   }, []);
+
+  useEffect(() => {
+    if (!isHomeMode && (location.hash === "#shop-featured" || location.search.includes("deal=featured"))) {
+      scrollToFeatured();
+    }
+  }, [isHomeMode, location.hash, location.search, scrollToFeatured]);
 
   const realCartItems = useMemo(() => {
     const shop = (Array.isArray(shopCart) ? shopCart : []).map((item) => ({
@@ -656,16 +662,23 @@ export default function CopUpBidShop() {
     [allProducts]
   );
 
+  const sidebarActive = useMemo(() => {
+    if (isHomeMode) return "home";
+    if (location.search.includes("deal=featured")) return "deals";
+    if (selectedCategoryId) return "categories";
+    return "home";
+  }, [isHomeMode, location.search, selectedCategoryId]);
+
   return (
     <div className={styles.page}>
       <Header />
       <div className={styles.shell}>
         <ShopSidebar
-          active="home"
-          onHomeClick={resetFilters}
-          onCategoriesClick={scrollToCategories}
-          onDealsClick={scrollToFeatured}
-          onBrowseClick={scrollToCategories}
+          active={sidebarActive}
+          onHomeClick={() => navigate("/")}
+          onCategoriesClick={isHomeMode ? () => navigate("/shop") : scrollToCategories}
+          onDealsClick={isHomeMode ? () => navigate("/shop?deal=featured#shop-featured") : scrollToFeatured}
+          onBrowseClick={isHomeMode ? () => navigate("/shop") : scrollToCategories}
         />
 
         <main className={styles.main}>
@@ -673,7 +686,14 @@ export default function CopUpBidShop() {
             <CategoryChips
               categories={categories}
               selectedCategoryId={selectedCategoryId}
-              onSelect={(val) => setSelectedCategoryId(toNumberOrNull(val))}
+              onSelect={(val) => {
+                const nextCategoryId = toNumberOrNull(val);
+                if (isHomeMode) {
+                  navigate(nextCategoryId ? `/shop?category=${encodeURIComponent(nextCategoryId)}` : "/shop");
+                  return;
+                }
+                setSelectedCategoryId(nextCategoryId);
+              }}
               mode="select"
               status={status}
               loading={loading || loadingProducts}
@@ -690,36 +710,44 @@ export default function CopUpBidShop() {
             />
           </section>
 
-          <section className={styles.bannerSection}>
-            <BannerCarousel
-              banners={banners}
-              loading={bannerLoading}
-              brand="New Drop"
-              subtitle="Discover featured drops, limited stock, and premium deals."
-              autoPlay
-              intervalMs={5500}
-              onBrowse={scrollToFeatured}
-              showSubtitle
-            />
-          </section>
+          {isHomeMode ? (
+            <>
+              <section className={styles.bannerSection}>
+                <BannerCarousel
+                  banners={banners}
+                  loading={bannerLoading}
+                  brand="New Drop"
+                  subtitle="Discover featured drops, limited stock, and premium deals."
+                  autoPlay
+                  intervalMs={5500}
+                  onBrowse={() => navigate("/shop?deal=featured#shop-featured")}
+                  showSubtitle
+                />
+              </section>
 
-          <section className={styles.promoGrid}>
-            <button type="button" className={styles.promoCard} onClick={scrollToFeatured}>
-              <span>Flash deals</span>
-              <strong>{visibleCount} live products</strong>
-              <small>Shop now</small>
-            </button>
-            <button type="button" className={styles.promoCard} onClick={() => goProtected("/how-to-play")}>
-              <span>Easy bidding</span>
-              <strong>Learn the rules</strong>
-              <small>How it works</small>
-            </button>
-            <button type="button" className={styles.promoCard} onClick={() => goProtected("/affiliate")}>
-              <span>Rewards</span>
-              <strong>Invite and earn</strong>
-              <small>Join program</small>
-            </button>
-          </section>
+              <section className={styles.promoGrid}>
+                <button
+                  type="button"
+                  className={styles.promoCard}
+                  onClick={() => navigate("/shop?deal=featured#shop-featured")}
+                >
+                  <span>Flash deals</span>
+                  <strong>{filteredFeatured.length + filteredAllProducts.length} live products</strong>
+                  <small>Shop now</small>
+                </button>
+                <button type="button" className={styles.promoCard} onClick={() => goProtected("/how-to-play")}>
+                  <span>Easy bidding</span>
+                  <strong>Learn the rules</strong>
+                  <small>How it works</small>
+                </button>
+                <button type="button" className={styles.promoCard} onClick={() => goProtected("/affiliate")}>
+                  <span>Rewards</span>
+                  <strong>Invite and earn</strong>
+                  <small>Join program</small>
+                </button>
+              </section>
+            </>
+          ) : null}
 
           <section className={styles.products}>
           {error ? (

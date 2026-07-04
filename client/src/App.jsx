@@ -63,9 +63,10 @@ export default function App() {
         {/* <Route element={<UserRoute />}>
           <Route path="/" element={<CopUpBidShop />} />
         </Route> */}
-        <Route path="/" element={<CopUpBidShop />} />
-         <Route path="/shop/product/:id" element={<CopUpBidShopD />} />
-        <Route path="/shop" element={<CopUpBidShop />} />
+        <Route path="/" element={<CopUpBidShop mode="home" />} />
+        <Route path="/shop/product/:id" element={<CopUpBidShopD />} />
+        <Route path="/shop" element={<CopUpBidShop mode="listing" />} />
+        <Route path="/app/shop" element={<CopUpBidShop mode="listing" />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
 

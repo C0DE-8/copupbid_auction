@@ -148,7 +148,6 @@
 }
 
 .searchPanel,
-.promoGrid,
 .railCard,
 .serviceGrid {
   border-radius: 20px;
@@ -167,6 +166,10 @@
 }
 
 .promoGrid {
+  border-radius: 20px;
+  border: 1px solid rgba(36, 28, 54, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 70px rgba(48, 38, 83, 0.08);
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -794,6 +797,11 @@
     border-radius: 16px;
   }
 
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
   .promoGrid {
     grid-template-columns: 1fr;
   }
@@ -806,11 +814,6 @@
 
   .promoCard:nth-child(3) {
     border-bottom: 0;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
   }
 
   .aboutSeo {
