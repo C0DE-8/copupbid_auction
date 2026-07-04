@@ -636,7 +636,7 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
   upload.single("image"),
   async (req, res) => {
     try {
-      const { name, description = "", entry_bid_points, minimum_users, category, product_id } = req.body;
+      const { name, description = "", entry_bid_points, minimum_users, category, product_id, shop_category_id } = req.body;
 
       // Basic validation
       if (!name || entry_bid_points == null || minimum_users == null || !category) {
@@ -658,21 +658,62 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
       }
 
       let productId = 0;
+      let selectedProduct = null;
       if (product_id != null && product_id !== "") {
         productId = Number(product_id);
         if (!Number.isInteger(productId) || productId < 1) {
           return res.status(400).json({ message: "product_id must be a positive integer when provided" });
         }
+        const [productRows] = await pool.query(
+          `SELECT p.id, p.name, p.description, p.short_description, p.image_path, p.auction_price,
+                  (SELECT pc.category_id
+                     FROM product_categories pc
+                    WHERE pc.product_id = p.id
+                    ORDER BY pc.category_id ASC
+                    LIMIT 1) AS category_id
+             FROM products p
+            WHERE p.id = ? AND p.allow_auction = 1
+            LIMIT 1`,
+          [productId]
+        );
+        selectedProduct = productRows[0] || null;
+        if (!selectedProduct) {
+          return res.status(400).json({ message: "Selected product was not found or is not allowed for auction" });
+        }
       }
 
-      const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+      let shopCategoryId = null;
+      if (shop_category_id != null && shop_category_id !== "") {
+        shopCategoryId = Number(shop_category_id);
+        if (!Number.isInteger(shopCategoryId) || shopCategoryId < 1) {
+          return res.status(400).json({ message: "shop_category_id must be a positive integer when provided" });
+        }
+      } else if (selectedProduct?.category_id) {
+        shopCategoryId = Number(selectedProduct.category_id);
+      }
+
+      if (shopCategoryId) {
+        const [[shopCategory]] = await pool.query("SELECT id FROM categories WHERE id = ? LIMIT 1", [shopCategoryId]);
+        if (!shopCategory) {
+          return res.status(400).json({ message: "Selected shop category was not found" });
+        }
+      }
+
+      const finalName = selectedProduct ? selectedProduct.name : name;
+      const finalDescription = selectedProduct
+        ? (selectedProduct.description || selectedProduct.short_description || description || "")
+        : description;
+      const finalEntry = selectedProduct && Number(selectedProduct.auction_price) > 0
+        ? Math.round(Number(selectedProduct.auction_price))
+        : entry;
+      const imagePath = req.file ? `/uploads/${req.file.filename}` : (selectedProduct?.image_path || null);
 
       const [result] = await pool.query(
         `INSERT INTO auctions
-          (name, description, image, entry_bid_points, minimum_users, category, status, created_by, product_id)
+          (name, description, image, entry_bid_points, minimum_users, category, status, created_by, product_id, shop_category_id)
          VALUES
-          (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
-        [name, description, imagePath, entry, minUsers, category.toLowerCase(), req.user.id, productId]
+          (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
+        [finalName, finalDescription, imagePath, finalEntry, minUsers, category.toLowerCase(), req.user.id, productId, shopCategoryId]
       );
 
       res.status(201).json({
@@ -700,32 +741,68 @@ router.get("/auctions",authenticateToken,authenticateAdmin,
       const params = [];
 
       if (q) {
-        where.push("(name LIKE ? OR description LIKE ?)");
+        where.push("(a.name LIKE ? OR a.description LIKE ?)");
         const term = `%${q}%`;
         params.push(term, term);
       }
       if (category && ["cash", "product", "coupon"].includes(String(category).toLowerCase())) {
-        where.push("category = ?");
+        where.push("a.category = ?");
         params.push(String(category).toLowerCase());
       }
-      if (status && ["pending", "active", "completed", "cancelled"].includes(String(status).toLowerCase())) {
-        where.push("status = ?");
+      if (status && ["pending", "active", "completed", "cancelled", "hold"].includes(String(status).toLowerCase())) {
+        where.push("a.status = ?");
         params.push(String(status).toLowerCase());
       }
 
       const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
       const [[{ total }]] = await pool.query(
-        `SELECT COUNT(*) AS total FROM auctions ${whereSql}`,
+        `SELECT COUNT(*) AS total FROM auctions a ${whereSql}`,
         params
       );
 
       const [rows] = await pool.query(
-        `SELECT id, name, description, image, entry_bid_points, minimum_users,
-                category, status, created_by, created_at, updated_at
-         FROM auctions
+        `SELECT a.id, a.name, a.description, a.image, a.entry_bid_points, a.minimum_users,
+                a.category, a.status, a.current_bid_amount, a.final_price,
+                a.highest_bidder, hb.username AS highest_bidder_username,
+                a.current_bidder, cb.username AS current_bidder_username,
+                a.winner_id, wu.username AS winner_username, wu.email AS winner_email,
+                a.end_date, a.created_by, a.product_id, a.shop_category_id, sc.name AS shop_category_name,
+                p.name AS product_name, p.image_path AS product_image,
+                a.created_at, a.updated_at,
+                (SELECT COUNT(*)
+                   FROM auction_participants ap
+                  WHERE ap.auction_id = a.id) AS participant_count,
+                (SELECT COUNT(DISTINCT abp.user_id)
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id) AS unique_bidders,
+                (SELECT COALESCE(SUM(abp.bid_points), 0)
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id) AS total_bid_points,
+                (SELECT abp.user_id
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id
+                  ORDER BY abp.bid_points DESC, abp.user_id ASC
+                  LIMIT 1) AS top_spender_id,
+                (SELECT u.username
+                   FROM auction_bid_points abp
+                   JOIN users u ON u.id = abp.user_id
+                  WHERE abp.auction_id = a.id
+                  ORDER BY abp.bid_points DESC, abp.user_id ASC
+                  LIMIT 1) AS top_spender_username,
+                (SELECT abp.bid_points
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id
+                  ORDER BY abp.bid_points DESC, abp.user_id ASC
+                  LIMIT 1) AS top_spender_points
+         FROM auctions a
+         LEFT JOIN users hb ON hb.id = a.highest_bidder
+         LEFT JOIN users cb ON cb.id = a.current_bidder
+         LEFT JOIN users wu ON wu.id = a.winner_id
+         LEFT JOIN categories sc ON sc.id = a.shop_category_id
+         LEFT JOIN products p ON p.id = a.product_id
          ${whereSql}
-         ORDER BY id DESC
+         ORDER BY a.id DESC
          LIMIT ? OFFSET ?`,
         [...params, lim, offset]
       );
@@ -733,6 +810,13 @@ router.get("/auctions",authenticateToken,authenticateAdmin,
       const data = rows.map(r => ({
         ...r,
         image_url: absUrl(req, r.image),
+        participant_count: Number(r.participant_count || 0),
+        unique_bidders: Number(r.unique_bidders || 0),
+        total_bid_points: Number(r.total_bid_points || 0),
+        current_bid_amount: Number(r.current_bid_amount || 0),
+        final_price: Number(r.final_price || 0),
+        top_spender_points: Number(r.top_spender_points || 0),
+        product_image_url: absUrl(req, r.product_image),
       }));
 
       res.json({ page: pageNum, limit: lim, total, data });
@@ -751,17 +835,92 @@ router.get("/auctions/:id", authenticateToken, authenticateAdmin, async (req, re
       }
 
       const [rows] = await pool.query(
-        `SELECT id, name, description, image, entry_bid_points, minimum_users,
-                category, status, created_by, created_at, updated_at
-         FROM auctions
-         WHERE id = ? LIMIT 1`,
+        `SELECT a.id, a.name, a.description, a.image, a.entry_bid_points, a.minimum_users,
+                a.category, a.status, a.current_bid_amount, a.final_price,
+                a.highest_bidder, hb.username AS highest_bidder_username,
+                a.current_bidder, cb.username AS current_bidder_username,
+                a.winner_id, wu.username AS winner_username, wu.email AS winner_email,
+                a.end_date, a.created_by, a.product_id, a.shop_category_id, sc.name AS shop_category_name,
+                p.name AS product_name, p.image_path AS product_image,
+                a.created_at, a.updated_at,
+                (SELECT COUNT(*)
+                   FROM auction_participants ap
+                  WHERE ap.auction_id = a.id) AS participant_count,
+                (SELECT COUNT(DISTINCT abp.user_id)
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id) AS unique_bidders,
+                (SELECT COALESCE(SUM(abp.bid_points), 0)
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id) AS total_bid_points,
+                (SELECT abp.user_id
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id
+                  ORDER BY abp.bid_points DESC, abp.user_id ASC
+                  LIMIT 1) AS top_spender_id,
+                (SELECT u.username
+                   FROM auction_bid_points abp
+                   JOIN users u ON u.id = abp.user_id
+                  WHERE abp.auction_id = a.id
+                  ORDER BY abp.bid_points DESC, abp.user_id ASC
+                  LIMIT 1) AS top_spender_username,
+                (SELECT abp.bid_points
+                   FROM auction_bid_points abp
+                  WHERE abp.auction_id = a.id
+                  ORDER BY abp.bid_points DESC, abp.user_id ASC
+                  LIMIT 1) AS top_spender_points
+         FROM auctions a
+         LEFT JOIN users hb ON hb.id = a.highest_bidder
+         LEFT JOIN users cb ON cb.id = a.current_bidder
+         LEFT JOIN users wu ON wu.id = a.winner_id
+         LEFT JOIN categories sc ON sc.id = a.shop_category_id
+         LEFT JOIN products p ON p.id = a.product_id
+         WHERE a.id = ? LIMIT 1`,
         [id]
       );
 
       const auction = rows[0];
       if (!auction) return res.status(404).json({ message: "Auction not found" });
 
+      const [leaderboardRows] = await pool.query(
+        `SELECT abp.user_id, u.username, u.email, abp.bid_points AS total_spent
+           FROM auction_bid_points abp
+           JOIN users u ON u.id = abp.user_id
+          WHERE abp.auction_id = ?
+          ORDER BY abp.bid_points DESC, abp.user_id ASC
+          LIMIT 20`,
+        [id]
+      );
+
+      const [participantRows] = await pool.query(
+        `SELECT ap.user_id, u.username, u.email, ap.joined_at
+           FROM auction_participants ap
+           JOIN users u ON u.id = ap.user_id
+          WHERE ap.auction_id = ?
+          ORDER BY ap.joined_at DESC
+          LIMIT 50`,
+        [id]
+      );
+
       auction.image_url = absUrl(req, auction.image);
+      auction.product_image_url = absUrl(req, auction.product_image);
+      auction.participant_count = Number(auction.participant_count || 0);
+      auction.unique_bidders = Number(auction.unique_bidders || 0);
+      auction.total_bid_points = Number(auction.total_bid_points || 0);
+      auction.current_bid_amount = Number(auction.current_bid_amount || 0);
+      auction.final_price = Number(auction.final_price || 0);
+      auction.top_spender_points = Number(auction.top_spender_points || 0);
+      auction.leaderboard = leaderboardRows.map(r => ({
+        userId: r.user_id,
+        username: r.username,
+        email: r.email,
+        totalSpent: Number(r.total_spent || 0),
+      }));
+      auction.participants = participantRows.map(r => ({
+        userId: r.user_id,
+        username: r.username,
+        email: r.email,
+        joinedAt: r.joined_at,
+      }));
       res.json(auction);
     } catch (err) {
       console.error("admin/auctions get error:", err);
@@ -795,6 +954,8 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
         minimum_users,
         category,
         status,
+        shop_category_id,
+        product_id,
       } = req.body;
 
       const updates = [];
@@ -829,10 +990,62 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
 
       if (status != null) {
         const st = String(status).toLowerCase();
-        if (!["pending", "active", "completed", "cancelled"].includes(st))
-          return res.status(400).json({ message: "Invalid status (pending|active|completed|cancelled)" });
+        if (!["pending", "hold", "active", "completed", "cancelled"].includes(st))
+          return res.status(400).json({ message: "Invalid status (pending|hold|active|completed|cancelled)" });
         updates.push("status = ?");
         params.push(st);
+      }
+
+      if (shop_category_id != null) {
+        if (shop_category_id === "") {
+          updates.push("shop_category_id = NULL");
+        } else {
+          const shopCategoryId = Number(shop_category_id);
+          if (!Number.isInteger(shopCategoryId) || shopCategoryId < 1) {
+            return res.status(400).json({ message: "shop_category_id must be a positive integer when provided" });
+          }
+          const [[shopCategory]] = await conn.query("SELECT id FROM categories WHERE id = ? LIMIT 1", [shopCategoryId]);
+          if (!shopCategory) {
+            return res.status(400).json({ message: "Selected shop category was not found" });
+          }
+          updates.push("shop_category_id = ?");
+          params.push(shopCategoryId);
+        }
+      }
+
+      if (product_id != null) {
+        let productId = 0;
+        let selectedProduct = null;
+        if (product_id !== "") {
+          productId = Number(product_id);
+          if (!Number.isInteger(productId) || productId < 1) {
+            return res.status(400).json({ message: "product_id must be a positive integer when provided" });
+          }
+          const [productRows] = await conn.query(
+            `SELECT p.id,
+                    (SELECT pc.category_id
+                       FROM product_categories pc
+                      WHERE pc.product_id = p.id
+                      ORDER BY pc.category_id ASC
+                      LIMIT 1) AS category_id
+               FROM products p
+              WHERE p.id = ? AND p.allow_auction = 1
+              LIMIT 1`,
+            [productId]
+          );
+          selectedProduct = productRows[0] || null;
+          if (!selectedProduct) {
+            return res.status(400).json({ message: "Selected product was not found or is not allowed for auction" });
+          }
+        }
+
+        updates.push("product_id = ?");
+        params.push(productId);
+
+        if (selectedProduct?.category_id && shop_category_id == null) {
+          updates.push("shop_category_id = ?");
+          params.push(Number(selectedProduct.category_id));
+        }
       }
 
       let newImagePath = null;
@@ -866,7 +1079,7 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
       // return updated row
       const [rows] = await conn.query(
         `SELECT id, name, description, image, entry_bid_points, minimum_users,
-                category, status, created_by, created_at, updated_at
+                category, status, product_id, shop_category_id, created_by, created_at, updated_at
          FROM auctions
          WHERE id = ? LIMIT 1`,
         [id]
@@ -2652,6 +2865,7 @@ router.get("/products", authenticateToken, authenticateAdmin, async (req, res) =
 
         -- ✅ ADD THIS
         p.is_featured,
+        p.allow_auction,
 
         GROUP_CONCAT(DISTINCT c.name ORDER BY c.name SEPARATOR ', ') AS categories,
 
@@ -2673,6 +2887,7 @@ router.get("/products", authenticateToken, authenticateAdmin, async (req, res) =
         ...r,
         // ensure 0/1 number (safe)
         is_featured: Number(r.is_featured) ? 1 : 0,
+        allow_auction: Number(r.allow_auction) ? 1 : 0,
         image_url: absUrl(req, r.image_path),
       }))
     );

@@ -29,6 +29,16 @@ function fmtDate(d) {
     return String(d);
   }
 }
+function textOrDash(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  return String(v);
+}
+function coinText(v) {
+  return `${fmtNum(v)} coins`;
+}
+function firstCategoryName(product) {
+  return String(product?.categories || "").split(",").map((x) => x.trim()).filter(Boolean)[0] || "";
+}
 function isFile(x) {
   return x && typeof x === "object" && "name" in x && "size" in x;
 }
@@ -53,6 +63,8 @@ export default function AdminAuction() {
   const [aLoading, setALoading] = React.useState(true);
   const [auctions, setAuctions] = React.useState([]);
   const [aTotal, setATotal] = React.useState(0);
+  const [shopCategories, setShopCategories] = React.useState([]);
+  const [auctionProducts, setAuctionProducts] = React.useState([]);
 
   // auction list filters
   const [aq, setAQ] = React.useState("");
@@ -91,6 +103,29 @@ export default function AdminAuction() {
     if (tab === "auctions") loadAuctions();
   }, [tab, loadAuctions]);
 
+  React.useEffect(() => {
+    if (tab !== "auctions") return;
+    let alive = true;
+    const loadAuctionRefs = async () => {
+      try {
+        const [catsRes, productsRes] = await Promise.all([
+          api.get("/admin/categories"),
+          api.get("/admin/products"),
+        ]);
+        if (!alive) return;
+        setShopCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
+        const products = Array.isArray(productsRes.data) ? productsRes.data : [];
+        setAuctionProducts(products.filter((p) => safeNum(p.allow_auction, 1) === 1));
+      } catch (e) {
+        console.error("load auction refs error:", e);
+      }
+    };
+    loadAuctionRefs();
+    return () => {
+      alive = false;
+    };
+  }, [tab]);
+
   // reset page on filter changes
   React.useEffect(() => {
     setAPage(1);
@@ -104,6 +139,8 @@ export default function AdminAuction() {
   const [cEntry, setCEntry] = React.useState(0);
   const [cMinUsers, setCMinUsers] = React.useState(1);
   const [cCategory, setCCategory] = React.useState("cash");
+  const [cShopCategoryId, setCShopCategoryId] = React.useState("");
+  const [cProductId, setCProductId] = React.useState("");
   const [cImage, setCImage] = React.useState(null);
   const [cSaving, setCSaving] = React.useState(false);
 
@@ -113,7 +150,22 @@ export default function AdminAuction() {
     setCEntry(0);
     setCMinUsers(1);
     setCCategory("cash");
+    setCShopCategoryId("");
+    setCProductId("");
     setCImage(null);
+  };
+
+  const applyCreateProduct = (productId) => {
+    setCProductId(productId);
+    const product = auctionProducts.find((p) => String(p.id) === String(productId));
+    if (!product) return;
+    setCName(product.name || "");
+    setCDesc(product.description || product.short_description || "");
+    setCEntry(Math.round(safeNum(product.auction_price, 0)));
+    setCCategory("product");
+    const catName = firstCategoryName(product);
+    const category = shopCategories.find((c) => String(c.name).toLowerCase() === catName.toLowerCase());
+    setCShopCategoryId(category ? String(category.id) : "");
   };
 
   const submitCreate = async () => {
@@ -134,6 +186,8 @@ export default function AdminAuction() {
       fd.append("entry_bid_points", String(entry));
       fd.append("minimum_users", String(minUsers));
       fd.append("category", String(cCategory).toLowerCase());
+      if (cShopCategoryId) fd.append("shop_category_id", String(cShopCategoryId));
+      if (cProductId) fd.append("product_id", String(cProductId));
       if (cImage && isFile(cImage)) fd.append("image", cImage);
 
       await api.post("/admin/auctions", fd, {
@@ -166,6 +220,8 @@ export default function AdminAuction() {
   const [eEntry, setEEntry] = React.useState(0);
   const [eMinUsers, setEMinUsers] = React.useState(1);
   const [eCategory, setECategory] = React.useState("cash");
+  const [eShopCategoryId, setEShopCategoryId] = React.useState("");
+  const [eProductId, setEProductId] = React.useState("");
   const [eStatus, setEStatus] = React.useState("pending");
   const [eImage, setEImage] = React.useState(null);
   const [ePreview, setEPreview] = React.useState("");
@@ -188,6 +244,8 @@ export default function AdminAuction() {
       setEEntry(safeNum(a.entry_bid_points, 0));
       setEMinUsers(safeNum(a.minimum_users, 1));
       setECategory(a.category || "cash");
+      setEShopCategoryId(a.shop_category_id ? String(a.shop_category_id) : "");
+      setEProductId(safeNum(a.product_id, 0) > 0 ? String(a.product_id) : "");
       setEStatus(a.status || "pending");
       setEPreview(a.image_url || "");
     } catch (e) {
@@ -204,6 +262,21 @@ export default function AdminAuction() {
     setEditId(null);
     setEImage(null);
     setEPreview("");
+  };
+
+  const applyEditProduct = (productId) => {
+    setEProductId(productId);
+    if (!productId) return;
+    const product = auctionProducts.find((p) => String(p.id) === String(productId));
+    if (!product) return;
+    setEName(product.name || "");
+    setEDesc(product.description || product.short_description || "");
+    setEEntry(Math.round(safeNum(product.auction_price, 0)));
+    setECategory("product");
+    setEPreview(product.image_url || "");
+    const catName = firstCategoryName(product);
+    const category = shopCategories.find((c) => String(c.name).toLowerCase() === catName.toLowerCase());
+    if (category) setEShopCategoryId(String(category.id));
   };
 
   const submitEdit = async () => {
@@ -228,6 +301,8 @@ export default function AdminAuction() {
       fd.append("entry_bid_points", String(entry));
       fd.append("minimum_users", String(minUsers));
       fd.append("category", String(eCategory).toLowerCase());
+      fd.append("shop_category_id", eShopCategoryId ? String(eShopCategoryId) : "");
+      fd.append("product_id", eProductId ? String(eProductId) : "");
       fd.append("status", String(eStatus).toLowerCase());
       if (eImage && isFile(eImage)) fd.append("image", eImage);
 
@@ -507,7 +582,7 @@ export default function AdminAuction() {
                 value={acategory}
                 onChange={(e) => setACategory(e.target.value)}
               >
-                <option value="">All Categories</option>
+                <option value="">All Auction Types</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -603,6 +678,48 @@ export default function AdminAuction() {
                           {a.description ? a.description : <span className={styles.muted}>No description</span>}
                         </div>
 
+                        <div className={styles.auctionStatsGrid}>
+                          <div className={styles.auctionStat}>
+                            <span>Joined users</span>
+                            <b>{fmtNum(a.participant_count)}</b>
+                          </div>
+                          <div className={styles.auctionStat}>
+                            <span>Unique bidders</span>
+                            <b>{fmtNum(a.unique_bidders)}</b>
+                          </div>
+                          <div className={styles.auctionStat}>
+                            <span>Total bid</span>
+                            <b>{coinText(a.total_bid_points)}</b>
+                          </div>
+                          <div className={styles.auctionStat}>
+                            <span>Current bid</span>
+                            <b>{coinText(a.current_bid_amount)}</b>
+                          </div>
+                        </div>
+
+                        <div className={styles.auctionInfoGrid}>
+                          <div className={styles.auctionInfoBox}>
+                            <span>Winner</span>
+                            <b>{textOrDash(a.winner_username)}</b>
+                            {a.winner_email ? <small>{a.winner_email}</small> : null}
+                          </div>
+                          <div className={styles.auctionInfoBox}>
+                            <span>Highest bidder</span>
+                            <b>{textOrDash(a.highest_bidder_username)}</b>
+                            {a.highest_bidder ? <small>User #{a.highest_bidder}</small> : null}
+                          </div>
+                          <div className={styles.auctionInfoBox}>
+                            <span>Top spender</span>
+                            <b>{textOrDash(a.top_spender_username)}</b>
+                            <small>{coinText(a.top_spender_points)}</small>
+                          </div>
+                          <div className={styles.auctionInfoBox}>
+                            <span>Current bidder</span>
+                            <b>{textOrDash(a.current_bidder_username)}</b>
+                            {a.current_bidder ? <small>User #{a.current_bidder}</small> : null}
+                          </div>
+                        </div>
+
                         <div className={styles.metaRow}>
                           <div className={styles.meta}>
                             Entry: <b>{fmtNum(a.entry_bid_points)}</b>
@@ -614,6 +731,19 @@ export default function AdminAuction() {
 
                         <div className={styles.metaRow}>
                           <div className={styles.meta}>Created: {fmtDate(a.created_at)}</div>
+                          <div className={styles.meta}>Ends: {fmtDate(a.end_date)}</div>
+                          <div className={styles.meta}>Final price: <b>{coinText(a.final_price)}</b></div>
+                          <div className={styles.meta}>
+                            Product: <b>{safeNum(a.product_id) > 0 ? `#${a.product_id}` : "Standalone"}</b>
+                          </div>
+                          <div className={styles.meta}>
+                            Shop category: <b>{textOrDash(a.shop_category_name)}</b>
+                          </div>
+                          {a.product_name ? (
+                            <div className={styles.meta}>
+                              Product name: <b>{a.product_name}</b>
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className={styles.actionsRow}>
@@ -917,6 +1047,22 @@ export default function AdminAuction() {
             <div className={styles.modalBody}>
               <div className={styles.formGrid}>
                 <div className={styles.formFieldFull}>
+                  <label className={styles.label}>Use Existing Product</label>
+                  <select
+                    className={styles.select}
+                    value={cProductId}
+                    onChange={(e) => applyCreateProduct(e.target.value)}
+                  >
+                    <option value="">Standalone auction</option>
+                    {auctionProducts.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        #{p.id} - {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formFieldFull}>
                   <label className={styles.label}>Name *</label>
                   <input className={styles.input} value={cName} onChange={(e) => setCName(e.target.value)} />
                 </div>
@@ -956,11 +1102,27 @@ export default function AdminAuction() {
                 </div>
 
                 <div className={styles.formField}>
-                  <label className={styles.label}>Category *</label>
+                  <label className={styles.label}>Auction Type *</label>
                   <select className={styles.select} value={cCategory} onChange={(e) => setCCategory(e.target.value)}>
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
                         {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.label}>Shop Category</label>
+                  <select
+                    className={styles.select}
+                    value={cShopCategoryId}
+                    onChange={(e) => setCShopCategoryId(e.target.value)}
+                  >
+                    <option value="">No shop category</option>
+                    {shopCategories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
                       </option>
                     ))}
                   </select>
@@ -1032,6 +1194,22 @@ export default function AdminAuction() {
 
                   <div className={styles.formGrid}>
                     <div className={styles.formFieldFull}>
+                      <label className={styles.label}>Use Existing Product</label>
+                      <select
+                        className={styles.select}
+                        value={eProductId}
+                        onChange={(e) => applyEditProduct(e.target.value)}
+                      >
+                        <option value="">Standalone auction</option>
+                        {auctionProducts.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            #{p.id} - {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className={styles.formFieldFull}>
                       <label className={styles.label}>Name</label>
                       <input className={styles.input} value={eName} onChange={(e) => setEName(e.target.value)} />
                     </div>
@@ -1071,11 +1249,27 @@ export default function AdminAuction() {
                     </div>
 
                     <div className={styles.formField}>
-                      <label className={styles.label}>Category</label>
+                      <label className={styles.label}>Auction Type</label>
                       <select className={styles.select} value={eCategory} onChange={(e) => setECategory(e.target.value)}>
                         {CATEGORIES.map((c) => (
                           <option key={c} value={c}>
                             {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className={styles.formField}>
+                      <label className={styles.label}>Shop Category</label>
+                      <select
+                        className={styles.select}
+                        value={eShopCategoryId}
+                        onChange={(e) => setEShopCategoryId(e.target.value)}
+                      >
+                        <option value="">No shop category</option>
+                        {shopCategories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
