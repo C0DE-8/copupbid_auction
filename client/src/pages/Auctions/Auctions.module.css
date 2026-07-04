@@ -130,11 +130,18 @@
 }
 
 .auctionCard {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 520px;
   overflow: hidden;
   border-radius: 18px;
   background: #fff;
   border: 1px solid rgba(36, 28, 54, 0.08);
   box-shadow: 0 18px 44px rgba(48, 38, 83, 0.08);
+}
+
+.auctionCard.hasCountdown {
+  min-height: 620px;
 }
 
 .cardImageButton {
@@ -195,8 +202,10 @@
 
 .cardBody {
   display: grid;
+  grid-template-rows: minmax(112px, auto) auto minmax(0, auto) auto;
   gap: 12px;
   padding: 14px;
+  height: 100%;
 }
 
 .cardBody h2 {
@@ -205,6 +214,11 @@
   font-size: 17px;
   line-height: 1.2;
   font-weight: 950;
+  display: -webkit-box;
+  min-height: 41px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .cardBody p {
@@ -212,12 +226,19 @@
   color: #6d657a;
   font-size: 13px;
   line-height: 1.45;
+  display: -webkit-box;
+  min-height: 38px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .cardStats {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-content: start;
+  min-height: 34px;
 }
 
 .cardStats span {
@@ -232,6 +253,40 @@
   font-weight: 900;
 }
 
+.cardStartCountdown {
+  align-self: start;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 169, 157, 0.16);
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 184, 77, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(0, 169, 157, 0.09), rgba(247, 244, 251, 0.96));
+  padding: 10px;
+  min-height: 112px;
+}
+
+.cardStartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cardStartHeader span {
+  color: #008f85;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cardStartHeader strong {
+  color: #241d33;
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
 .cardActions,
 .roomActions,
 .roomTopbar,
@@ -240,6 +295,10 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+}
+
+.cardActions {
+  align-self: end;
 }
 
 .roomActions {
@@ -470,7 +529,7 @@
   background:
     radial-gradient(circle at 86% 18%, rgba(255, 184, 77, 0.18), transparent 34%),
     linear-gradient(135deg, rgba(0, 169, 157, 0.1), rgba(255, 255, 255, 0.94));
-  padding: 14px;
+  padding: 16px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
@@ -513,18 +572,15 @@
 .flipCard {
   position: relative;
   width: 100%;
-  min-height: 78px;
+  height: 86px;
   border-radius: 15px;
-  display: grid;
-  place-items: center;
   overflow: hidden;
   color: #ffffff;
-  background:
-    linear-gradient(180deg, rgba(36, 29, 51, 0.96), rgba(17, 14, 25, 0.98));
+  perspective: 420px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 2px 5px rgba(0, 0, 0, 0.42),
     0 18px 34px rgba(36, 29, 51, 0.18);
+  background: #241d33;
 }
 
 .flipCard::before,
@@ -538,27 +594,129 @@
 
 .flipCard::before {
   top: 50%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.48);
-  z-index: 2;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.52);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+  z-index: 7;
 }
 
 .flipCard::after {
-  top: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  z-index: 8;
 }
 
-.flipNumber {
-  position: relative;
+.flipSheet,
+.flipBefore,
+.flipActive {
+  position: absolute;
+  inset: 0;
+}
+
+.flipSheet {
   z-index: 1;
+}
+
+.flipBefore {
+  z-index: 3;
+}
+
+.flipActive {
+  z-index: 2;
+  animation: flipLayerForward 720ms ease-out both;
+}
+
+.flipPane {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  background: #2f2840;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.flipPaneUp {
+  top: 0;
+  transform-origin: 50% 100%;
+  border-radius: 15px 15px 0 0;
+}
+
+.flipPaneUp::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.34);
+  z-index: 4;
+}
+
+.flipPaneDown {
+  bottom: 0;
+  transform-origin: 50% 0%;
+  border-radius: 0 0 15px 15px;
+}
+
+.flipInn {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f7f4fb;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82);
   font-size: clamp(30px, 5vw, 48px);
   line-height: 1;
   font-weight: 950;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
-  animation: flipTick 420ms ease both;
+  background:
+    linear-gradient(180deg, rgba(48, 39, 66, 1), rgba(22, 18, 31, 1));
+}
+
+.flipPaneUp .flipInn {
+  top: 0;
+}
+
+.flipPaneDown .flipInn {
+  bottom: 0;
+}
+
+.flipShadow {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.flipCardActive .flipBefore .flipPaneUp {
+  z-index: 4;
+  animation: flipTurnTop 360ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.flipCardActive .flipActive .flipPaneDown {
+  z-index: 4;
+  animation: flipTurnBottom 360ms 360ms cubic-bezier(0.22, 0.78, 0.22, 1) both;
+}
+
+.flipCardActive .flipBefore .flipPaneUp .flipShadow,
+.flipCardActive .flipBefore .flipPaneDown .flipShadow {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.9));
+  animation: flipShadowShow 360ms ease-out both;
+}
+
+.flipCardActive .flipActive .flipPaneUp .flipShadow,
+.flipCardActive .flipActive .flipPaneDown .flipShadow {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.08));
+  animation: flipShadowHide 360ms 220ms ease-out both;
 }
 
 .flipLabel {
@@ -576,16 +734,75 @@
   font-weight: 950;
 }
 
-@keyframes flipTick {
+.compactFlipClock {
+  gap: 5px;
+}
+
+.compactFlipClock .flipUnit {
+  gap: 4px;
+}
+
+.compactFlipClock .flipCard {
+  height: 42px;
+  border-radius: 10px;
+}
+
+.compactFlipClock .flipInn {
+  font-size: 18px;
+}
+
+.compactFlipClock .flipLabel {
+  font-size: 8px;
+}
+
+.compactFlipClock .flipSep {
+  padding-top: 10px;
+  font-size: 15px;
+}
+
+@keyframes flipLayerForward {
+  0% {
+    z-index: 2;
+  }
+  5%,
+  100% {
+    z-index: 5;
+  }
+}
+
+@keyframes flipTurnTop {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes flipTurnBottom {
+  0% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+@keyframes flipShadowShow {
   0% {
     opacity: 0;
-    transform: rotateX(-82deg) translateY(-6px);
-    filter: blur(1px);
   }
   100% {
     opacity: 1;
-    transform: rotateX(0deg) translateY(0);
-    filter: blur(0);
+  }
+}
+
+@keyframes flipShadowHide {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
@@ -747,13 +964,23 @@
     padding-top: 82px;
   }
 
+  .auctionCard,
+  .auctionCard.hasCountdown {
+    min-height: 0;
+  }
+
   .auctionGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
   .cardBody {
+    grid-template-rows: auto auto auto auto;
     padding: 11px;
+  }
+
+  .cardStartCountdown {
+    min-height: 0;
   }
 
   .cardBody h2 {
@@ -827,12 +1054,16 @@
   }
 
   .flipCard {
-    min-height: 66px;
+    height: 70px;
     border-radius: 13px;
   }
 
-  .flipNumber {
+  .flipInn {
     font-size: 28px;
+  }
+
+  .compactFlipClock .flipInn {
+    font-size: 18px;
   }
 
   .flipSep {

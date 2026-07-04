@@ -36,6 +36,13 @@ function textOrDash(v) {
 function coinText(v) {
   return `${fmtNum(v)} coins`;
 }
+function toDateTimeLocalValue(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 function firstCategoryName(product) {
   return String(product?.categories || "").split(",").map((x) => x.trim()).filter(Boolean)[0] || "";
 }
@@ -141,6 +148,7 @@ export default function AdminAuction() {
   const [cCategory, setCCategory] = React.useState("cash");
   const [cShopCategoryId, setCShopCategoryId] = React.useState("");
   const [cProductId, setCProductId] = React.useState("");
+  const [cScheduledStartAt, setCScheduledStartAt] = React.useState("");
   const [cImage, setCImage] = React.useState(null);
   const [cSaving, setCSaving] = React.useState(false);
 
@@ -152,6 +160,7 @@ export default function AdminAuction() {
     setCCategory("cash");
     setCShopCategoryId("");
     setCProductId("");
+    setCScheduledStartAt("");
     setCImage(null);
   };
 
@@ -188,6 +197,7 @@ export default function AdminAuction() {
       fd.append("category", String(cCategory).toLowerCase());
       if (cShopCategoryId) fd.append("shop_category_id", String(cShopCategoryId));
       if (cProductId) fd.append("product_id", String(cProductId));
+      if (cScheduledStartAt) fd.append("scheduled_start_at", cScheduledStartAt);
       if (cImage && isFile(cImage)) fd.append("image", cImage);
 
       await api.post("/admin/auctions", fd, {
@@ -222,6 +232,7 @@ export default function AdminAuction() {
   const [eCategory, setECategory] = React.useState("cash");
   const [eShopCategoryId, setEShopCategoryId] = React.useState("");
   const [eProductId, setEProductId] = React.useState("");
+  const [eScheduledStartAt, setEScheduledStartAt] = React.useState("");
   const [eStatus, setEStatus] = React.useState("pending");
   const [eImage, setEImage] = React.useState(null);
   const [ePreview, setEPreview] = React.useState("");
@@ -246,6 +257,7 @@ export default function AdminAuction() {
       setECategory(a.category || "cash");
       setEShopCategoryId(a.shop_category_id ? String(a.shop_category_id) : "");
       setEProductId(safeNum(a.product_id, 0) > 0 ? String(a.product_id) : "");
+      setEScheduledStartAt(toDateTimeLocalValue(a.scheduled_start_at));
       setEStatus(a.status || "pending");
       setEPreview(a.image_url || "");
     } catch (e) {
@@ -262,6 +274,7 @@ export default function AdminAuction() {
     setEditId(null);
     setEImage(null);
     setEPreview("");
+    setEScheduledStartAt("");
   };
 
   const applyEditProduct = (productId) => {
@@ -303,6 +316,7 @@ export default function AdminAuction() {
       fd.append("category", String(eCategory).toLowerCase());
       fd.append("shop_category_id", eShopCategoryId ? String(eShopCategoryId) : "");
       fd.append("product_id", eProductId ? String(eProductId) : "");
+      fd.append("scheduled_start_at", eScheduledStartAt || "");
       fd.append("status", String(eStatus).toLowerCase());
       if (eImage && isFile(eImage)) fd.append("image", eImage);
 
@@ -737,6 +751,9 @@ export default function AdminAuction() {
                             Product: <b>{safeNum(a.product_id) > 0 ? `#${a.product_id}` : "Standalone"}</b>
                           </div>
                           <div className={styles.meta}>
+                            Scheduled hold: <b>{fmtDate(a.scheduled_start_at)}</b>
+                          </div>
+                          <div className={styles.meta}>
                             Shop category: <b>{textOrDash(a.shop_category_name)}</b>
                           </div>
                           {a.product_name ? (
@@ -1129,6 +1146,16 @@ export default function AdminAuction() {
                 </div>
 
                 <div className={styles.formField}>
+                  <label className={styles.label}>Schedule Hold Time</label>
+                  <input
+                    className={styles.input}
+                    type="datetime-local"
+                    value={cScheduledStartAt}
+                    onChange={(e) => setCScheduledStartAt(e.target.value)}
+                  />
+                </div>
+
+                <div className={styles.formField}>
                   <label className={styles.label}>Image</label>
                   <input
                     className={styles.input}
@@ -1273,6 +1300,16 @@ export default function AdminAuction() {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div className={styles.formField}>
+                      <label className={styles.label}>Schedule Hold Time</label>
+                      <input
+                        className={styles.input}
+                        type="datetime-local"
+                        value={eScheduledStartAt}
+                        onChange={(e) => setEScheduledStartAt(e.target.value)}
+                      />
                     </div>
 
                     <div className={styles.formField}>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiRefreshCw, FiSearch, FiUsers } from "react-icons/fi";
 import { Gavel, ShieldCheck, Trophy, WalletCards } from "lucide-react";
@@ -37,6 +37,13 @@ function formatTime(seconds) {
   return `${mins}:${String(secs).padStart(2, "0")}`;
 }
 
+function secondsUntil(value, now = Date.now()) {
+  if (!value) return 0;
+  const target = new Date(String(value).replace(" ", "T")).getTime();
+  if (!Number.isFinite(target)) return 0;
+  return Math.max(0, Math.floor((target - now) / 1000));
+}
+
 function getCountdownParts(seconds) {
   const total = Math.max(0, Number(seconds) || 0);
   const hours = Math.floor(total / 3600);
@@ -49,20 +56,77 @@ function getCountdownParts(seconds) {
   };
 }
 
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}
+
 function FlipUnit({ value, label }) {
+  const previous = usePrevious(value);
+  const changed = previous !== value && previous !== undefined;
+
   return (
     <div className={styles.flipUnit}>
-      <div className={styles.flipCard} aria-hidden="true">
-        <span key={value} className={styles.flipNumber}>{value}</span>
+      <div className={`${styles.flipCard} ${changed ? styles.flipCardActive : ""}`} aria-hidden="true">
+        <div className={styles.flipSheet}>
+          <div className={`${styles.flipPane} ${styles.flipPaneUp}`}>
+            <span className={styles.flipInn}>{value}</span>
+          </div>
+          <div className={`${styles.flipPane} ${styles.flipPaneDown}`}>
+            <span className={styles.flipInn}>{value}</span>
+          </div>
+        </div>
+
+        {changed ? (
+          <div key={`${label}-${previous}-before`} className={styles.flipBefore}>
+            <div className={`${styles.flipPane} ${styles.flipPaneUp}`}>
+              <span className={styles.flipShadow} />
+              <span className={styles.flipInn}>{previous}</span>
+            </div>
+            <div className={`${styles.flipPane} ${styles.flipPaneDown}`}>
+              <span className={styles.flipShadow} />
+              <span className={styles.flipInn}>{previous}</span>
+            </div>
+          </div>
+        ) : null}
+
+        {changed ? (
+          <div key={`${label}-${value}-active`} className={styles.flipActive}>
+            <div className={`${styles.flipPane} ${styles.flipPaneUp}`}>
+              <span className={styles.flipShadow} />
+              <span className={styles.flipInn}>{value}</span>
+            </div>
+            <div className={`${styles.flipPane} ${styles.flipPaneDown}`}>
+              <span className={styles.flipShadow} />
+              <span className={styles.flipInn}>{value}</span>
+            </div>
+          </div>
+        ) : null}
       </div>
       <span className={styles.flipLabel}>{label}</span>
     </div>
   );
 }
 
+function CountdownClock({ seconds, compact = false }) {
+  const parts = getCountdownParts(seconds);
+  return (
+    <div className={`${styles.flipClock} ${compact ? styles.compactFlipClock : ""}`}>
+      <FlipUnit value={parts.hours} label="Hours" />
+      <span className={styles.flipSep}>:</span>
+      <FlipUnit value={parts.minutes} label="Minutes" />
+      <span className={styles.flipSep}>:</span>
+      <FlipUnit value={parts.seconds} label="Seconds" />
+    </div>
+  );
+}
+
 function formatDate(value) {
   if (!value) return "Not set";
-  const date = new Date(value);
+  const date = new Date(String(value).replace(" ", "T"));
   if (Number.isNaN(date.getTime())) return "Not set";
   return date.toLocaleDateString(undefined, {
     year: "numeric",
@@ -95,6 +159,7 @@ export default function Auctions() {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [displaySeconds, setDisplaySeconds] = useState(0);
+  const [nowTick, setNowTick] = useState(Date.now());
 
   const loadProfile = useCallback(async () => {
     try {
@@ -166,7 +231,19 @@ export default function Auctions() {
   const isJoined = Boolean(stats?.isJoined || selectedAuction?.isJoined || selectedAuction?.is_joined);
   const entryOpen = selectedAuction ? ["pending", "active", "hold"].includes(selectedAuction.status) : false;
   const canBid = selectedAuction?.status === "active" && isJoined;
-  const countdownParts = getCountdownParts(displaySeconds);
+  const scheduledStartAt = selectedAuction?.scheduled_start_at || stats?.scheduled_start_at || stats?.scheduledStartAt;
+  const scheduledStartSeconds = secondsUntil(scheduledStartAt, nowTick);
+  const showScheduledStart = selectedAuction?.status === "pending" && scheduledStartSeconds > 0;
+  const clockSeconds = showScheduledStart ? scheduledStartSeconds : displaySeconds;
+  const detailTimerLabel = showScheduledStart
+    ? "Auction start in"
+    : selectedAuction?.status === "active"
+      ? "Live countdown"
+      : selectedAuction?.status === "hold"
+        ? "Ready for admin start"
+        : selectedAuction?.status === "completed"
+          ? "Auction ended"
+          : "Auction timer";
   const topBidder =
     stats?.leaderboard?.[0] ||
     (stats?.highestSpender
@@ -187,6 +264,11 @@ export default function Auctions() {
     }, 1000);
     return () => window.clearInterval(timer);
   }, [auctionId]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function refreshAll() {
     setLoading(true);
@@ -230,9 +312,13 @@ export default function Auctions() {
     const joined = Boolean(auction.is_joined || auction.isJoined);
     const cardEntryOpen = ["pending", "active", "hold"].includes(auction.status);
     const image = getAuctionImage(auction);
+    const cardStartSeconds = auction.status === "pending"
+      ? secondsUntil(auction.scheduled_start_at, nowTick)
+      : 0;
+    const showCardCountdown = cardStartSeconds > 0;
 
     return (
-      <article className={styles.auctionCard} key={auction.id}>
+      <article className={`${styles.auctionCard} ${showCardCountdown ? styles.hasCountdown : ""}`} key={auction.id}>
         <button
           type="button"
           className={styles.cardImageButton}
@@ -259,6 +345,16 @@ export default function Auctions() {
             <span><WalletCards size={15} /> {formatCoins(auction.entry_bid_points)} entry</span>
             <span><FiUsers /> {formatCoins(auction.participant_count)} joined</span>
           </div>
+
+          {showCardCountdown ? (
+            <div className={styles.cardStartCountdown}>
+              <div className={styles.cardStartHeader}>
+                <span>Auction start in</span>
+                <strong>{formatTime(cardStartSeconds)}</strong>
+              </div>
+              <CountdownClock seconds={cardStartSeconds} compact />
+            </div>
+          ) : null}
 
           <div className={styles.cardActions}>
             <button type="button" onClick={() => navigate(`/auctions/${auction.id}`)}>
@@ -364,16 +460,10 @@ export default function Auctions() {
 
                       <div className={styles.countdownModule} aria-label="Auction countdown">
                         <div className={styles.countdownHeader}>
-                          <span>{selectedAuction.status === "active" ? "Live countdown" : "Auction timer"}</span>
-                          <strong>{displaySeconds > 0 ? formatTime(displaySeconds) : "0:00"}</strong>
+                          <span>{detailTimerLabel}</span>
+                          <strong>{clockSeconds > 0 ? formatTime(clockSeconds) : "0:00"}</strong>
                         </div>
-                        <div className={styles.flipClock}>
-                          <FlipUnit value={countdownParts.hours} label="Hours" />
-                          <span className={styles.flipSep}>:</span>
-                          <FlipUnit value={countdownParts.minutes} label="Minutes" />
-                          <span className={styles.flipSep}>:</span>
-                          <FlipUnit value={countdownParts.seconds} label="Seconds" />
-                        </div>
+                        <CountdownClock seconds={clockSeconds} />
                       </div>
 
                       <div className={styles.liveStats}>

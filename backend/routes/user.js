@@ -240,7 +240,7 @@ router.get("/auctions",authenticateToken,
 
       const [rows] = await pool.query(
         `SELECT id, name, description, image, entry_bid_points, minimum_users,
-                category, status, created_by, created_at, updated_at,
+                category, status, scheduled_start_at, created_by, created_at, updated_at,
                 (SELECT COUNT(*) FROM auction_participants ap WHERE ap.auction_id = auctions.id) AS participant_count,
                 EXISTS(
                   SELECT 1 FROM auction_participants ap
@@ -248,7 +248,15 @@ router.get("/auctions",authenticateToken,
                 ) AS is_joined
          FROM auctions
          ${whereSql}
-         ORDER BY id DESC
+         ORDER BY CASE status
+                    WHEN 'hold' THEN 0
+                    WHEN 'active' THEN 1
+                    WHEN 'pending' THEN 2
+                    WHEN 'cancelled' THEN 3
+                    WHEN 'completed' THEN 4
+                    ELSE 5
+                  END,
+                  id DESC
          LIMIT ? OFFSET ?`,
         [req.user.id, ...params, lim, offset]
       );
@@ -627,6 +635,8 @@ router.get("/:id/stats", authenticateToken, async (req, res) => {
       minimumUsers: a.minimum_users,
       image: absUrl(req, a.image),
       endDate: a.end_date, // server time (MySQL DATETIME)
+      scheduledStartAt: a.scheduled_start_at,
+      scheduled_start_at: a.scheduled_start_at,
       remainingSeconds,
       participants,
       isJoined: Boolean(myParticipation.joined),

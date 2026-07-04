@@ -57,6 +57,15 @@ function toFsPath(webPath) {
   return path.join(__dirname, "..", webPath.replace(/^\//, ""));
 }
 
+function parseMysqlDateTimeInput(value) {
+  if (value == null || value === "") return null;
+  const raw = String(value).trim();
+  const local = moment(raw, ["YYYY-MM-DDTHH:mm", "YYYY-MM-DDTHH:mm:ss", "YYYY-MM-DD HH:mm:ss"], true);
+  if (local.isValid()) return local.format("YYYY-MM-DD HH:mm:ss");
+  const parsed = moment(raw);
+  return parsed.isValid() ? parsed.format("YYYY-MM-DD HH:mm:ss") : false;
+}
+
 const ALLOWED_STATUS = new Set([
   "processing",
   "packed",
@@ -636,7 +645,7 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
   upload.single("image"),
   async (req, res) => {
     try {
-      const { name, description = "", entry_bid_points, minimum_users, category, product_id, shop_category_id } = req.body;
+      const { name, description = "", entry_bid_points, minimum_users, category, product_id, shop_category_id, scheduled_start_at } = req.body;
 
       // Basic validation
       if (!name || entry_bid_points == null || minimum_users == null || !category) {
@@ -699,6 +708,11 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
         }
       }
 
+      const scheduledStartAt = parseMysqlDateTimeInput(scheduled_start_at);
+      if (scheduledStartAt === false) {
+        return res.status(400).json({ message: "scheduled_start_at must be a valid date and time" });
+      }
+
       const finalName = selectedProduct ? selectedProduct.name : name;
       const finalDescription = selectedProduct
         ? (selectedProduct.description || selectedProduct.short_description || description || "")
@@ -710,10 +724,10 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
 
       const [result] = await pool.query(
         `INSERT INTO auctions
-          (name, description, image, entry_bid_points, minimum_users, category, status, created_by, product_id, shop_category_id)
+          (name, description, image, entry_bid_points, minimum_users, category, status, created_by, product_id, shop_category_id, scheduled_start_at)
          VALUES
-          (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
-        [finalName, finalDescription, imagePath, finalEntry, minUsers, category.toLowerCase(), req.user.id, productId, shopCategoryId]
+          (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)`,
+        [finalName, finalDescription, imagePath, finalEntry, minUsers, category.toLowerCase(), req.user.id, productId, shopCategoryId, scheduledStartAt]
       );
 
       res.status(201).json({
@@ -769,7 +783,7 @@ router.get("/auctions",authenticateToken,authenticateAdmin,
                 a.winner_id, wu.username AS winner_username, wu.email AS winner_email,
                 a.end_date, a.created_by, a.product_id, a.shop_category_id, sc.name AS shop_category_name,
                 p.name AS product_name, p.image_path AS product_image,
-                a.created_at, a.updated_at,
+                a.scheduled_start_at, a.created_at, a.updated_at,
                 (SELECT COUNT(*)
                    FROM auction_participants ap
                   WHERE ap.auction_id = a.id) AS participant_count,
@@ -802,7 +816,15 @@ router.get("/auctions",authenticateToken,authenticateAdmin,
          LEFT JOIN categories sc ON sc.id = a.shop_category_id
          LEFT JOIN products p ON p.id = a.product_id
          ${whereSql}
-         ORDER BY a.id DESC
+         ORDER BY CASE a.status
+                    WHEN 'hold' THEN 0
+                    WHEN 'active' THEN 1
+                    WHEN 'pending' THEN 2
+                    WHEN 'cancelled' THEN 3
+                    WHEN 'completed' THEN 4
+                    ELSE 5
+                  END,
+                  a.id DESC
          LIMIT ? OFFSET ?`,
         [...params, lim, offset]
       );
@@ -842,7 +864,7 @@ router.get("/auctions/:id", authenticateToken, authenticateAdmin, async (req, re
                 a.winner_id, wu.username AS winner_username, wu.email AS winner_email,
                 a.end_date, a.created_by, a.product_id, a.shop_category_id, sc.name AS shop_category_name,
                 p.name AS product_name, p.image_path AS product_image,
-                a.created_at, a.updated_at,
+                a.scheduled_start_at, a.created_at, a.updated_at,
                 (SELECT COUNT(*)
                    FROM auction_participants ap
                   WHERE ap.auction_id = a.id) AS participant_count,
@@ -956,6 +978,7 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
         status,
         shop_category_id,
         product_id,
+        scheduled_start_at,
       } = req.body;
 
       const updates = [];
@@ -1048,6 +1071,19 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
         }
       }
 
+      if (scheduled_start_at != null) {
+        const scheduledStartAt = parseMysqlDateTimeInput(scheduled_start_at);
+        if (scheduledStartAt === false) {
+          return res.status(400).json({ message: "scheduled_start_at must be a valid date and time" });
+        }
+        if (scheduledStartAt === null) {
+          updates.push("scheduled_start_at = NULL");
+        } else {
+          updates.push("scheduled_start_at = ?");
+          params.push(scheduledStartAt);
+        }
+      }
+
       let newImagePath = null;
       if (req.file) {
         newImagePath = `/uploads/${req.file.filename}`;
@@ -1079,7 +1115,7 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
       // return updated row
       const [rows] = await conn.query(
         `SELECT id, name, description, image, entry_bid_points, minimum_users,
-                category, status, product_id, shop_category_id, created_by, created_at, updated_at
+                category, status, product_id, shop_category_id, scheduled_start_at, created_by, created_at, updated_at
          FROM auctions
          WHERE id = ? LIMIT 1`,
         [id]

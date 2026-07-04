@@ -25,7 +25,7 @@ const cronStatus = {
 };
 
 /* -------------------------------------------------------------------------- */
-/*   If participants >= minimum_users → set status = 'hold' (every 10 sec)    */
+/* Pending → hold when minimum users reached OR scheduled_start_at has passed */
 /* -------------------------------------------------------------------------- */
 const startAuctionPendingToHoldJob = () => {
   if (pendingToHoldTimer) return pendingToHoldTimer;
@@ -39,7 +39,7 @@ const startAuctionPendingToHoldJob = () => {
     try {
       const [result] = await conn.query(`
         UPDATE auctions a
-        JOIN (
+        LEFT JOIN (
           SELECT auction_id, COUNT(*) AS cnt
           FROM auction_participants
           GROUP BY auction_id
@@ -47,7 +47,10 @@ const startAuctionPendingToHoldJob = () => {
         SET a.status = 'hold',
             a.updated_at = CURRENT_TIMESTAMP
         WHERE a.status = 'pending'
-          AND ap.cnt >= a.minimum_users
+          AND (
+            COALESCE(ap.cnt, 0) >= a.minimum_users
+            OR (a.scheduled_start_at IS NOT NULL AND a.scheduled_start_at <= NOW())
+          )
       `);
 
       cronStatus.pendingToHold.lastRunAt = new Date().toISOString();
