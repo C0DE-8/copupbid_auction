@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#00a99d" />
+    <meta name="color-scheme" content="light" />
+    <meta name="application-name" content="CopUpBid" />
+    <meta name="apple-mobile-web-app-title" content="CopUpBid" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#00a99d" />
+    <meta name="msapplication-TileImage" content="/android-chrome-192x192.png" />
     <meta name="google-adsense-account" content="ca-pub-4267505150982541" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta
@@ -16,8 +24,15 @@
     />
     <meta name="author" content="CopUpBid" />
     <link rel="canonical" href="https://copupbid.com/" />
-    <link rel="icon" type="image/png" href="/copupcoin.png" />
-    <link rel="apple-touch-icon" href="/copupcoin.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="CopUpBid" />
@@ -27,7 +42,11 @@
       content="Bid, shop, and win products on CopUpBid. Use CopUpCoin for live auctions, product drops, favorites, cart, checkout, and secure account tools built for Nigerian shoppers."
     />
     <meta property="og:url" content="https://copupbid.com/" />
-    <meta property="og:image" content="https://copupbid.com/copupcoin.png" />
+    <meta property="og:image" content="https://copupbid.com/android-chrome-512x512.png" />
+    <meta property="og:image:secure_url" content="https://copupbid.com/android-chrome-512x512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
     <meta property="og:image:alt" content="CopUpBid CopUpCoin logo" />
     <meta property="og:locale" content="en_NG" />
 
@@ -37,7 +56,8 @@
       name="twitter:description"
       content="Nigeria's auction e-commerce marketplace for live auctions, direct shopping, product drops, and CopUpCoin-powered bidding."
     />
-    <meta name="twitter:image" content="https://copupbid.com/copupcoin.png" />
+    <meta name="twitter:image" content="https://copupbid.com/android-chrome-512x512.png" />
+    <meta name="twitter:image:alt" content="CopUpBid CopUpCoin logo" />
 
     <script type="application/ld+json">
       {
@@ -48,7 +68,13 @@
             "@id": "https://copupbid.com/#organization",
             "name": "CopUpBid",
             "url": "https://copupbid.com/",
-            "logo": "https://copupbid.com/copupcoin.png",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://copupbid.com/android-chrome-512x512.png",
+              "width": 512,
+              "height": 512
+            },
+            "image": "https://copupbid.com/android-chrome-512x512.png",
             "foundingDate": "2023",
             "description": "CopUpBid is a Nigerian auction e-commerce platform where shoppers bid, shop, and win products with CopUpCoin.",
             "contactPoint": [
@@ -78,7 +104,7 @@
             "@id": "https://copupbid.com/#store",
             "name": "CopUpBid Auction Shop",
             "url": "https://copupbid.com/",
-            "image": "https://copupbid.com/copupcoin.png",
+            "image": "https://copupbid.com/android-chrome-512x512.png",
             "description": "Auction e-commerce marketplace for live auctions, product drops, direct shopping, favorites, cart, checkout, CopUpCoin bidding, and winner history.",
             "currenciesAccepted": "NGN",
             "paymentAccepted": "CopUpCoin, bank transfer, online payment",
