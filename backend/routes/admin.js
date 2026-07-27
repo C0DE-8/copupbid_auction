@@ -57,6 +57,104 @@ function toFsPath(webPath) {
   return path.join(__dirname, "..", webPath.replace(/^\//, ""));
 }
 
+const UPLOAD_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const UPLOAD_REFERENCE_COLUMNS = [
+  { table: "auctions", column: "image" },
+  { table: "banners", column: "image_path" },
+  { table: "bidshop", column: "image" },
+  { table: "coin_purchases", column: "proof_image" },
+  { table: "demo_users", column: "avatar" },
+  { table: "products", column: "image_path" },
+  { table: "product_images", column: "image_path" },
+  { table: "users", column: "profile" },
+];
+
+function uploadFilenameFromDbValue(value) {
+  if (!value) return null;
+
+  let raw = String(value).trim();
+  if (!raw) return null;
+
+  try {
+    if (/^https?:\/\//i.test(raw)) {
+      raw = new URL(raw).pathname;
+    }
+  } catch (_) {
+    // Fall back to basename parsing below.
+  }
+
+  raw = raw.replace(/\\/g, "/");
+  const marker = "/uploads/";
+  const markerIndex = raw.indexOf(marker);
+  if (markerIndex >= 0) raw = raw.slice(markerIndex + marker.length);
+  else if (raw.startsWith("uploads/")) raw = raw.slice("uploads/".length);
+
+  const filename = path.basename(raw);
+  if (!filename || filename === "." || filename === "..") return null;
+
+  try {
+    return decodeURIComponent(filename);
+  } catch (_) {
+    return filename;
+  }
+}
+
+async function getReferencedUploadFilenames() {
+  const referenced = new Set();
+
+  for (const ref of UPLOAD_REFERENCE_COLUMNS) {
+    try {
+      const [rows] = await pool.query(
+        `SELECT \`${ref.column}\` AS upload_path FROM \`${ref.table}\` WHERE \`${ref.column}\` IS NOT NULL AND \`${ref.column}\` <> ''`
+      );
+
+      for (const row of rows) {
+        const filename = uploadFilenameFromDbValue(row.upload_path);
+        if (filename) referenced.add(filename);
+      }
+    } catch (err) {
+      if (["ER_NO_SUCH_TABLE", "ER_BAD_FIELD_ERROR"].includes(err.code)) {
+        console.warn(`Skipping upload reference scan for ${ref.table}.${ref.column}: ${err.code}`);
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  return referenced;
+}
+
+async function listUnusedUploadImages() {
+  const referenced = await getReferencedUploadFilenames();
+  const entries = await fs.promises.readdir(UPLOAD_DIR, { withFileTypes: true });
+  const unused = [];
+  const kept = [];
+
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+
+    const ext = path.extname(entry.name).toLowerCase();
+    if (!UPLOAD_IMAGE_EXTENSIONS.has(ext)) continue;
+
+    const filePath = path.join(UPLOAD_DIR, entry.name);
+    const stat = await fs.promises.stat(filePath);
+    const item = {
+      filename: entry.name,
+      path: `/uploads/${entry.name}`,
+      size: stat.size,
+      updated_at: stat.mtime.toISOString(),
+    };
+
+    if (referenced.has(entry.name)) kept.push(item);
+    else unused.push(item);
+  }
+
+  unused.sort((a, b) => a.filename.localeCompare(b.filename));
+  kept.sort((a, b) => a.filename.localeCompare(b.filename));
+
+  return { referenced, unused, kept };
+}
+
 function parseMysqlDateTimeInput(value) {
   if (value == null || value === "") return null;
   const raw = String(value).trim();
@@ -4373,5 +4471,64 @@ router.delete("/banners/:id",authenticateToken,authenticateAdmin,
     }
   }
 );
+
+// GET - Preview unused upload images without deleting anything.
+router.get("/uploads/unused", async (_req, res) => {
+  try {
+    const { referenced, unused, kept } = await listUnusedUploadImages();
+
+    return res.status(200).json({
+      message: "Unused upload images preview",
+      counts: {
+        referenced: referenced.size,
+        unused: unused.length,
+        kept: kept.length,
+      },
+      unused,
+    });
+  } catch (err) {
+    console.error("GET /admin/uploads/unused error:", err);
+    return res.status(500).json({ message: "Error scanning unused upload images" });
+  }
+});
+
+// DELETE - Remove only image files in backend/uploads that are not referenced by SQL rows.
+router.delete("/uploads/unused", async (_req, res) => {
+  try {
+    const { referenced, unused, kept } = await listUnusedUploadImages();
+    const deleted = [];
+    const failed = [];
+
+    for (const item of unused) {
+      const filePath = path.join(UPLOAD_DIR, item.filename);
+
+      try {
+        await fs.promises.unlink(filePath);
+        deleted.push(item);
+      } catch (err) {
+        failed.push({
+          ...item,
+          error: err.message,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      message: "Unused upload image cleanup complete",
+      counts: {
+        referenced: referenced.size,
+        kept: kept.length,
+        scanned_unused: unused.length,
+        deleted: deleted.length,
+        failed: failed.length,
+      },
+      deleted,
+      failed,
+    });
+  } catch (err) {
+    console.error("DELETE /admin/uploads/unused error:", err);
+    return res.status(500).json({ message: "Error deleting unused upload images" });
+  }
+});
 
 module.exports = router;
