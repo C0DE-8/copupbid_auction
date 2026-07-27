@@ -1,10 +1,10 @@
-// src/pages/admin/AdminCoins.jsx
+// src/pages/admin/AdminCoins/AdminCoins.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { api } from "../../lib/api";
+import { api } from "../../../lib/api";
 import styles from "./AdminCoins.module.css";
-import AdminNavbar from "../../components/admin/Navbar";
-import { ToastProvider, useToast } from "../../components/ui/Toaster";
-import Modal from "../../components/ui/Modal";
+import AdminNavbar from "../../../components/admin/Navbar";
+import { ToastProvider, useToast } from "../../../components/ui/Toaster";
+import Modal from "../../../components/ui/Modal";
 
 function safeNum(v, fallback = 0) {
   const n = Number(v);

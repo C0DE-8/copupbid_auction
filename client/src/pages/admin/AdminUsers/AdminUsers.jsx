@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./AdminUsers.module.css";
-import AdminNavbar from "../../components/admin/Navbar";
-import { api } from "../../lib/api";
+import AdminNavbar from "../../../components/admin/Navbar";
+import { api } from "../../../lib/api";
 
 import {
   FaChevronLeft,

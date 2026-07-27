@@ -1,5 +1,5 @@
 import React from "react";
-import AdminNavbar from "../../components/admin/Navbar";
+import AdminNavbar from "../../../components/admin/Navbar";
 import styles from "./AdminAffiliates.module.css";
 
 export default function AdminAffilates() {

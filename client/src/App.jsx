@@ -11,7 +11,7 @@ import ForgotPassword from "./pages/Auth/ForgotPassword/ForgotPassword";
 import ResetPassword from "./pages/Auth/ResetPassword/ResetPassword";
 
 // Admin
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard/AdminDashboard";
 
 // Protected Routes
 import AdminRoute from "./routes/AdminRoute";
@@ -21,18 +21,18 @@ import SuperAdminRoute from "./routes/SuperAdminRoute";
 
 // 404
 import NotFound from "./pages/NotFound/NotFound";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminWaitlist from "./pages/admin/AdminWaitlist";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminAuction from "./pages/admin/AdminAuction";
-import AdminAffilates from "./pages/admin/AdminAffilates";
-import AdminPayout from "./pages/admin/AdminPayout";
-import AdminControl from "./pages/admin/AdminControl";
-import AdminCoins from "./pages/admin/AdminCoins";
-import AdminPayAccount from "./pages/admin/AdminPayAccount";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminFavorites from "./pages/admin/AdminFavorites";
-import AdminBanner from "./pages/admin/AdminBanner";
+import AdminProducts from "./pages/admin/AdminProducts/AdminProducts";
+import AdminWaitlist from "./pages/admin/AdminWaitlist/AdminWaitlist";
+import AdminUsers from "./pages/admin/AdminUsers/AdminUsers";
+import AdminAuction from "./pages/admin/AdminAuction/AdminAuction";
+import AdminAffilates from "./pages/admin/AdminAffilates/AdminAffilates";
+import AdminPayout from "./pages/admin/AdminPayout/AdminPayout";
+import AdminControl from "./pages/admin/AdminControl/AdminControl";
+import AdminCoins from "./pages/admin/AdminCoins/AdminCoins";
+import AdminPayAccount from "./pages/admin/AdminPayAccount/AdminPayAccount";
+import AdminOrders from "./pages/admin/AdminOrders/AdminOrders";
+import AdminFavorites from "./pages/admin/AdminFavorites/AdminFavorites";
+import AdminBanner from "./pages/admin/AdminBanner/AdminBanner";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Profile from "./pages/Profile/Profile";
 import Account from "./pages/Account/Account";
@@ -46,8 +46,8 @@ import Affiliate from "./pages/Affiliate/Affiliate";
 import Winner from "./pages/Winner/Winner";
 import HowItWork from "./pages/Support/HowItWork";
 import CopUpBidShopD from "./pages/CopUpBidShop/CopUpBidShopD";
-import AdminCoinPay from "./pages/admin/AdminCoinPay";
-import AdminManagement from "./pages/admin/AdminManagement";
+import AdminCoinPay from "./pages/admin/AdminCoinPay/AdminCoinPay";
+import AdminManagement from "./pages/admin/AdminManagement/AdminManagement";
 import CookieConsent from "./components/CookieConsent/CookieConsent";
 import Privacy from "./pages/Privacy/Privacy";
 import Terms from "./pages/Privacy/Terms";

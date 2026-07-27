@@ -9,6 +9,7 @@ const {
 } = require("../lib/mail");
 
 const router = express.Router();
+const SUPER_ADMIN_EMAILS = new Set(["admin@copupbid.com"]);
 
 /* ------------------------------ helpers ------------------------------ */
 function generateReferralCode() {
@@ -147,8 +148,13 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
+    const isSuperAdmin =
+      user.role === "admin" &&
+      (user.admin_scope === "super" || SUPER_ADMIN_EMAILS.has(String(user.email || "").toLowerCase()));
+    const adminScope = isSuperAdmin ? "super" : user.admin_scope || "limited";
+
     let permissions = [];
-    if (user.role === "admin" && user.admin_scope !== "super") {
+    if (user.role === "admin" && !isSuperAdmin) {
       const [permissionRows] = await pool.query(
         "SELECT permission_key FROM admin_permissions WHERE user_id = ?",
         [user.id]
@@ -169,7 +175,7 @@ router.post("/login", async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        admin_scope: user.admin_scope || "limited",
+        admin_scope: adminScope,
         permissions,
       },
     });

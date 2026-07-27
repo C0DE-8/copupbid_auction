@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { api, imgUrl } from "../../lib/api";
+import { api, imgUrl } from "../../../lib/api";
 import styles from "./AdminBanner.module.css";
-import AdminNavbar from "../../components/admin/Navbar";
+import AdminNavbar from "../../../components/admin/Navbar";
 
 import {
   FiArrowLeft,

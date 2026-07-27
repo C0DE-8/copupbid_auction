@@ -1,5 +1,5 @@
 import React from "react";
-import AdminNavbar from "../../components/admin/Navbar";
+import AdminNavbar from "../../../components/admin/Navbar";
 import styles from "./AdminWaitlist.module.css";
 import { FaClock, FaGavel } from "react-icons/fa";
 

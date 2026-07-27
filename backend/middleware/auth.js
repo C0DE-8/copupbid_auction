@@ -2,6 +2,8 @@
 const jwt = require("jsonwebtoken");
 const { pool } = require("../db");
 
+const SUPER_ADMIN_EMAILS = new Set(["admin@copupbid.com"]);
+
 /**
  * Authenticate requests using a Bearer JWT.
  * - Verifies token with JWT_SECRET
@@ -42,8 +44,13 @@ const authenticateToken = async (req, res, next) => {
       return res.status(403).json({ message: "Account is blocked" });
     }
 
+    const isSuperAdmin =
+      user.role === "admin" &&
+      (user.admin_scope === "super" || SUPER_ADMIN_EMAILS.has(String(user.email || "").toLowerCase()));
+    const adminScope = isSuperAdmin ? "super" : user.admin_scope || "limited";
+
     let adminPermissions = [];
-    if (user.role === "admin" && user.admin_scope !== "super") {
+    if (user.role === "admin" && !isSuperAdmin) {
       const [permissionRows] = await pool.query(
         "SELECT permission_key FROM admin_permissions WHERE user_id = ?",
         [user.id]
@@ -57,7 +64,7 @@ const authenticateToken = async (req, res, next) => {
       email: user.email,
       username: user.username,
       role: user.role,
-      admin_scope: user.admin_scope || "limited",
+      admin_scope: adminScope,
       admin_permissions: adminPermissions,
       is_verified: user.is_verified,
       is_blocked: user.is_blocked,

@@ -2,8 +2,8 @@
 // ✅ Featured ones will still show ⭐ because your card uses p.is_featured
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import styles from "./AdminProducts.module.css";
-import AdminNavbar from "../../components/admin/Navbar";
-import { api } from "../../lib/api";
+import AdminNavbar from "../../../components/admin/Navbar";
+import { api } from "../../../lib/api";
 
 import {
   FaPlus,

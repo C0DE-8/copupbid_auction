@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import AdminNavbar from "../../components/admin/Navbar";
-import { api } from "../../lib/api";
+import AdminNavbar from "../../../components/admin/Navbar";
+import { api } from "../../../lib/api";
 import styles from "./AdminManagement.module.css";
 
 export default function AdminManagement() {

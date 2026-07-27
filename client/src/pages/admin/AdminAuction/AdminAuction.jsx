@@ -1,8 +1,8 @@
 import React from "react";
 import styles from "./AdminAuction.module.css";
-import { api } from "../../lib/api";
-import AdminNavbar from "../../components/admin/Navbar";
-import { useToast } from "../../components/Toast/ToastContext";
+import { api } from "../../../lib/api";
+import AdminNavbar from "../../../components/admin/Navbar";
+import { useToast } from "../../../components/Toast/ToastContext";
 const CATEGORIES = ["cash", "product", "coupon"];
 const AUCTION_STATUSES = ["pending", "active", "completed", "cancelled", "hold"]; // you use hold in start route
 const ORDER_STATUSES = [

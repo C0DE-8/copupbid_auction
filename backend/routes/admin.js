@@ -224,9 +224,13 @@ const ADMIN_PERMISSION_MODULES = [
 ];
 
 const ADMIN_PERMISSION_KEYS = new Set(ADMIN_PERMISSION_MODULES.map((module) => module.key));
+const SUPER_ADMIN_EMAILS = new Set(["admin@copupbid.com"]);
 
 function isSuperAdmin(user) {
-  return user?.role === "admin" && user?.admin_scope === "super";
+  return (
+    user?.role === "admin" &&
+    (user?.admin_scope === "super" || SUPER_ADMIN_EMAILS.has(String(user?.email || "").toLowerCase()))
+  );
 }
 
 async function loadAdminPermissionKeys(userId) {
@@ -317,7 +321,10 @@ router.get("/profile", authenticateToken, authenticateAdmin, async (req, res) =>
 
       // Only the requested fields
       const { name, username, role, admin_scope } = rows[0];
-      const permissions = role === "admin" && admin_scope !== "super"
+      const profileUser = { ...req.user, role, admin_scope };
+      const superAdmin = isSuperAdmin(profileUser);
+      const effectiveAdminScope = superAdmin ? "super" : admin_scope || "limited";
+      const permissions = role === "admin" && !superAdmin
         ? await loadAdminPermissionKeys(adminId)
         : ADMIN_PERMISSION_MODULES.map((module) => module.key);
 
@@ -325,10 +332,10 @@ router.get("/profile", authenticateToken, authenticateAdmin, async (req, res) =>
         name,
         username,
         role,
-        admin_scope: admin_scope || "limited",
+        admin_scope: effectiveAdminScope,
         permissions,
         modules: ADMIN_PERMISSION_MODULES.filter((module) =>
-          admin_scope === "super" || permissions.includes(module.key)
+          superAdmin || permissions.includes(module.key)
         ),
       });
     } catch (err) {

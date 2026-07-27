@@ -1,10 +1,10 @@
-// src/pages/admin/AdminFavorites.jsx
+// src/pages/admin/AdminFavorites/AdminFavorites.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { api, imgUrl } from "../../lib/api";
+import { api, imgUrl } from "../../../lib/api";
 import styles from "./AdminFavorites.module.css";
-import AdminNavbar from "../../components/admin/Navbar";
-import { ToastProvider, useToast } from "../../components/ui/Toaster";
-import Modal from "../../components/ui/Modal";
+import AdminNavbar from "../../../components/admin/Navbar";
+import { ToastProvider, useToast } from "../../../components/ui/Toaster";
+import Modal from "../../../components/ui/Modal";
 
 import {
   FiRefreshCw,

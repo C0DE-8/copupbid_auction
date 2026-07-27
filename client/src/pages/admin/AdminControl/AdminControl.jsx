@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
-import AdminNavbar from "../../components/admin/Navbar";
+import AdminNavbar from "../../../components/admin/Navbar";
 import styles from "./AdminControl.module.css";
-import { api } from "../../lib/api";
+import { api } from "../../../lib/api";
 
 export default function AdminControl() {
   const [cleanup, setCleanup] = useState(null);
