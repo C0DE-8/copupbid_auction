@@ -74,6 +74,8 @@ export default function Login() {
   const clearSession = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("admin_scope");
+    localStorage.removeItem("admin_permissions");
   };
 
   const intendedRedirect = useMemo(() => {
@@ -85,8 +87,10 @@ export default function Login() {
     );
   }, [location.search, location.state]);
 
-  const redirectByRole = (role) => {
-    if (role === "admin") nav("/admin-dashboard", { replace: true });
+  const redirectByRole = (role, adminScope = localStorage.getItem("admin_scope")) => {
+    if (role === "admin") {
+      nav(adminScope === "super" ? "/admin-dashboard" : "/admin/management", { replace: true });
+    }
     else {
       localStorage.removeItem("copup_auth_redirect");
       nav(intendedRedirect || "/", { replace: true });
@@ -114,15 +118,22 @@ export default function Login() {
           return;
         }
 
-        // server check to confirm token is valid
-        await api.get("/users/profile", {
-          headers: { Authorization: `Bearer ${storedToken}` },
-        });
+        if (storedRole === "admin") {
+          const { data } = await api.get("/admin/profile", {
+            headers: { Authorization: `Bearer ${storedToken}` },
+          });
+          localStorage.setItem("admin_scope", data?.admin_scope || "limited");
+          localStorage.setItem("admin_permissions", JSON.stringify(data?.permissions || []));
+        } else {
+          await api.get("/users/profile", {
+            headers: { Authorization: `Bearer ${storedToken}` },
+          });
+        }
 
         // valid token -> redirect
         if (mounted) {
           setCheckingSession(false);
-          redirectByRole(storedRole || "user");
+          redirectByRole(storedRole || "user", localStorage.getItem("admin_scope"));
         }
       } catch (e) {
         // invalid token -> clear
@@ -171,6 +182,20 @@ export default function Login() {
       );
 
       localStorage.setItem("role", role);
+      const adminScope =
+        data?.admin_scope ||
+        data?.data?.admin_scope ||
+        data?.user?.admin_scope ||
+        data?.data?.user?.admin_scope ||
+        "limited";
+      const adminPermissions =
+        data?.permissions ||
+        data?.data?.permissions ||
+        data?.user?.permissions ||
+        data?.data?.user?.permissions ||
+        [];
+      localStorage.setItem("admin_scope", adminScope);
+      localStorage.setItem("admin_permissions", JSON.stringify(Array.isArray(adminPermissions) ? adminPermissions : []));
 
       // ✅ if token is a JWT and already expired (rare but safe)
       if (token && isTokenExpired(token)) {
@@ -181,9 +206,17 @@ export default function Login() {
 
       // ✅ verify token once (optional but prevents mismatch)
       try {
-        await api.get("/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        if (role === "admin") {
+          const { data: profile } = await api.get("/admin/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          localStorage.setItem("admin_scope", profile?.admin_scope || adminScope);
+          localStorage.setItem("admin_permissions", JSON.stringify(profile?.permissions || adminPermissions || []));
+        } else {
+          await api.get("/users/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
       } catch (_) {
         clearSession();
         setErr("Login session could not be verified. Try again.");
@@ -191,7 +224,7 @@ export default function Login() {
       }
 
       setMsg("Login successful.");
-      redirectByRole(role);
+      redirectByRole(role, localStorage.getItem("admin_scope"));
     } catch (e2) {
       const apiMsg =
         e2?.response?.data?.message || e2?.message || "Login failed";

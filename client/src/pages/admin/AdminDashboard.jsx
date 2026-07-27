@@ -202,7 +202,7 @@ export default function AdminDashboard() {
       },
       {
         title: "Admin Control",
-        desc: "Manage platform controls and demo users",
+        desc: "Run platform controls including unused upload cleanup",
         to: "/admin/control",
         icon: <FaShieldAlt />,
         accent: "green",

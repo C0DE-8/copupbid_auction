@@ -43,6 +43,8 @@ const EMPTY_EDIT = {
   username: "",
   full_name: "",
   role: "user",
+  admin_scope: "limited",
+  admin_permissions: [],
   is_verified: 0,
   is_blocked: 0,
   wallet_address: "",
@@ -80,6 +82,8 @@ export default function AdminUsers() {
   const [editLoading, setEditLoading] = useState(false);
   const [editErr, setEditErr] = useState("");
   const [editForm, setEditForm] = useState(EMPTY_EDIT);
+  const [permissionModules, setPermissionModules] = useState([]);
+  const [canManagePermissions, setCanManagePermissions] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const canPrev = page > 1;
@@ -137,6 +141,27 @@ export default function AdminUsers() {
     loadUsers();
   }, [loadUsers]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    api
+      .get("/admin/permission-modules")
+      .then((res) => {
+        if (!mounted) return;
+        setPermissionModules(Array.isArray(res.data?.modules) ? res.data.modules : []);
+        setCanManagePermissions(true);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setPermissionModules([]);
+        setCanManagePermissions(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // reset to page 1 when filters change (except page/limit)
   useEffect(() => {
     setPage(1);
@@ -173,12 +198,27 @@ export default function AdminUsers() {
     try {
       const res = await api.get(`/admin/users/${uid}`);
       const u = res.data || {};
+      let adminPermissions = [];
+      let adminScope = u.admin_scope || "limited";
+
+      if (canManagePermissions && u.role === "admin") {
+        try {
+          const permRes = await api.get(`/admin/users/${uid}/permissions`);
+          adminPermissions = Array.isArray(permRes.data?.permissions) ? permRes.data.permissions : [];
+          adminScope = permRes.data?.user?.admin_scope || adminScope;
+        } catch (_) {
+          adminPermissions = [];
+        }
+      }
+
       setEditForm({
         id: u.id ?? "",
         email: u.email ?? "",
         username: u.username ?? "",
         full_name: u.full_name ?? "",
         role: u.role ?? "user",
+        admin_scope: adminScope,
+        admin_permissions: adminPermissions,
         is_verified: safeNum(u.is_verified, 0),
         is_blocked: safeNum(u.is_blocked, 0),
         wallet_address: u.wallet_address ?? "",
@@ -213,7 +253,6 @@ export default function AdminUsers() {
         email: String(editForm.email || "").trim().toLowerCase(),
         username: String(editForm.username || "").trim(),
         full_name: String(editForm.full_name || "").trim(),
-        role: String(editForm.role || "user").trim().toLowerCase(),
         is_verified: Number(editForm.is_verified) ? 1 : 0,
         is_blocked: Number(editForm.is_blocked) ? 1 : 0,
         wallet_address: String(editForm.wallet_address || "").trim(),
@@ -221,8 +260,18 @@ export default function AdminUsers() {
         referral_code: String(editForm.referral_code || "").trim(),
         bid_points: Number(editForm.bid_points),
       };
+      if (canManagePermissions) {
+        payload.role = String(editForm.role || "user").trim().toLowerCase();
+      }
 
       await api.patch(`/admin/users/${uid}`, payload);
+
+      if (canManagePermissions && editForm.role === "admin") {
+        await api.patch(`/admin/users/${uid}/permissions`, {
+          admin_scope: editForm.admin_scope || "limited",
+          permissions: editForm.admin_scope === "super" ? [] : editForm.admin_permissions || [],
+        });
+      }
 
       setToast("✅ User updated");
       setTimeout(() => setToast(""), 1500);
@@ -472,7 +521,7 @@ export default function AdminUsers() {
                       </td>
                       <td>
                         <span className={`${styles.pill} ${u.role === "admin" ? styles.pillGold : styles.pillGray}`}>
-                          {u.role || "user"}
+                          {u.role || "user"}{u.role === "admin" ? ` / ${u.admin_scope || "limited"}` : ""}
                         </span>
                       </td>
                       <td>
@@ -585,12 +634,60 @@ export default function AdminUsers() {
                       <select
                         className={styles.textField}
                         value={editForm.role}
+                        disabled={!canManagePermissions}
                         onChange={(e) => setEditForm((s) => ({ ...s, role: e.target.value }))}
                       >
                         <option value="user">user</option>
                         <option value="admin">admin</option>
                       </select>
                     </div>
+
+                    {canManagePermissions && editForm.role === "admin" ? (
+                      <>
+                        <div className={styles.formField}>
+                          <label>Admin Scope</label>
+                          <select
+                            className={styles.textField}
+                            value={editForm.admin_scope}
+                            onChange={(e) =>
+                              setEditForm((s) => ({
+                                ...s,
+                                admin_scope: e.target.value,
+                                admin_permissions: e.target.value === "super" ? [] : s.admin_permissions,
+                              }))
+                            }
+                          >
+                            <option value="limited">limited</option>
+                            <option value="super">super</option>
+                          </select>
+                        </div>
+
+                        {editForm.admin_scope === "limited" ? (
+                          <div className={styles.formFieldFull}>
+                            <label>Allowed Management Modules</label>
+                            <div className={styles.permissionsGrid}>
+                              {permissionModules.map((module) => (
+                                <label key={module.key} className={styles.permissionItem}>
+                                  <input
+                                    type="checkbox"
+                                    checked={(editForm.admin_permissions || []).includes(module.key)}
+                                    onChange={(e) => {
+                                      setEditForm((s) => {
+                                        const current = new Set(s.admin_permissions || []);
+                                        if (e.target.checked) current.add(module.key);
+                                        else current.delete(module.key);
+                                        return { ...s, admin_permissions: [...current] };
+                                      });
+                                    }}
+                                  />
+                                  <span>{module.title}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : null}
 
                     <div className={styles.formField}>
                       <label>Bid Points</label>

@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Jul 04, 2026 at 09:33 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Host: localhost:3306
+-- Generation Time: Jul 27, 2026 at 07:30 PM
+-- Server version: 11.4.12-MariaDB-cll-lve
+-- PHP Version: 8.4.23
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,8 +18,20 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `copup`
+-- Database: `copucznc_copupbid`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_permissions`
+--
+
+CREATE TABLE `admin_permissions` (
+  `user_id` int(11) NOT NULL,
+  `permission_key` varchar(64) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -92,7 +104,7 @@ INSERT INTO `auctions` (`id`, `name`, `description`, `image`, `entry_bid_points`
 (9, 'iphone flash p', 'the phone information', '/uploads/1771627597310_5.jpeg', 2, 5, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 3, NULL, NULL, '2025-11-19 02:13:38', '2026-02-20 22:46:37'),
 (10, 'Men\'s Short Sleeved Long Pants 2-in-1 Set - Black', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n ', '/uploads/1783184562716_men\'s-short.jpg', 10, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 0, NULL, NULL, '2026-07-04 17:02:42', '2026-07-04 17:22:58'),
 (11, 'Men\'s Short', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n \r\n\r\nNotes:\r\nDue to the light and screen setting difference, the items color may be slightly different from the pictures.\r\nPlease allow slight dimension difference due to different manual measurement.\r\n\r\nWord of mouth:\r\nOur store updates promotional activities every day. Please pay more attention to our store.\r\nWe control the quality of our products during transportation to ensure that they are delivered to you with the best quality.\r\nThe products of Jihua Xiaodian are safely and free of charge delivered by JUMIA EXPRESS. If you have any questions, please call JUMIA EXPRESS.', '/uploads/1783186274734_men\'s-short3.jpg', 10, 1, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 9, 2, NULL, '2026-07-04 17:31:14', NULL),
-(12, 'Mobile Phone', 'Notes: After receiving the product, please charge it for 1 hour before turning it on for use.\r\n???? Product Overview\r\nThe MKTEL M51 is a rugged, feature phone engineered for reliability and longevity. Designed with a durable build and essential functionality, this device is perfect for users who prioritize long battery life, clear communication, and practical utility tools over complex smartphone features.\r\n\r\n???? Power & Charging\r\nLong-Lasting 2500mAh Battery: Experience extended usage with the high-capacity 2500mAh battery, providing hours of talk time and days of standby, perfect for travelers and heavy users who need reliable power on the go.\r\nModern Type-C Charging Port: Equipped with a convenient Type-C interface for faster data transfer and a reversible plug design, eliminating the hassle of incorrect insertion and ensuring quick, easy charging.\r\n???? Global Connectivity\r\nDual SIM & Quad Band Connectivity: Stay connected globally with Dual SIM Dual Standby functionality and support for Quad Band GSM networks (850/900/1800/1900 MHz), offering stable signal reception for calls, messages, and roaming in various regions.\r\n???? Multimedia & Audio\r\nEnhanced Multimedia Experience: Features a 1.77-inch clear display for comfortable viewing, combined with a high-fidelity Φ20 speaker for immersive audio, ensuring crisp sound for music and hands-free calls.\r\n???? Utility & Entertainment\r\nEssential Utility Tools: Includes a powerful LED flashlight for illumination in dark environments and pre-installed classic games like Snake and Tetris for instant entertainment during downtime.', '/uploads/1783188501733_mobile-phone-2.jpg', 10, 1, 'product', 'pending', 0, 0, NULL, NULL, NULL, NULL, 1, 8, 1, '2026-07-05 11:07:00', '2026-07-04 18:08:21', NULL);
+(12, 'Mobile Phone', 'Notes: After receiving the product, please charge it for 1 hour before turning it on for use.\r\n???? Product Overview\r\nThe MKTEL M51 is a rugged, feature phone engineered for reliability and longevity. Designed with a durable build and essential functionality, this device is perfect for users who prioritize long battery life, clear communication, and practical utility tools over complex smartphone features.\r\n\r\n???? Power & Charging\r\nLong-Lasting 2500mAh Battery: Experience extended usage with the high-capacity 2500mAh battery, providing hours of talk time and days of standby, perfect for travelers and heavy users who need reliable power on the go.\r\nModern Type-C Charging Port: Equipped with a convenient Type-C interface for faster data transfer and a reversible plug design, eliminating the hassle of incorrect insertion and ensuring quick, easy charging.\r\n???? Global Connectivity\r\nDual SIM & Quad Band Connectivity: Stay connected globally with Dual SIM Dual Standby functionality and support for Quad Band GSM networks (850/900/1800/1900 MHz), offering stable signal reception for calls, messages, and roaming in various regions.\r\n???? Multimedia & Audio\r\nEnhanced Multimedia Experience: Features a 1.77-inch clear display for comfortable viewing, combined with a high-fidelity Φ20 speaker for immersive audio, ensuring crisp sound for music and hands-free calls.\r\n???? Utility & Entertainment\r\nEssential Utility Tools: Includes a powerful LED flashlight for illumination in dark environments and pre-installed classic games like Snake and Tetris for instant entertainment during downtime.', '/uploads/1783188501733_mobile-phone-2.jpg', 10, 1, 'product', 'hold', 0, 0, NULL, NULL, NULL, NULL, 1, 8, 1, '2026-07-05 11:07:00', '2026-07-04 18:08:21', '2026-07-05 15:07:03');
 
 -- --------------------------------------------------------
 
@@ -213,8 +225,9 @@ CREATE TABLE `banners` (
 --
 
 INSERT INTO `banners` (`id`, `action_name`, `action_url`, `image_path`, `is_active`, `sort_order`, `created_at`) VALUES
-(1, 'Hesit mode', 'http://localhost:5173/', '/Users/apple/Desktop/projects/copupbid/backend/uploads/1772037544490_1.jpeg', 1, 0, '2026-02-25 08:39:04'),
-(2, 'banner2', 'http://localhost:5173/', '/Users/apple/Desktop/projects/copupbid/backend/uploads/1772038631339_5.jpeg', 1, 0, '2026-02-25 08:57:11');
+(1, 'Yes It’s Auction', 'https://copupbid.com/auctions', '/home/copucznc/z-copup-backend/uploads/1783224010983_img_4926.jpeg', 1, 0, '2026-02-25 08:39:04'),
+(2, 'Bid little win big', 'https://copupbid.com/auctions', '/home/copucznc/z-copup-backend/uploads/1783223766448_img_4925.jpeg', 1, 0, '2026-02-25 08:57:11'),
+(3, 'Sweet Deals', 'https://copupbid.com/shop?deal=featured#shop-featured', '/home/copucznc/z-copup-backend/uploads/1783246053323_img_4928.jpeg', 1, 0, '2026-07-05 06:07:33');
 
 -- --------------------------------------------------------
 
@@ -301,9 +314,9 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `created_at`) VALUES
-(1, 'Electronics', '2025-11-04 16:25:08'),
-(2, 'Clothing', '2025-11-04 16:25:34'),
-(4, 'Food', '2025-11-06 15:04:29'),
+(1, 'gadgets/electronics', '2025-11-04 16:25:08'),
+(2, 'Fashion/looks', '2025-11-04 16:25:34'),
+(4, 'Food/stuff', '2025-11-06 15:04:29'),
 (5, 'Others/Utilities', '2025-11-06 15:04:50');
 
 -- --------------------------------------------------------
@@ -474,6 +487,13 @@ CREATE TABLE `otps` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `otps`
+--
+
+INSERT INTO `otps` (`email`, `otp`, `expires_at`, `created_at`) VALUES
+('kingben2681@gmail.com', 211722, '2026-07-26 06:14:26', '2026-07-26 09:52:39');
+
 -- --------------------------------------------------------
 
 --
@@ -559,7 +579,31 @@ CREATE TABLE `products` (
 INSERT INTO `products` (`id`, `name`, `short_description`, `description`, `vendor_name`, `stock_status`, `shipping_cost`, `delivery_eta`, `image_path`, `is_featured`, `cash_price`, `auction_price`, `created_at`, `allow_cash`, `allow_auction`, `updated_at`) VALUES
 (7, 'Smartphones', 'OUKITEL C26 Smartphones Android 16, 4GB RAM/128GB ROM, 6.63”HD+, 5150mAh Battery, Gemini AI Android Phones, 13MP+5MP Camera Smart Phone, Reverse Charging, 4G Dual SIM,Fingerprint,BT5.0,Face ID,GPS,Blue', 'Note：Same box design for all colors of one model. Actual phone color stated on back label of package！！！\r\n \r\nLaunched in January 2026, the OUKITEL C26 is a practical daily-use smartphone with Android 16.0 pre-installed—ensuring smooth multi-tasking and user-friendly new features.\r\n \r\nPowered by Unisoc T615 (T7250) CPU + G57 GPU, it delivers stable performance for browsing, video watching, and multi-app use without lag.\r\n \r\nKey highlights: Gemini AI (voice control, real-time translation for study/travel) and reverse charging (emergency power for earbuds/smartwatches).\r\n \r\nPlus, 5150mAh all-day battery, 6.63\" HD display, 13MP+5MP cameras, 185g lightweight body (4 colors), and 0.3s side fingerprint unlock—ideal for students, commuters, and value seekers.\r\n      Brand & Model      	      OUKITEL C26      \r\n      Processor	      Unisoc T615 (T7250) + G57 GPU (1Core@850MHz)\r\n      AI Assistant	      Gemini AI (Voice Control, Real-Time Translation, Photo Editing)\r\n      Display	      6.63\" HD (576*1280 Resolution)\r\n      Camera	      Rear: 13MP / Front: 5MP\r\n      Battery & Charging    	      5150mAh Capacity + 5V2A Charging + Reverse Charging\r\n      Operating System	      Android 16.0\r\n      Unlock Method	      Side Fingerprint Sensor & Face ID\r\n      Special Functions	      Gemini AI, Reverse Charging, Multi-Tasking, Low-Light Photography      \r\n      Weight	      185g (Single Phone)', 'CopUp', 'in_stock', 1000.00, '3', '/uploads/1783177820121_smartphones.jpg', 0, 1000.00, 40.00, '2026-07-04 15:10:20', 1, 1, NULL),
 (8, 'Mobile Phone', 'MKTEL M51 Gray Mobile Phone 1.77 inch Screen 2500mAh Battery Type-C Dual SIM', 'Notes: After receiving the product, please charge it for 1 hour before turning it on for use.\r\n???? Product Overview\r\nThe MKTEL M51 is a rugged, feature phone engineered for reliability and longevity. Designed with a durable build and essential functionality, this device is perfect for users who prioritize long battery life, clear communication, and practical utility tools over complex smartphone features.\r\n\r\n???? Power & Charging\r\nLong-Lasting 2500mAh Battery: Experience extended usage with the high-capacity 2500mAh battery, providing hours of talk time and days of standby, perfect for travelers and heavy users who need reliable power on the go.\r\nModern Type-C Charging Port: Equipped with a convenient Type-C interface for faster data transfer and a reversible plug design, eliminating the hassle of incorrect insertion and ensuring quick, easy charging.\r\n???? Global Connectivity\r\nDual SIM & Quad Band Connectivity: Stay connected globally with Dual SIM Dual Standby functionality and support for Quad Band GSM networks (850/900/1800/1900 MHz), offering stable signal reception for calls, messages, and roaming in various regions.\r\n???? Multimedia & Audio\r\nEnhanced Multimedia Experience: Features a 1.77-inch clear display for comfortable viewing, combined with a high-fidelity Φ20 speaker for immersive audio, ensuring crisp sound for music and hands-free calls.\r\n???? Utility & Entertainment\r\nEssential Utility Tools: Includes a powerful LED flashlight for illumination in dark environments and pre-installed classic games like Snake and Tetris for instant entertainment during downtime.', 'CopUp', 'in_stock', 10.00, '2', '/uploads/1783178168657_mobile-phone-.jpg', 0, 90.00, 10.00, '2026-07-04 15:16:08', 1, 1, NULL),
-(9, 'Men\'s Short', 'Men\'s Short Sleeved Long Pants 2-in-1 Set - Black', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n \r\n\r\nNotes:\r\nDue to the light and screen setting difference, the items color may be slightly different from the pictures.\r\nPlease allow slight dimension difference due to different manual measurement.\r\n\r\nWord of mouth:\r\nOur store updates promotional activities every day. Please pay more attention to our store.\r\nWe control the quality of our products during transportation to ensure that they are delivered to you with the best quality.\r\nThe products of Jihua Xiaodian are safely and free of charge delivered by JUMIA EXPRESS. If you have any questions, please call JUMIA EXPRESS.', 'Mja', 'in_stock', 10.00, '3', '/uploads/1783178980441_men\'s-short.jpg', 1, 100.00, 10.00, '2026-07-04 15:29:40', 1, 1, '2026-07-04 15:34:53');
+(9, 'Men\'s Short', 'Men\'s Short Sleeved Long Pants 2-in-1 Set - Black', 'Breaking conventions, unwilling to play the role of a \"conservative\", with the strengths of being less prone to pilling, good moisture absorption, less static electricity, and less prone to pilling. Comfortable to wear, easy to wash, bright in color, beautiful and generous in appearance, and resistant to wrinkles\r\n\r\n \r\n\r\nNotes:\r\nDue to the light and screen setting difference, the items color may be slightly different from the pictures.\r\nPlease allow slight dimension difference due to different manual measurement.\r\n\r\nWord of mouth:\r\nOur store updates promotional activities every day. Please pay more attention to our store.\r\nWe control the quality of our products during transportation to ensure that they are delivered to you with the best quality.\r\nThe products of Jihua Xiaodian are safely and free of charge delivered by JUMIA EXPRESS. If you have any questions, please call JUMIA EXPRESS.', 'Mja', 'in_stock', 10.00, '3', '/uploads/1783178980441_men\'s-short.jpg', 1, 100.00, 10.00, '2026-07-04 15:29:40', 1, 1, '2026-07-04 15:34:53'),
+(10, 'Apple iPhone 15 128GB', 'USB-C iPhone with bright display, strong camera, and all-day battery for everyday use.', 'Apple iPhone 15 is a polished everyday smartphone for customers who want a modern iPhone experience with USB-C charging, a bright display, dependable performance, and a capable camera for photos, videos, business chats, and social media.', 'CopUp Tech', 'in_stock', 2500.00, '2-4 days', '/uploads/seed-iphone-15.jpg', 1, 820000.00, 250.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(11, 'Apple iPhone 16 128GB', 'Newer-generation iPhone for creators, students, business users, and daily productivity.', 'Apple iPhone 16 is a premium smartphone option for customers who want fast performance, a refined camera experience, dependable battery life, smooth apps, and a clean iOS experience for work and entertainment.', 'CopUp Tech', 'in_stock', 2500.00, '2-4 days', '/uploads/seed-iphone-16.jpg', 1, 980000.00, 300.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(12, 'Apple iPhone 17 256GB', 'Latest-generation iPhone option with roomy storage for apps, photos, video, and work files.', 'Apple iPhone 17 is listed as a high-demand premium phone for customers who want a current iPhone model, larger storage, smooth everyday performance, and a strong camera experience for content, business, and personal use.', 'CopUp Tech', 'in_stock', 3000.00, '3-5 days', '/uploads/seed-iphone-17.jpg', 1, 1250000.00, 380.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(13, 'Samsung Galaxy A55 5G 256GB', '5G Android phone with AMOLED display, strong battery, and generous storage.', 'Samsung Galaxy A55 5G is a balanced Android smartphone for customers who need a large smooth display, capable cameras, secure software, strong battery life, and enough storage for apps, photos, videos, and documents.', 'CopUp Tech', 'in_stock', 2200.00, '2-4 days', '/uploads/seed-galaxy-a55.jpg', 1, 560000.00, 180.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(14, 'Oraimo FreePods 4 Wireless Earbuds', 'Wireless earbuds with charging case for music, calls, workouts, and daily movement.', 'Oraimo FreePods 4 are lightweight true wireless earbuds for customers who need clear calls, easy pairing, portable charging, and comfortable listening during commuting, workouts, work, and school.', 'CopUp Tech', 'in_stock', 800.00, '1-3 days', '/uploads/seed-oraimo-freepods-4.jpg', 0, 42000.00, 20.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(15, 'Anker 20,000mAh Power Bank', 'High-capacity portable charger for phones, earbuds, tablets, and travel backup power.', 'A 20,000mAh class power bank is useful for customers who move around all day and need backup power for phones, wireless earbuds, tablets, and other USB-powered devices during work, school, or travel.', 'CopUp Tech', 'in_stock', 1000.00, '1-3 days', '/uploads/seed-anker-20000-power-bank.jpg', 0, 76000.00, 35.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(16, 'Classic White Sneakers', 'Clean low-top sneakers for casual, school, weekend, and smart-casual outfits.', 'Classic white sneakers are an easy wardrobe staple that pairs well with denim, chinos, joggers, skirts, dresses, and relaxed weekend outfits. A practical style item for daily movement and simple looks.', 'CopUp Fashion', 'in_stock', 1200.00, '2-4 days', '/uploads/seed-white-sneakers.jpg', 1, 48000.00, 20.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(17, 'Unisex Oversized Hoodie', 'Soft relaxed hoodie with front pocket for streetwear, travel, campus, and cool evenings.', 'A comfortable oversized hoodie for layering over T-shirts and pairing with jeans, shorts, or joggers. It works for casual errands, campus wear, travel days, and relaxed streetwear styling.', 'CopUp Fashion', 'in_stock', 1200.00, '2-4 days', '/uploads/seed-oversized-hoodie.jpg', 1, 39000.00, 18.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(18, 'Women\'s Crossbody Handbag', 'Structured everyday handbag with adjustable strap and practical compartments.', 'A compact crossbody handbag for workdays, errands, events, and travel. It keeps daily essentials organized while adding a neat finished look to casual and smart outfits.', 'CopUp Fashion', 'in_stock', 1000.00, '2-4 days', '/uploads/seed-crossbody-handbag.jpg', 1, 42000.00, 18.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(19, 'Men\'s Slim Fit Chino Trousers', 'Tapered cotton-blend chinos for office, church, dates, and clean casual looks.', 'Slim fit chinos give a neat shape without feeling too tight. They pair easily with polos, shirts, sneakers, or loafers and suit customers building a clean everyday wardrobe.', 'CopUp Fashion', 'in_stock', 1000.00, '2-4 days', '/uploads/seed-mens-chino-trousers.jpg', 0, 36000.00, 15.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(20, 'Aviator Sunglasses', 'UV400 aviator-style sunglasses with a lightweight metal-frame look.', 'Aviator sunglasses are a simple style upgrade for driving, outdoor events, travel, beach days, and finishing casual outfits. The shape is familiar, versatile, and easy to wear.', 'CopUp Fashion', 'in_stock', 600.00, '1-3 days', '/uploads/seed-aviator-sunglasses.jpg', 0, 18000.00, 8.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(21, 'Leather Strap Wristwatch', 'Minimal analog wristwatch with leather-style strap for office, gifting, and daily wear.', 'A clean everyday wristwatch with a simple dial and leather-style strap. It is suitable for office outfits, dates, church, casual wear, and gifting.', 'CopUp Fashion', 'in_stock', 800.00, '1-3 days', '/uploads/seed-leather-watch.jpg', 0, 28000.00, 12.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(22, 'Golden Penny Spaghetti 500g Pack', 'Dry spaghetti pack for jollof pasta, stir-fry, quick meals, and home cooking.', 'A pantry staple for homes, hostels, students, and small kitchens. Spaghetti cooks quickly and works with stew, tomato sauce, vegetables, sardines, egg sauce, or chicken.', 'CopUp Grocery', 'in_stock', 400.00, '1-2 days', '/uploads/seed-golden-penny-spaghetti.jpg', 1, 1800.00, 4.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(23, 'Indomie Chicken Noodles Carton', 'Carton of instant noodles for quick snacks, breakfasts, and student meals.', 'A convenient carton of chicken-flavour instant noodles for families, offices, shops, and hostels. Useful when customers need fast meals without complicated preparation.', 'CopUp Grocery', 'in_stock', 1200.00, '1-2 days', '/uploads/seed-indomie-carton.jpg', 1, 10500.00, 12.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(24, 'Peak Full Cream Milk Powder 400g', 'Creamy milk powder for tea, pap, cereal, custard, oats, and baking.', 'Peak full cream milk powder is a familiar household grocery item for breakfast and drinks. It can be used in tea, oats, cereal, pap, custard, and simple baking.', 'CopUp Grocery', 'in_stock', 500.00, '1-2 days', '/uploads/seed-peak-milk-400g.jpg', 0, 6200.00, 8.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(25, 'Milo Chocolate Drink 400g', 'Chocolate malt beverage powder for hot or cold breakfast drinks.', 'Milo is a popular chocolate malt drink for families, students, and office snack corners. It can be served hot or cold and pairs well with milk.', 'CopUp Grocery', 'in_stock', 500.00, '1-2 days', '/uploads/seed-milo-400g.jpg', 0, 7200.00, 9.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(26, 'Basmati Rice 5kg Bag', 'Long-grain aromatic rice for jollof rice, fried rice, white rice, and special meals.', 'A 5kg basmati rice bag for family cooking and meal prep. The long grains are suitable for everyday meals and special occasions when customers want fluffy rice.', 'CopUp Grocery', 'in_stock', 1000.00, '1-3 days', '/uploads/seed-basmati-rice-5kg.jpg', 1, 28500.00, 18.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(27, 'Power Oil 3L Vegetable Oil', 'Everyday cooking oil for frying, stew, soup, jollof, and home kitchens.', 'A practical 3-litre vegetable oil pack for customers restocking basic kitchen items. Useful for frying, soups, stew, sauces, and regular home cooking.', 'CopUp Grocery', 'in_stock', 800.00, '1-2 days', '/uploads/seed-power-oil-3l.jpg', 0, 13200.00, 12.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(28, 'Rechargeable LED Desk Lamp', 'Adjustable rechargeable lamp for studying, remote work, bedside reading, and outages.', 'A useful LED desk lamp for students, remote workers, salons, and bedside reading. The rechargeable battery helps during power cuts, and the adjustable neck makes it easy to aim light.', 'CopUp Utility', 'in_stock', 800.00, '1-3 days', '/uploads/seed-led-desk-lamp.jpg', 1, 22000.00, 12.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(29, 'Stainless Steel Vacuum Flask 1L', 'Insulated flask for hot tea, cold drinks, office desks, school, and travel.', 'A durable 1-litre vacuum flask that helps keep drinks hot or cold for longer. Practical for commuters, drivers, students, gym users, and office desks.', 'CopUp Utility', 'in_stock', 700.00, '1-3 days', '/uploads/seed-vacuum-flask-1l.jpg', 0, 14500.00, 8.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(30, 'Non-Stick Frying Pan 28cm', 'Everyday non-stick pan for eggs, pancakes, stir-fry, and light frying.', 'A 28cm non-stick frying pan for home kitchens and quick meals. It helps reduce sticking when used correctly and makes cleanup easier after cooking.', 'CopUp Utility', 'in_stock', 1000.00, '1-3 days', '/uploads/seed-nonstick-frying-pan.jpg', 1, 26000.00, 14.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(31, 'Digital Kitchen Scale', 'Compact kitchen scale for baking, meal prep, portion control, and small sellers.', 'A simple digital scale for measuring ingredients, food portions, small packaged goods, and home business items. Useful for kitchens and sellers who need consistency.', 'CopUp Utility', 'in_stock', 700.00, '1-3 days', '/uploads/seed-digital-kitchen-scale.jpg', 0, 18000.00, 9.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(32, 'Travel Organizer Pouch Set', 'Packing cube and pouch set for clothes, toiletries, makeup, cables, and documents.', 'A travel organizer set for keeping bags and suitcases tidy. Customers can separate clothes, toiletries, skincare, chargers, and travel documents without mixing everything together.', 'CopUp Utility', 'in_stock', 600.00, '1-3 days', '/uploads/seed-travel-organizer-pouches.jpg', 0, 15000.00, 8.00, '2026-07-27 22:58:23', 1, 1, NULL),
+(33, 'Tool Kit 46-Piece Household Set', 'Compact household tool kit for assembly, basic repairs, and emergency fixes.', 'A compact tool kit for renters, students, small offices, and first apartments. It covers basic screw tightening, small repairs, furniture assembly, and simple maintenance jobs.', 'CopUp Utility', 'in_stock', 1000.00, '1-3 days', '/uploads/seed-household-tool-kit.jpg', 1, 34000.00, 16.00, '2026-07-27 22:58:23', 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -579,7 +623,31 @@ CREATE TABLE `product_categories` (
 INSERT INTO `product_categories` (`product_id`, `category_id`) VALUES
 (7, 1),
 (8, 1),
-(9, 2);
+(10, 1),
+(11, 1),
+(12, 1),
+(13, 1),
+(14, 1),
+(15, 1),
+(9, 2),
+(16, 2),
+(17, 2),
+(18, 2),
+(19, 2),
+(20, 2),
+(21, 2),
+(22, 4),
+(23, 4),
+(24, 4),
+(25, 4),
+(26, 4),
+(27, 4),
+(28, 5),
+(29, 5),
+(30, 5),
+(31, 5),
+(32, 5),
+(33, 5);
 
 -- --------------------------------------------------------
 
@@ -619,7 +687,55 @@ INSERT INTO `product_images` (`id`, `product_id`, `image_path`, `sort_order`, `c
 (8, 8, '/uploads/1783178168662_mobile-phone-2.jpg', 0, '2026-07-04 15:16:08'),
 (9, 8, '/uploads/1783178168667_mobile-phone-3.jpg', 1, '2026-07-04 15:16:08'),
 (10, 9, '/uploads/1783178980450_men\'s-short2.jpg', 0, '2026-07-04 15:29:40'),
-(11, 9, '/uploads/1783178980475_men\'s-short3.jpg', 1, '2026-07-04 15:29:40');
+(11, 9, '/uploads/1783178980475_men\'s-short3.jpg', 1, '2026-07-04 15:29:40'),
+(12, 10, '/uploads/seed-iphone-15-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(13, 11, '/uploads/seed-iphone-16-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(14, 12, '/uploads/seed-iphone-17-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(15, 13, '/uploads/seed-galaxy-a55-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(16, 14, '/uploads/seed-oraimo-freepods-4-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(17, 15, '/uploads/seed-anker-20000-power-bank-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(18, 16, '/uploads/seed-white-sneakers-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(19, 17, '/uploads/seed-oversized-hoodie-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(20, 18, '/uploads/seed-crossbody-handbag-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(21, 19, '/uploads/seed-mens-chino-trousers-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(22, 20, '/uploads/seed-aviator-sunglasses-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(23, 21, '/uploads/seed-leather-watch-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(24, 22, '/uploads/seed-golden-penny-spaghetti-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(25, 23, '/uploads/seed-indomie-carton-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(26, 24, '/uploads/seed-peak-milk-400g-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(27, 25, '/uploads/seed-milo-400g-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(28, 26, '/uploads/seed-basmati-rice-5kg-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(29, 27, '/uploads/seed-power-oil-3l-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(30, 28, '/uploads/seed-led-desk-lamp-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(31, 29, '/uploads/seed-vacuum-flask-1l-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(32, 30, '/uploads/seed-nonstick-frying-pan-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(33, 31, '/uploads/seed-digital-kitchen-scale-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(34, 32, '/uploads/seed-travel-organizer-pouches-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(35, 33, '/uploads/seed-household-tool-kit-gallery-1.jpg', 0, '2026-07-27 22:58:23'),
+(36, 10, '/uploads/seed-iphone-15-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(37, 11, '/uploads/seed-iphone-16-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(38, 12, '/uploads/seed-iphone-17-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(39, 13, '/uploads/seed-galaxy-a55-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(40, 14, '/uploads/seed-oraimo-freepods-4-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(41, 15, '/uploads/seed-anker-20000-power-bank-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(42, 16, '/uploads/seed-white-sneakers-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(43, 17, '/uploads/seed-oversized-hoodie-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(44, 18, '/uploads/seed-crossbody-handbag-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(45, 19, '/uploads/seed-mens-chino-trousers-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(46, 20, '/uploads/seed-aviator-sunglasses-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(47, 21, '/uploads/seed-leather-watch-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(48, 22, '/uploads/seed-golden-penny-spaghetti-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(49, 23, '/uploads/seed-indomie-carton-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(50, 24, '/uploads/seed-peak-milk-400g-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(51, 25, '/uploads/seed-milo-400g-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(52, 26, '/uploads/seed-basmati-rice-5kg-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(53, 27, '/uploads/seed-power-oil-3l-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(54, 28, '/uploads/seed-led-desk-lamp-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(55, 29, '/uploads/seed-vacuum-flask-1l-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(56, 30, '/uploads/seed-nonstick-frying-pan-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(57, 31, '/uploads/seed-digital-kitchen-scale-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(58, 32, '/uploads/seed-travel-organizer-pouches-gallery-2.jpg', 1, '2026-07-27 22:58:23'),
+(59, 33, '/uploads/seed-household-tool-kit-gallery-2.jpg', 1, '2026-07-27 22:58:23');
 
 -- --------------------------------------------------------
 
@@ -746,6 +862,7 @@ CREATE TABLE `users` (
   `bid_points` int(11) NOT NULL DEFAULT 0,
   `task_coin` int(11) NOT NULL DEFAULT 0,
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
+  `admin_scope` enum('super','limited') NOT NULL DEFAULT 'limited',
   `is_verified` tinyint(1) NOT NULL DEFAULT 0,
   `is_blocked` tinyint(1) NOT NULL DEFAULT 0,
   `referral_code` varchar(32) DEFAULT NULL,
@@ -759,15 +876,24 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `username`, `full_name`, `profile`, `password_hash`, `pin`, `bid_points`, `task_coin`, `role`, `is_verified`, `is_blocked`, `referral_code`, `wallet_address`, `game_id`, `created_at`, `updated_at`) VALUES
-(1, 'admin@copupbid.com', 'admin', 'one user', NULL, '$2b$12$fdWqjDpx5HfBy07mNRdQBeqJZRCQR.DdTv/QQejaS5vUbbTUgqvXC', '0000', 10, 0, 'admin', 1, 0, 'rdyb9o', 'copqy0FwMBB0wmnJ1v1hcz1', 'TVEA-23E7-HYWF', '2025-08-27 16:35:15', '2025-09-09 05:03:52'),
-(2, '8amlight@gmail.com', 'potato', 'light habibi', 'uploads/user-rave-faq-1772051540676-695524335.jpeg', '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 46080, 0, 'user', 1, 0, 'ylpg48', 'copio7DCqxF3UQ9F0W4z261', '3Z8G-GJSN-KDFB', '2025-08-27 16:56:37', '2026-07-04 18:38:38'),
-(7, 'jossycode0@gmail.com', 'jay', 'dbill jay', NULL, '$2b$12$G70VFVOg9wow8H7BHGGNYe0ypHn5AExM.iNT.RnHY0nEswFUzVH0q', '0000', 60, 0, 'user', 1, 0, '8gzacr', 'copDwaSf1gGaYaJdeSNhAcB', 'FT5M-32ZV-9RGB', '2025-08-30 15:37:41', '2025-11-27 13:54:20'),
-(8, '8amjoker@gmail.com', 'joker', 'joker jay', NULL, '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 104702, 0, 'user', 1, 0, '8gzaco', 'copDwaSf1gGaYaJdeSNhAcc', 'FT5M-32ZV-9RGU', '2025-08-30 15:37:41', '2026-03-01 00:05:59');
+INSERT INTO `users` (`id`, `email`, `username`, `full_name`, `profile`, `password_hash`, `pin`, `bid_points`, `task_coin`, `role`, `admin_scope`, `is_verified`, `is_blocked`, `referral_code`, `wallet_address`, `game_id`, `created_at`, `updated_at`) VALUES
+(1, 'admin@copupbid.com', 'admin', 'one user', NULL, '$2b$12$fdWqjDpx5HfBy07mNRdQBeqJZRCQR.DdTv/QQejaS5vUbbTUgqvXC', '0000', 10, 0, 'admin', 'super', 1, 0, 'rdyb9o', 'copqy0FwMBB0wmnJ1v1hcz1', 'TVEA-23E7-HYWF', '2025-08-27 16:35:15', '2026-07-27 23:28:20'),
+(2, '8amlight@gmail.com', 'potato', 'light habibi', 'uploads/IMG_0888-1783249702704-429708616.jpeg', '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 46080, 0, 'user', 'limited', 1, 0, 'ylpg48', 'copio7DCqxF3UQ9F0W4z261', '3Z8G-GJSN-KDFB', '2025-08-27 16:56:37', '2026-07-05 11:08:22'),
+(7, 'jossycode0@gmail.com', 'jay', 'dbill jay', NULL, '$2b$12$G70VFVOg9wow8H7BHGGNYe0ypHn5AExM.iNT.RnHY0nEswFUzVH0q', '0000', 60, 0, 'user', 'limited', 1, 0, '8gzacr', 'copDwaSf1gGaYaJdeSNhAcB', 'FT5M-32ZV-9RGB', '2025-08-30 15:37:41', '2025-11-27 13:54:20'),
+(8, '8amjoker@gmail.com', 'joker', 'joker jay', NULL, '$2b$12$wYsy6lwp8SfWlv/pQreqhOWdzwBPRrNe7Se2YRoNaPT/N4JI51XNi', '0000', 104702, 0, 'user', 'limited', 1, 0, '8gzaco', 'copDwaSf1gGaYaJdeSNhAcc', 'FT5M-32ZV-9RGU', '2025-08-30 15:37:41', '2026-03-01 00:05:59'),
+(9, 'Emmanueleunice014@gmail.com', 'Coco', 'Emmanuel Eunice', NULL, '$2b$12$Fy5JeDb5Tj/l0W21Y2PfnOIDnWkSQ5AQFBvFDw.ncx1uifUpHLOA.', '0000', 0, 0, 'user', 'limited', 1, 0, 'isj9v7', 'cop5gOkGwo6CZVqHEdajve6', 'X63G-KW3L-MWXR', '2026-07-26 09:50:53', NULL),
+(10, 'benjaminisaac908@gmail.com', 'king Ben', 'Isaac Benjamin', NULL, '$2b$12$nKI5g/VNQ4JOXVn7NWhdSe9wPZ1KwnwqpEJF1a7mhEolO9XqUON6S', '0000', 0, 0, 'user', 'limited', 1, 0, 'vd6gp3', 'copdveMbqLBTgFtjMB75JtG', 'ZBLP-L5AC-6SG7', '2026-07-26 10:06:48', NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin_permissions`
+--
+ALTER TABLE `admin_permissions`
+  ADD PRIMARY KEY (`user_id`,`permission_key`),
+  ADD KEY `idx_admin_permissions_permission` (`permission_key`);
 
 --
 -- Indexes for table `affiliate_referrals`
@@ -1037,7 +1163,7 @@ ALTER TABLE `auction_order_items`
 -- AUTO_INCREMENT for table `banners`
 --
 ALTER TABLE `banners`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `bidshop`
@@ -1085,7 +1211,7 @@ ALTER TABLE `payouts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `product_favorites`
@@ -1097,7 +1223,7 @@ ALTER TABLE `product_favorites`
 -- AUTO_INCREMENT for table `product_images`
 --
 ALTER TABLE `product_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT for table `referrals`
@@ -1133,11 +1259,17 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `admin_permissions`
+--
+ALTER TABLE `admin_permissions`
+  ADD CONSTRAINT `fk_admin_permissions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `affiliate_referrals`

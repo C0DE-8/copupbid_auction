@@ -500,6 +500,35 @@
   outline: none;
 }
 
+.permissionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+}
+
+.permissionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 10px;
+  color: rgba(233,233,255,0.86);
+  font-size: 12px;
+}
+
+.permissionItem:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.permissionItem input {
+  accent-color: #22c55e;
+}
+
 .switchRow {
   grid-column: 1 / -1;
   display: flex;

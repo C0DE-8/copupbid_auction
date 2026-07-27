@@ -13,7 +13,20 @@ import {
   FaWallet,
   FaCog,
   FaSignOutAlt,
+  FaShoppingBag,
+  FaClock,
+  FaStar,
 } from "react-icons/fa";
+
+function getStoredPermissions() {
+  try {
+    const raw = localStorage.getItem("admin_permissions");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function AdminNavbar({ admin: adminProp }) {
   const navigate = useNavigate();
@@ -22,15 +35,31 @@ export default function AdminNavbar({ admin: adminProp }) {
   const [admin, setAdmin] = useState(adminProp || null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const navItems = useMemo(
-    () => [
-      { to: "/admin-dashboard", label: "Dashboard", icon: <FaTachometerAlt /> },
-      { to: "/admin/users", label: "Users", icon: <FaUsers /> },
-      { to: "/admin/auctions", label: "Auctions", icon: <FaGavel /> },
-      { to: "/admin/payouts", label: "Payouts", icon: <FaWallet /> },
-    ],
-    []
-  );
+  const adminScope = (admin?.admin_scope || localStorage.getItem("admin_scope") || "").toLowerCase();
+  const isSuper = adminScope === "super";
+  const permissions = admin?.permissions || getStoredPermissions();
+
+  const navItems = useMemo(() => {
+    const allItems = [
+      { to: "/admin-dashboard", label: "Dashboard", icon: <FaTachometerAlt />, superOnly: true },
+      { to: "/admin/management", label: "Management", icon: <FaCog /> },
+      { to: "/admin/users", label: "Users", icon: <FaUsers />, permission: "users" },
+      { to: "/admin/products", label: "Products", icon: <FaShoppingBag />, permission: "products" },
+      { to: "/admin/auctions", label: "Auctions", icon: <FaGavel />, permission: "auctions" },
+      { to: "/admin/orders", label: "Orders", icon: <FaShoppingBag />, permission: "orders" },
+      { to: "/admin/payouts", label: "Payouts", icon: <FaWallet />, permission: "payouts" },
+      { to: "/admin/waitlist", label: "Waitlist", icon: <FaClock />, permission: "waitlist" },
+      { to: "/admin/favorites", label: "Favorites", icon: <FaStar />, permission: "favorites" },
+      { to: "/admin/control", label: "Control", icon: <FaCog />, permission: "control" },
+    ];
+
+    if (isSuper) return allItems;
+    return allItems.filter((item) => {
+      if (item.superOnly) return false;
+      if (!item.permission) return true;
+      return permissions.includes(item.permission);
+    });
+  }, [isSuper, permissions]);
 
   // Close menu on route change (fixes “header preview” issue on mobile)
   useEffect(() => {
@@ -59,8 +88,12 @@ export default function AdminNavbar({ admin: adminProp }) {
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("jwt");
+    localStorage.removeItem("admin_scope");
+    localStorage.removeItem("admin_permissions");
     navigate("/auth/login");
   };
+
+  const homePath = isSuper ? "/admin-dashboard" : "/admin/management";
 
   return (
     <div className={styles.wrap}>
@@ -68,7 +101,7 @@ export default function AdminNavbar({ admin: adminProp }) {
         <div className={styles.left}>
           <button
             className={styles.brandBtn}
-            onClick={() => navigate("/admin-dashboard")}
+            onClick={() => navigate(homePath)}
             title="Admin Dashboard"
             type="button"
           >

@@ -28,7 +28,7 @@ const authenticateToken = async (req, res, next) => {
 
     // Fetch user and validate status
     const [rows] = await pool.query(
-      "SELECT id, email, username, role, is_verified, is_blocked, created_at FROM users WHERE id = ? LIMIT 1",
+      "SELECT id, email, username, role, admin_scope, is_verified, is_blocked, created_at FROM users WHERE id = ? LIMIT 1",
       [payload.userId]
     );
     const user = rows[0];
@@ -42,12 +42,23 @@ const authenticateToken = async (req, res, next) => {
       return res.status(403).json({ message: "Account is blocked" });
     }
 
+    let adminPermissions = [];
+    if (user.role === "admin" && user.admin_scope !== "super") {
+      const [permissionRows] = await pool.query(
+        "SELECT permission_key FROM admin_permissions WHERE user_id = ?",
+        [user.id]
+      );
+      adminPermissions = permissionRows.map((row) => row.permission_key);
+    }
+
     // Attach minimal user to request
     req.user = {
       id: user.id,
       email: user.email,
       username: user.username,
       role: user.role,
+      admin_scope: user.admin_scope || "limited",
+      admin_permissions: adminPermissions,
       is_verified: user.is_verified,
       is_blocked: user.is_blocked,
       created_at: user.created_at,

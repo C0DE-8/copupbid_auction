@@ -131,7 +131,7 @@ router.post("/login", async (req, res) => {
     }
 
     const [rows] = await pool.query(
-      `SELECT id, email, username, password_hash, role, is_verified, is_blocked
+      `SELECT id, email, username, password_hash, role, admin_scope, is_verified, is_blocked
        FROM users
        WHERE email = ? OR username = ?
        LIMIT 1`,
@@ -147,6 +147,15 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
+    let permissions = [];
+    if (user.role === "admin" && user.admin_scope !== "super") {
+      const [permissionRows] = await pool.query(
+        "SELECT permission_key FROM admin_permissions WHERE user_id = ?",
+        [user.id]
+      );
+      permissions = permissionRows.map((row) => row.permission_key);
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -155,7 +164,14 @@ router.post("/login", async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, username: user.username, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        admin_scope: user.admin_scope || "limited",
+        permissions,
+      },
     });
   } catch (err) {
     console.error("login error:", err);

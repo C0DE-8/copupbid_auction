@@ -16,6 +16,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 // Protected Routes
 import AdminRoute from "./routes/AdminRoute";
 import UserRoute from "./routes/UserRoute";
+import AdminPermissionRoute from "./routes/AdminPermissionRoute";
+import SuperAdminRoute from "./routes/SuperAdminRoute";
 
 // 404
 import NotFound from "./pages/NotFound/NotFound";
@@ -45,6 +47,7 @@ import Winner from "./pages/Winner/Winner";
 import HowItWork from "./pages/Support/HowItWork";
 import CopUpBidShopD from "./pages/CopUpBidShop/CopUpBidShopD";
 import AdminCoinPay from "./pages/admin/AdminCoinPay";
+import AdminManagement from "./pages/admin/AdminManagement";
 import CookieConsent from "./components/CookieConsent/CookieConsent";
 import Privacy from "./pages/Privacy/Privacy";
 import Terms from "./pages/Privacy/Terms";
@@ -119,59 +122,63 @@ export default function App() {
         </Route>
 
         {/* ================= ADMIN ROUTES (Protected) ================= */}
-        <Route element={<AdminRoute />}>
+        <Route element={<SuperAdminRoute />}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+        <Route element={<AdminRoute />}>
+          <Route path="/admin/management" element={<AdminManagement />} />
+        </Route>
+
+         <Route element={<AdminPermissionRoute permission="products" />}>
           <Route path="/admin/products" element={<AdminProducts />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="waitlist" />}>
           <Route path="/admin/waitlist" element={<AdminWaitlist />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="users" />}>
           <Route path="/admin/users" element={<AdminUsers />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="auctions" />}>
           <Route path="/admin/auctions" element={<AdminAuction />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="affiliates" />}>
           <Route path="/admin/affiliates" element={<AdminAffilates />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="payouts" />}>
           <Route path="/admin/payouts" element={<AdminPayout />} />
         </Route>
 
-        <Route element={<AdminRoute />}>
+        <Route element={<AdminPermissionRoute permission="control" />}>
           <Route path="/admin/control" element={<AdminControl />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="coins" />}>
           <Route path="/admin/coins" element={<AdminCoins />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="pay_account" />}>
           <Route path="/admin/pay-account" element={<AdminPayAccount />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="orders" />}>
           <Route path="/admin/orders" element={<AdminOrders />} />
         </Route>
 
-         <Route element={<AdminRoute />}>
+         <Route element={<AdminPermissionRoute permission="favorites" />}>
           <Route path="/admin/favorites" element={<AdminFavorites />} />
         </Route>
 
-        <Route element={<AdminRoute />}>
+        <Route element={<AdminPermissionRoute permission="banners" />}>
           <Route path="/admin/banner" element={<AdminBanner />} />
         </Route>
 
-        <Route element={<AdminRoute />}>
+        <Route element={<AdminPermissionRoute permission="coin_payments" />}>
           <Route path="/admin/coin-pay-in" element={<AdminCoinPay />} />
         </Route>
 

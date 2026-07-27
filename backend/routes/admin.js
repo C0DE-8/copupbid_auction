@@ -29,7 +29,13 @@ const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  destination: (req, file, cb) => {
+    const adminId = Number(req.user?.id);
+    const folder = Number.isInteger(adminId) && adminId > 0 ? String(adminId) : "unknown";
+    const adminUploadDir = path.join(UPLOAD_DIR, "admins", folder);
+    fs.mkdirSync(adminUploadDir, { recursive: true });
+    cb(null, adminUploadDir);
+  },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname || "");
     const base = path.basename(file.originalname || "image", ext)
@@ -57,6 +63,20 @@ function toFsPath(webPath) {
   return path.join(__dirname, "..", webPath.replace(/^\//, ""));
 }
 
+function publicUploadPath(file) {
+  if (!file) return null;
+
+  const rawPath = file.path
+    ? path.relative(UPLOAD_DIR, file.path)
+    : file.filename;
+
+  const rel = String(rawPath || "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "");
+
+  return rel ? `/uploads/${rel}` : null;
+}
+
 const UPLOAD_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const UPLOAD_REFERENCE_COLUMNS = [
   { table: "auctions", column: "image" },
@@ -69,7 +89,7 @@ const UPLOAD_REFERENCE_COLUMNS = [
   { table: "users", column: "profile" },
 ];
 
-function uploadFilenameFromDbValue(value) {
+function uploadReferenceKeyFromDbValue(value) {
   if (!value) return null;
 
   let raw = String(value).trim();
@@ -89,13 +109,14 @@ function uploadFilenameFromDbValue(value) {
   if (markerIndex >= 0) raw = raw.slice(markerIndex + marker.length);
   else if (raw.startsWith("uploads/")) raw = raw.slice("uploads/".length);
 
-  const filename = path.basename(raw);
-  if (!filename || filename === "." || filename === "..") return null;
+  raw = raw.replace(/^\/+/, "");
+  const parts = raw.split("/").filter(Boolean);
+  if (!parts.length) return null;
 
   try {
-    return decodeURIComponent(filename);
+    return decodeURIComponent(parts.join("/"));
   } catch (_) {
-    return filename;
+    return parts.join("/");
   }
 }
 
@@ -109,8 +130,8 @@ async function getReferencedUploadFilenames() {
       );
 
       for (const row of rows) {
-        const filename = uploadFilenameFromDbValue(row.upload_path);
-        if (filename) referenced.add(filename);
+        const key = uploadReferenceKeyFromDbValue(row.upload_path);
+        if (key) referenced.add(key);
       }
     } catch (err) {
       if (["ER_NO_SUCH_TABLE", "ER_BAD_FIELD_ERROR"].includes(err.code)) {
@@ -126,31 +147,44 @@ async function getReferencedUploadFilenames() {
 
 async function listUnusedUploadImages() {
   const referenced = await getReferencedUploadFilenames();
-  const entries = await fs.promises.readdir(UPLOAD_DIR, { withFileTypes: true });
   const unused = [];
   const kept = [];
 
-  for (const entry of entries) {
-    if (!entry.isFile()) continue;
+  async function walk(dir) {
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
 
-    const ext = path.extname(entry.name).toLowerCase();
-    if (!UPLOAD_IMAGE_EXTENSIONS.has(ext)) continue;
+    for (const entry of entries) {
+      const filePath = path.join(dir, entry.name);
 
-    const filePath = path.join(UPLOAD_DIR, entry.name);
-    const stat = await fs.promises.stat(filePath);
-    const item = {
-      filename: entry.name,
-      path: `/uploads/${entry.name}`,
-      size: stat.size,
-      updated_at: stat.mtime.toISOString(),
-    };
+      if (entry.isDirectory()) {
+        await walk(filePath);
+        continue;
+      }
 
-    if (referenced.has(entry.name)) kept.push(item);
-    else unused.push(item);
+      if (!entry.isFile()) continue;
+
+      const ext = path.extname(entry.name).toLowerCase();
+      if (!UPLOAD_IMAGE_EXTENSIONS.has(ext)) continue;
+
+      const rel = path.relative(UPLOAD_DIR, filePath).replace(/\\/g, "/");
+      const stat = await fs.promises.stat(filePath);
+      const item = {
+        filename: entry.name,
+        relative_path: rel,
+        path: `/uploads/${rel}`,
+        size: stat.size,
+        updated_at: stat.mtime.toISOString(),
+      };
+
+      if (referenced.has(rel) || referenced.has(entry.name)) kept.push(item);
+      else unused.push(item);
+    }
   }
 
-  unused.sort((a, b) => a.filename.localeCompare(b.filename));
-  kept.sort((a, b) => a.filename.localeCompare(b.filename));
+  await walk(UPLOAD_DIR);
+
+  unused.sort((a, b) => a.relative_path.localeCompare(b.relative_path));
+  kept.sort((a, b) => a.relative_path.localeCompare(b.relative_path));
 
   return { referenced, unused, kept };
 }
@@ -173,6 +207,83 @@ const ALLOWED_STATUS = new Set([
   "cancelled",
 ]);
 
+const ADMIN_PERMISSION_MODULES = [
+  { key: "users", title: "Users Management", path: "/admin/users" },
+  { key: "products", title: "Product Management", path: "/admin/products" },
+  { key: "auctions", title: "Auction Management", path: "/admin/auctions" },
+  { key: "banners", title: "Banner Management", path: "/admin/banner" },
+  { key: "affiliates", title: "Affiliate Management", path: "/admin/affiliates" },
+  { key: "payouts", title: "Payout Management", path: "/admin/payouts" },
+  { key: "pay_account", title: "Pay Account", path: "/admin/pay-account" },
+  { key: "coin_payments", title: "Coin Pay Management", path: "/admin/coin-pay-in" },
+  { key: "coins", title: "Coin Management", path: "/admin/coins" },
+  { key: "waitlist", title: "Waitlist", path: "/admin/waitlist" },
+  { key: "orders", title: "Orders Management", path: "/admin/orders" },
+  { key: "favorites", title: "Favorites Summary", path: "/admin/favorites" },
+  { key: "control", title: "Admin Control", path: "/admin/control" },
+];
+
+const ADMIN_PERMISSION_KEYS = new Set(ADMIN_PERMISSION_MODULES.map((module) => module.key));
+
+function isSuperAdmin(user) {
+  return user?.role === "admin" && user?.admin_scope === "super";
+}
+
+async function loadAdminPermissionKeys(userId) {
+  const [rows] = await pool.query(
+    "SELECT permission_key FROM admin_permissions WHERE user_id = ? ORDER BY permission_key ASC",
+    [userId]
+  );
+  return rows.map((row) => row.permission_key);
+}
+
+function getPermissionForAdminPath(req) {
+  const pathOnly = String(req.path || "").split("?")[0];
+
+  if (pathOnly.startsWith("/users-copupcoin")) return "coins";
+  if (pathOnly.startsWith("/users")) return "users";
+  if (pathOnly.startsWith("/user/count")) return "users";
+  if (pathOnly.startsWith("/featured/products")) return "products";
+  if (pathOnly.startsWith("/products")) return "products";
+  if (pathOnly.startsWith("/categories")) return "products";
+  if (pathOnly.startsWith("/auction/orders")) return "orders";
+  if (pathOnly.startsWith("/auctions")) return "auctions";
+  if (pathOnly.startsWith("/demo-users")) return "control";
+  if (pathOnly.startsWith("/coin-rate")) return "coins";
+  if (pathOnly.startsWith("/copup-topups")) return "coin_payments";
+  if (pathOnly.startsWith("/coin-purchases")) return "coin_payments";
+  if (pathOnly.startsWith("/payouts")) return "payouts";
+  if (pathOnly.startsWith("/pay-account")) return "pay_account";
+  if (pathOnly.startsWith("/banners")) return "banners";
+  if (pathOnly.startsWith("/uploads/unused")) return "control";
+  if (pathOnly.includes("waitlist") || pathOnly.includes("wait-list")) return "waitlist";
+  if (pathOnly.startsWith("/orders")) return "orders";
+  if (pathOnly.startsWith("/favorites")) return "favorites";
+  if (pathOnly.includes("affiliate")) return "affiliates";
+
+  return null;
+}
+
+function requireSuperAdmin(req, res, next) {
+  if (isSuperAdmin(req.user)) return next();
+  return res.status(403).json({ message: "Super admin access required" });
+}
+
+function requireAdminModuleAccess(req, res, next) {
+  if (isSuperAdmin(req.user)) return next();
+
+  const required = getPermissionForAdminPath(req);
+  if (!required) return next();
+
+  const permissions = new Set(req.user?.admin_permissions || []);
+  if (permissions.has(required)) return next();
+
+  return res.status(403).json({
+    message: "This admin account does not have access to this management module",
+    required_permission: required,
+  });
+}
+
 /* ---------- Helper ID Checkers (HEIST) ---------- */
 function isCopId(val) {
   return typeof val === "string" && val.startsWith("cop_");
@@ -192,7 +303,8 @@ router.get("/profile", authenticateToken, authenticateAdmin, async (req, res) =>
         `SELECT
            full_name AS name,
            username,
-           role
+           role,
+           admin_scope
          FROM users
          WHERE id = ?
          LIMIT 1`,
@@ -204,8 +316,21 @@ router.get("/profile", authenticateToken, authenticateAdmin, async (req, res) =>
       }
 
       // Only the requested fields
-      const { name, username, role } = rows[0];
-      return res.status(200).json({ name, username, role });
+      const { name, username, role, admin_scope } = rows[0];
+      const permissions = role === "admin" && admin_scope !== "super"
+        ? await loadAdminPermissionKeys(adminId)
+        : ADMIN_PERMISSION_MODULES.map((module) => module.key);
+
+      return res.status(200).json({
+        name,
+        username,
+        role,
+        admin_scope: admin_scope || "limited",
+        permissions,
+        modules: ADMIN_PERMISSION_MODULES.filter((module) =>
+          admin_scope === "super" || permissions.includes(module.key)
+        ),
+      });
     } catch (err) {
       console.error("admin/profile error:", err);
       return res.status(500).json({ message: "Error fetching admin profile" });
@@ -295,7 +420,7 @@ router.patch("/profile", authenticateToken, authenticateAdmin, async (req, res) 
 
     // Return fresh profile snapshot
     const [rows] = await pool.query(
-      `SELECT full_name AS name, username, email, role
+      `SELECT full_name AS name, username, email, role, admin_scope
          FROM users
         WHERE id = ?
         LIMIT 1`,
@@ -311,6 +436,129 @@ router.patch("/profile", authenticateToken, authenticateAdmin, async (req, res) 
     return res.status(500).json({ message: "Error updating admin profile" });
   }
 });
+
+// GET /api/admin/management/modules
+router.get("/management/modules", authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const permissions = isSuperAdmin(req.user)
+      ? ADMIN_PERMISSION_MODULES.map((module) => module.key)
+      : await loadAdminPermissionKeys(req.user.id);
+
+    return res.status(200).json({
+      admin_scope: req.user.admin_scope || "limited",
+      modules: ADMIN_PERMISSION_MODULES.map((module) => ({
+        ...module,
+        allowed: isSuperAdmin(req.user) || permissions.includes(module.key),
+      })),
+    });
+  } catch (err) {
+    console.error("GET /admin/management/modules error:", err);
+    return res.status(500).json({ message: "Error fetching admin modules" });
+  }
+});
+
+// GET /api/admin/permission-modules
+router.get("/permission-modules", authenticateToken, authenticateAdmin, requireSuperAdmin, async (_req, res) => {
+  return res.status(200).json({ modules: ADMIN_PERMISSION_MODULES });
+});
+
+// GET /api/admin/users/:id/permissions
+router.get("/users/:id/permissions", authenticateToken, authenticateAdmin, requireSuperAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+
+    const [[user]] = await pool.query(
+      `SELECT id, email, username, full_name, role, admin_scope
+         FROM users
+        WHERE id = ?
+        LIMIT 1`,
+      [id]
+    );
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const permissions = user.role === "admin" && user.admin_scope !== "super"
+      ? await loadAdminPermissionKeys(id)
+      : [];
+
+    return res.status(200).json({
+      user,
+      permissions,
+      modules: ADMIN_PERMISSION_MODULES,
+    });
+  } catch (err) {
+    console.error("GET /admin/users/:id/permissions error:", err);
+    return res.status(500).json({ message: "Error fetching admin permissions" });
+  }
+});
+
+// PATCH /api/admin/users/:id/permissions
+router.patch("/users/:id/permissions", authenticateToken, authenticateAdmin, requireSuperAdmin, async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+
+    const adminScope = String(req.body?.admin_scope || "limited").trim().toLowerCase();
+    const permissions = Array.isArray(req.body?.permissions) ? req.body.permissions : [];
+
+    if (!["super", "limited"].includes(adminScope)) {
+      return res.status(400).json({ message: "admin_scope must be super or limited" });
+    }
+
+    const cleanPermissions = [...new Set(
+      permissions.map((key) => String(key || "").trim()).filter(Boolean)
+    )];
+
+    const invalid = cleanPermissions.filter((key) => !ADMIN_PERMISSION_KEYS.has(key));
+    if (invalid.length) {
+      return res.status(400).json({ message: "Invalid permission key", invalid });
+    }
+
+    const [[user]] = await conn.query(
+      "SELECT id FROM users WHERE id = ? LIMIT 1",
+      [id]
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await conn.beginTransaction();
+    await conn.query(
+      "UPDATE users SET role = 'admin', admin_scope = ?, is_verified = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [adminScope, id]
+    );
+    await conn.query("DELETE FROM admin_permissions WHERE user_id = ?", [id]);
+
+    if (adminScope === "limited" && cleanPermissions.length) {
+      await conn.query(
+        "INSERT INTO admin_permissions (user_id, permission_key) VALUES ?",
+        [cleanPermissions.map((key) => [id, key])]
+      );
+    }
+
+    await conn.commit();
+
+    return res.status(200).json({
+      message: "Admin permissions updated",
+      user_id: id,
+      role: "admin",
+      admin_scope: adminScope,
+      permissions: adminScope === "super" ? ADMIN_PERMISSION_MODULES.map((module) => module.key) : cleanPermissions,
+    });
+  } catch (err) {
+    await conn.rollback();
+    console.error("PATCH /admin/users/:id/permissions error:", err);
+    return res.status(500).json({ message: "Error updating admin permissions" });
+  } finally {
+    conn.release();
+  }
+});
+
+router.use(authenticateToken, authenticateAdmin, requireAdminModuleAccess);
 
 // ================== ADMIN: USERS (WITH BID POINTS + EDIT) ==================
 // GET /api/admin/user/count
@@ -389,6 +637,7 @@ router.get("/users", authenticateToken, authenticateAdmin,
            username,
            full_name,
            role,
+           admin_scope,
            is_verified,
            is_blocked,
            referral_code,
@@ -434,6 +683,7 @@ router.get("/users/:id", authenticateToken, authenticateAdmin,
            username,
            full_name,
            role,
+           admin_scope,
            is_verified,
            is_blocked,
            referral_code,
@@ -475,6 +725,7 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
       full_name,      // preferred
       name,           // alias -> maps to full_name if provided
       role,
+      admin_scope,
       is_verified,
       is_blocked,
       wallet_address,
@@ -491,9 +742,14 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
     if (typeof username === "string")       username = username.trim();
     if (typeof full_name === "string")      full_name = full_name.trim();
     if (typeof role === "string")           role = role.trim().toLowerCase();
+    if (typeof admin_scope === "string")    admin_scope = admin_scope.trim().toLowerCase();
     if (typeof wallet_address === "string") wallet_address = wallet_address.trim();
     if (typeof game_id === "string")        game_id = game_id.trim();
     if (typeof referral_code === "string")  referral_code = referral_code.trim();
+
+    if ((role !== undefined || admin_scope !== undefined) && !isSuperAdmin(req.user)) {
+      return res.status(403).json({ message: "Only a super admin can change user roles or admin scope" });
+    }
 
     // Coerce booleans
     const toBoolInt = (v) =>
@@ -522,6 +778,7 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
       wallet_address === undefined &&
       game_id === undefined &&
       referral_code === undefined &&
+      admin_scope === undefined &&
       bid_points === undefined         // <── include bid_points in the check
     ) {
       return res.status(400).json({ message: "Provide at least one field to update" });
@@ -574,6 +831,12 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
         return res.status(400).json({ message: "Invalid role" });
       }
     }
+    if (admin_scope !== undefined) {
+      const allowedScopes = new Set(["super", "limited"]);
+      if (!allowedScopes.has(admin_scope)) {
+        return res.status(400).json({ message: "Invalid admin_scope" });
+      }
+    }
 
     // Build dynamic update
     const sets = [];
@@ -583,6 +846,7 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
     if (username !== undefined)       { sets.push("username = ?");       params.push(username); }
     if (full_name !== undefined)      { sets.push("full_name = ?");      params.push(full_name); }
     if (role !== undefined)           { sets.push("role = ?");           params.push(role); }
+    if (admin_scope !== undefined)    { sets.push("admin_scope = ?");    params.push(admin_scope); }
     if (is_verified !== undefined)    { sets.push("is_verified = ?");    params.push(is_verified); }
     if (is_blocked !== undefined)     { sets.push("is_blocked = ?");     params.push(is_blocked); }
     if (wallet_address !== undefined) { sets.push("wallet_address = ?"); params.push(wallet_address || null); }
@@ -604,6 +868,10 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
       params
     );
 
+    if (role === "user") {
+      await pool.query("DELETE FROM admin_permissions WHERE user_id = ?", [id]);
+    }
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -616,6 +884,7 @@ router.patch("/users/:id", authenticateToken, authenticateAdmin, async (req, res
          username,
          full_name,
          role,
+         admin_scope,
          is_verified,
          is_blocked,
          referral_code,
@@ -818,7 +1087,7 @@ router.post("/auctions",authenticateToken,authenticateAdmin,
       const finalEntry = selectedProduct && Number(selectedProduct.auction_price) > 0
         ? Math.round(Number(selectedProduct.auction_price))
         : entry;
-      const imagePath = req.file ? `/uploads/${req.file.filename}` : (selectedProduct?.image_path || null);
+      const imagePath = req.file ? publicUploadPath(req.file) : (selectedProduct?.image_path || null);
 
       const [result] = await pool.query(
         `INSERT INTO auctions
@@ -1184,7 +1453,7 @@ router.patch("/auctions/:id", authenticateToken, authenticateAdmin, upload.singl
 
       let newImagePath = null;
       if (req.file) {
-        newImagePath = `/uploads/${req.file.filename}`;
+        newImagePath = publicUploadPath(req.file);
         updates.push("image = ?");
         params.push(newImagePath);
       }
@@ -1833,7 +2102,7 @@ router.post("/demo-users",authenticateToken,authenticateAdmin,
         });
       }
 
-      const avatarPath = req.file ? `uploads/${req.file.filename}` : null;
+      const avatarPath = req.file ? publicUploadPath(req.file) : null;
 
       await pool.query(
         `INSERT INTO demo_users (id, username, full_name, avatar)
@@ -1972,7 +2241,7 @@ router.put("/demo-users/:id",authenticateToken,authenticateAdmin,
 
       const existingAvatar = rows[0].avatar;
       const avatarPath = req.file
-        ? `uploads/${req.file.filename}`
+        ? publicUploadPath(req.file)
         : existingAvatar;
 
       await pool.query(
@@ -2839,7 +3108,7 @@ router.post(
 
       // primary image
       const primaryFile = req.files?.image?.[0] || null;
-      const imagePath = primaryFile ? `/uploads/${primaryFile.filename}` : null;
+      const imagePath = primaryFile ? publicUploadPath(primaryFile) : null;
 
       // insert product
       const [result] = await pool.query(
@@ -2869,7 +3138,7 @@ router.post(
         const placeholders = galleryFiles.map(() => "(?,?,?)").join(",");
         const params = galleryFiles.flatMap((f, idx) => [
           productId,
-          `/uploads/${f.filename}`,
+          publicUploadPath(f),
           idx,
         ]);
 
@@ -3177,7 +3446,7 @@ router.put(
         prices.auction_price !== undefined ? prices.auction_price : current.auction_price;
       // primary image replacement
       const primaryFile = req.files?.image?.[0] || null;
-      const newImagePath = primaryFile ? `/uploads/${primaryFile.filename}` : current.image_path;
+      const newImagePath = primaryFile ? publicUploadPath(primaryFile) : current.image_path;
 
       // update product core
       await pool.query(
@@ -3277,7 +3546,7 @@ router.put(
         const placeholders = galleryFiles.map(() => "(?,?,?)").join(",");
         const params = galleryFiles.flatMap((f, idx) => [
           id,
-          `/uploads/${f.filename}`,
+          publicUploadPath(f),
           start + idx,
         ]);
 
@@ -4282,7 +4551,7 @@ router.post("/banners",authenticateToken,authenticateAdmin,
         return res.status(400).json({ message: "Image is required" });
       }
 
-      const image_path = req.file.path || req.file.filename;
+      const image_path = publicUploadPath(req.file);
 
       const [result] = await pool.query(
         `INSERT INTO banners (action_name, action_url, image_path, is_active, sort_order)
@@ -4413,7 +4682,7 @@ router.put("/banners/:id",authenticateToken,authenticateAdmin,
       const banner = existing[0];
 
       const newImagePath = req.file
-        ? (req.file.path || req.file.filename)
+        ? publicUploadPath(req.file)
         : banner.image_path;
 
       await pool.query(
@@ -4500,7 +4769,7 @@ router.delete("/uploads/unused", async (_req, res) => {
     const failed = [];
 
     for (const item of unused) {
-      const filePath = path.join(UPLOAD_DIR, item.filename);
+      const filePath = path.join(UPLOAD_DIR, item.relative_path || item.filename);
 
       try {
         await fs.promises.unlink(filePath);

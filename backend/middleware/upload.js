@@ -41,9 +41,23 @@ function buildFilename(file) {
   return `${base}-${ts}-${rand}${ext}`;
 }
 
+function resolveUploadDestination(req) {
+  if (req?.user?.role === "admin" && String(req.baseUrl || "").includes("/admin")) {
+    const adminId = Number(req.user.id);
+    const folder = Number.isInteger(adminId) && adminId > 0 ? String(adminId) : "unknown";
+    return path.join(uploadsDir, "admins", folder);
+  }
+
+  return uploadsDir;
+}
+
 /** Multer storage */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
+  destination: (req, file, cb) => {
+    const dir = resolveUploadDestination(req);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
   filename: (req, file, cb) => cb(null, buildFilename(file)),
 });
 
