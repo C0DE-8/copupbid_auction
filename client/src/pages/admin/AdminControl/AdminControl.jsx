@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import AdminNavbar from "../../../components/admin/Navbar";
 import styles from "./AdminControl.module.css";
-import { api } from "../../../lib/api";
+import { api, imgUrl } from "../../../lib/api";
 
 export default function AdminControl() {
   const [cleanup, setCleanup] = useState(null);
@@ -124,8 +124,19 @@ export default function AdminControl() {
                   {unusedFiles.length ? (
                     unusedFiles.slice(0, 80).map((file) => (
                       <div key={file.filename} className={styles.fileRow}>
-                        <span className={styles.mono}>{file.path || file.filename}</span>
-                        <span>{formatBytes(file.size)}</span>
+                        <div className={styles.fileInfo}>
+                          <img
+                            className={styles.filePreview}
+                            src={imgUrl(getUploadPath(file))}
+                            alt={file.filename || "Unused upload"}
+                            loading="lazy"
+                          />
+                          <div className={styles.fileMeta}>
+                            <span className={styles.mono}>{file.path || file.filename}</span>
+                            <span>{file.filename}</span>
+                          </div>
+                        </div>
+                        <span className={styles.fileSize}>{formatBytes(file.size)}</span>
                       </div>
                     ))
                   ) : (
@@ -141,6 +152,12 @@ export default function AdminControl() {
       </main>
     </div>
   );
+}
+
+function getUploadPath(file) {
+  if (file?.path) return file.path;
+  if (file?.filename) return `/uploads/${file.filename}`;
+  return "";
 }
 
 function formatBytes(value) {

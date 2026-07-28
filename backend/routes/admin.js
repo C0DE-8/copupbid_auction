@@ -285,6 +285,8 @@ function requireAdminModuleAccess(req, res, next) {
   return res.status(403).json({
     message: "This admin account does not have access to this management module",
     required_permission: required,
+    admin_scope: req.user?.admin_scope || "limited",
+    assigned_permissions: [...permissions],
   });
 }
 

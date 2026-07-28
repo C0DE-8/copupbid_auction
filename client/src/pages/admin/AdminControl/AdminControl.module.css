@@ -381,7 +381,7 @@
   grid-template-columns: minmax(0, 1fr) 90px;
   gap: 12px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 12px;
 }
 
 .fileListHead {
@@ -401,13 +401,42 @@
   font-size: 12px;
 }
 
-.fileRow span:first-child {
+.fileInfo {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.filePreview {
+  width: 74px;
+  height: 58px;
+  display: block;
+  object-fit: cover;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.fileMeta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fileMeta span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.fileRow span:last-child {
+.fileMeta span:last-child {
+  color: rgba(233, 233, 255, 0.56);
+}
+
+.fileSize {
   text-align: right;
   color: rgba(233, 233, 255, 0.58);
 }
@@ -430,5 +459,15 @@
 
   .countGrid {
     grid-template-columns: 1fr;
+  }
+
+  .fileListHead,
+  .fileRow {
+    grid-template-columns: 1fr;
+  }
+
+  .fileListHead span,
+  .fileSize {
+    text-align: left;
   }
 }
