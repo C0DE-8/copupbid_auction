@@ -226,6 +226,10 @@ const ADMIN_PERMISSION_MODULES = [
 const ADMIN_PERMISSION_KEYS = new Set(ADMIN_PERMISSION_MODULES.map((module) => module.key));
 const SUPER_ADMIN_EMAILS = new Set(["admin@copupbid.com"]);
 
+function normalizePermissionKey(key) {
+  return String(key || "").trim().toLowerCase();
+}
+
 function isSuperAdmin(user) {
   return (
     user?.role === "admin" &&
@@ -238,7 +242,7 @@ async function loadAdminPermissionKeys(userId) {
     "SELECT permission_key FROM admin_permissions WHERE user_id = ? ORDER BY permission_key ASC",
     [userId]
   );
-  return rows.map((row) => row.permission_key);
+  return rows.map((row) => normalizePermissionKey(row.permission_key)).filter(Boolean);
 }
 
 function getPermissionForAdminPath(req) {
@@ -273,21 +277,34 @@ function requireSuperAdmin(req, res, next) {
   return res.status(403).json({ message: "Super admin access required" });
 }
 
-function requireAdminModuleAccess(req, res, next) {
+async function requireAdminModuleAccess(req, res, next) {
   if (isSuperAdmin(req.user)) return next();
 
   const required = getPermissionForAdminPath(req);
   if (!required) return next();
 
-  const permissions = new Set(req.user?.admin_permissions || []);
-  if (permissions.has(required)) return next();
+  try {
+    const loadedPermissions = req.user?.id ? await loadAdminPermissionKeys(req.user.id) : [];
+    const permissions = new Set([
+      ...(req.user?.admin_permissions || []).map(normalizePermissionKey),
+      ...loadedPermissions,
+    ].filter(Boolean));
 
-  return res.status(403).json({
-    message: "This admin account does not have access to this management module",
-    required_permission: required,
-    admin_scope: req.user?.admin_scope || "limited",
-    assigned_permissions: [...permissions],
-  });
+    req.user.admin_permissions = [...permissions];
+
+    if (permissions.has(required)) return next();
+
+    return res.status(403).json({
+      message: "This admin account does not have access to this management module",
+      required_permission: required,
+      admin_scope: req.user?.admin_scope || "limited",
+      assigned_permissions: [...permissions],
+      user_id: req.user?.id,
+    });
+  } catch (err) {
+    console.error("admin module permission check error:", err);
+    return res.status(500).json({ message: "Error checking admin module access" });
+  }
 }
 
 /* ---------- Helper ID Checkers (HEIST) ---------- */

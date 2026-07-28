@@ -11,6 +11,10 @@ const {
 const router = express.Router();
 const SUPER_ADMIN_EMAILS = new Set(["admin@copupbid.com"]);
 
+function normalizePermissionKey(key) {
+  return String(key || "").trim().toLowerCase();
+}
+
 /* ------------------------------ helpers ------------------------------ */
 function generateReferralCode() {
   return Math.random().toString(36).slice(2, 8); // 6 chars
@@ -159,7 +163,7 @@ router.post("/login", async (req, res) => {
         "SELECT permission_key FROM admin_permissions WHERE user_id = ?",
         [user.id]
       );
-      permissions = permissionRows.map((row) => row.permission_key);
+      permissions = permissionRows.map((row) => normalizePermissionKey(row.permission_key)).filter(Boolean);
     }
 
     const token = jwt.sign(

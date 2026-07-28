@@ -4,6 +4,10 @@ const { pool } = require("../db");
 
 const SUPER_ADMIN_EMAILS = new Set(["admin@copupbid.com"]);
 
+function normalizePermissionKey(key) {
+  return String(key || "").trim().toLowerCase();
+}
+
 /**
  * Authenticate requests using a Bearer JWT.
  * - Verifies token with JWT_SECRET
@@ -55,7 +59,7 @@ const authenticateToken = async (req, res, next) => {
         "SELECT permission_key FROM admin_permissions WHERE user_id = ?",
         [user.id]
       );
-      adminPermissions = permissionRows.map((row) => row.permission_key);
+      adminPermissions = permissionRows.map((row) => normalizePermissionKey(row.permission_key)).filter(Boolean);
     }
 
     // Attach minimal user to request
