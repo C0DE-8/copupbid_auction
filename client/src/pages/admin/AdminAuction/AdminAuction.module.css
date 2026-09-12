@@ -512,3 +512,22 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Long editors keep their heading visible and scroll within the viewport. */
+.modalOverlay { padding: 20px; z-index: 1000; outline: none; overscroll-behavior: contain; }
+.modal, .modalLarge { display: flex; flex-direction: column; max-height: calc(100dvh - 40px); color-scheme: dark; }
+.modalHeader, .modalHead { flex: 0 0 auto; padding: 20px; }
+.modalTitle { font-size: 20px; font-weight: 750; line-height: 1.35; }
+.modalBody, .modalBodyGrid { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px; scrollbar-gutter: stable; }
+.modalFooter, .modalActions { flex-wrap: wrap; gap: 10px; }
+.modalFooter button, .modalActions button { min-height: 44px; justify-content: center; }
+@media (max-width: 620px) {
+  .modalOverlay { padding: 8px; }
+  .modal, .modalLarge { max-height: calc(100dvh - 16px); }
+  .modalBody, .modalBodyGrid, .modalHeader, .modalHead { padding: 16px; }
+  .priceGrid, .formGrid { grid-template-columns: minmax(0, 1fr); }
+  .formRow, .listRow { flex-wrap: wrap; }
+  .modalFooter button, .modalActions button { flex: 1 1 auto; }
+}
+
+.modal, .modalLarge { color: rgba(233,233,255,.96); }

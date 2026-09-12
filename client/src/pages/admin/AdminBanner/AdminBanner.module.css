@@ -877,3 +877,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.modalOverlay { padding: 12px; outline: none; }
+.modalContent { color: rgba(233,233,255,.96); color-scheme: dark; max-height: calc(100dvh - 24px); }

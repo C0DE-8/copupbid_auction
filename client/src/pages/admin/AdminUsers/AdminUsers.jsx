@@ -1,3 +1,4 @@
+import DialogFrame from "../../../components/ui/DialogFrame";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./AdminUsers.module.css";
 import AdminNavbar from "../../../components/admin/Navbar";
@@ -577,7 +578,7 @@ export default function AdminUsers() {
 
       {/* EDIT MODAL */}
       {showEdit ? (
-        <div className={styles.modalOverlay} onMouseDown={closeEdit}>
+        <DialogFrame className={styles.modalOverlay} onClose={closeEdit} label="Edit user" disableClose={busy}>
           <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
@@ -589,7 +590,7 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <button className={styles.iconBtn} type="button" onClick={closeEdit} disabled={busy}>
+              <button className={styles.iconBtn} type="button" aria-label="Close editor" onClick={closeEdit} disabled={busy}>
                 <FaTimes />
               </button>
             </div>
@@ -754,7 +755,7 @@ export default function AdminUsers() {
                   </div>
 
                   <div className={styles.modalFooter}>
-                    <button className={styles.softBtn} type="button" onClick={closeEdit} disabled={busy}>
+                    <button className={styles.softBtn} type="button" aria-label="Close editor" onClick={closeEdit} disabled={busy}>
                       Cancel
                     </button>
                     <button className={styles.primaryBtn} type="button" onClick={submitEdit} disabled={busy}>
@@ -765,7 +766,7 @@ export default function AdminUsers() {
               )}
             </div>
           </div>
-        </div>
+        </DialogFrame>
       ) : null}
     </div>
   );

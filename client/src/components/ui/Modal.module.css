@@ -80,3 +80,20 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+/* Keep actions visible while long forms and payment details scroll. */
+.overlay { padding: 24px; overscroll-behavior: contain; outline: none; }
+.modal { display: flex; flex-direction: column; max-height: calc(100dvh - 48px); color: rgba(233,233,255,.96); color-scheme: dark; }
+.head { flex: 0 0 auto; padding: 20px 24px; align-items: flex-start; }
+.title { margin: 0; font-size: 20px; line-height: 1.35; font-weight: 750; }
+.sub { font-size: 13px; line-height: 1.6; margin-top: 4px; }
+.iconBtn { flex: 0 0 40px; }
+.body { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 24px; scrollbar-gutter: stable; }
+.footer { flex: 0 0 auto; padding: 16px 24px; }
+.footer button { min-height: 44px; }
+@media (max-width: 600px) {
+  .overlay { padding: 10px; }
+  .modal { max-height: calc(100dvh - 20px); border-radius: 16px; }
+  .head, .body { padding: 16px; }
+  .footer { padding: 12px 16px; }
+  .footer button { flex: 1 1 auto; justify-content: center; }
+}

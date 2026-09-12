@@ -1,3 +1,4 @@
+import DialogFrame from "../../../components/ui/DialogFrame";
 import React from "react";
 import styles from "./AdminAuction.module.css";
 import { api } from "../../../lib/api";
@@ -1049,12 +1050,12 @@ export default function AdminAuction() {
 
       {/* ====================== CREATE MODAL ====================== */}
       {createOpen ? (
-        <div className={styles.modalOverlay} onMouseDown={() => !busy && setCreateOpen(false)}>
+        <DialogFrame className={styles.modalOverlay} onClose={() => !busy && setCreateOpen(false)} label="Create auction" disableClose={busy}>
           <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
             <div className={styles.modalHead}>
               <div>
                 <div className={styles.modalTitle}>Create Auction</div>
-                <div className={styles.modalSub}>POST /api/admin/auctions</div>
+                <div className={styles.modalSub}>Choose a product, set the bid price, and schedule your auction.</div>
               </div>
               <button className={styles.iconBtn} type="button" onClick={() => !busy && setCreateOpen(false)}>
                 ✕
@@ -1185,19 +1186,19 @@ export default function AdminAuction() {
               </div>
             </div>
           </div>
-        </div>
+        </DialogFrame>
       ) : null}
 
       {/* ====================== EDIT MODAL ====================== */}
       {editOpen ? (
-        <div className={styles.modalOverlay} onMouseDown={closeEdit}>
+        <DialogFrame className={styles.modalOverlay} onClose={closeEdit} label="Edit auction" disableClose={busy}>
           <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
             <div className={styles.modalHead}>
               <div>
                 <div className={styles.modalTitle}>Edit Auction #{editId}</div>
-                <div className={styles.modalSub}>PATCH /api/admin/auctions/:id</div>
+                <div className={styles.modalSub}>Review auction details before saving your changes.</div>
               </div>
-              <button className={styles.iconBtn} type="button" onClick={closeEdit} disabled={busy}>
+              <button className={styles.iconBtn} type="button" aria-label="Close editor" onClick={closeEdit} disabled={busy}>
                 ✕
               </button>
             </div>
@@ -1335,7 +1336,7 @@ export default function AdminAuction() {
                   </div>
 
                   <div className={styles.modalActions}>
-                    <button className={styles.softBtn} type="button" onClick={closeEdit} disabled={busy}>
+                    <button className={styles.softBtn} type="button" aria-label="Close editor" onClick={closeEdit} disabled={busy}>
                       Cancel
                     </button>
                     <button className={styles.primaryBtn} type="button" onClick={submitEdit} disabled={busy || eSaving}>
@@ -1346,7 +1347,7 @@ export default function AdminAuction() {
               )}
             </div>
           </div>
-        </div>
+        </DialogFrame>
       ) : null}
     </div>
 

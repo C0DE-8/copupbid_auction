@@ -1,3 +1,4 @@
+import DialogFrame from "../../../components/ui/DialogFrame";
 import React, { useEffect, useMemo, useState } from "react";
 import { api, imgUrl } from "../../../lib/api";
 import styles from "./AdminBanner.module.css";
@@ -104,11 +105,11 @@ function Modal({ isOpen, onClose, children, title }) {
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <DialogFrame className={styles.modalOverlay} onClose={onClose} label="Banner details">
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
-    </div>
+    </DialogFrame>
   );
 }
 

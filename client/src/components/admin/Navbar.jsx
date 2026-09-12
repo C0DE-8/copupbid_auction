@@ -32,8 +32,10 @@ export default function AdminNavbar({ admin: adminProp }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [admin, setAdmin] = useState(adminProp || null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [fetchedAdmin, setAdmin] = useState(null);
+  const admin = adminProp || fetchedAdmin;
+  const [menu, setMenu] = useState({ path: "", open: false });
+  const menuOpen = menu.path === location.pathname && menu.open;
 
   const adminScope = (admin?.admin_scope || localStorage.getItem("admin_scope") || "").toLowerCase();
   const isSuper = adminScope === "super";
@@ -50,6 +52,11 @@ export default function AdminNavbar({ admin: adminProp }) {
       { to: "/admin/payouts", label: "Payouts", icon: <FaWallet />, permission: "payouts" },
       { to: "/admin/waitlist", label: "Waitlist", icon: <FaClock />, permission: "waitlist" },
       { to: "/admin/favorites", label: "Favorites", icon: <FaStar />, permission: "favorites" },
+      { to: "/admin/affiliates", label: "Affiliates", icon: <FaUsers />, permission: "affiliates" },
+      { to: "/admin/coins", label: "Coin rates", icon: <FaWallet />, permission: "coins" },
+      { to: "/admin/pay-account", label: "Pay accounts", icon: <FaWallet />, permission: "pay_account" },
+      { to: "/admin/coin-pay-in", label: "Coin payments", icon: <FaWallet />, permission: "coin_payments" },
+      { to: "/admin/banner", label: "Banners", icon: <FaStar />, permission: "banners" },
       { to: "/admin/control", label: "Control", icon: <FaCog />, permission: "control" },
     ];
 
@@ -61,16 +68,8 @@ export default function AdminNavbar({ admin: adminProp }) {
     });
   }, [isSuper, permissions]);
 
-  // Close menu on route change (fixes “header preview” issue on mobile)
   useEffect(() => {
-    setMenuOpen(false);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (adminProp) {
-      setAdmin(adminProp);
-      return;
-    }
+    if (adminProp) return;
 
     let mounted = true;
     api
@@ -88,6 +87,7 @@ export default function AdminNavbar({ admin: adminProp }) {
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("jwt");
+    localStorage.removeItem("role");
     localStorage.removeItem("admin_scope");
     localStorage.removeItem("admin_permissions");
     navigate("/auth/login");
@@ -110,7 +110,7 @@ export default function AdminNavbar({ admin: adminProp }) {
           </button>
 
           {/* Desktop nav */}
-          <nav className={styles.nav}>
+          <nav className={styles.nav} aria-label="Admin navigation">
             {navItems.map((i) => (
               <NavLink
                 key={i.to}
@@ -135,7 +135,7 @@ export default function AdminNavbar({ admin: adminProp }) {
               </div>
               <div className={styles.adminMeta}>
                 <div className={styles.adminName}>{admin.name}</div>
-                <div className={styles.adminRole}>{admin.role}</div>
+                <div className={styles.adminRole}>{isSuper ? "Super admin" : "Sub-admin"}</div>
               </div>
             </div>
           ) : null}
@@ -144,10 +144,10 @@ export default function AdminNavbar({ admin: adminProp }) {
           <div className={styles.desktopActions}>
             <button
               className={styles.ghostBtn}
-              onClick={() => navigate("/admin/settings")}
+              onClick={() => navigate("/")}
               type="button"
             >
-              Settings
+              View shop
             </button>
 
             <button className={styles.logoutBtn} onClick={logout} type="button">
@@ -158,8 +158,10 @@ export default function AdminNavbar({ admin: adminProp }) {
           {/* Mobile menu toggle */}
           <button
             className={styles.mobileMenuBtn}
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => setMenu({ path: location.pathname, open: !menuOpen })}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="admin-mobile-navigation"
             type="button"
           >
             {menuOpen ? <FaTimes /> : <FaBars />}
@@ -168,7 +170,7 @@ export default function AdminNavbar({ admin: adminProp }) {
       </div>
 
       {/* Mobile dropdown menu */}
-      <div className={`${styles.mobilePanel} ${menuOpen ? styles.mobilePanelOpen : ""}`}>
+      <div id="admin-mobile-navigation" inert={!menuOpen} className={`${styles.mobilePanel} ${menuOpen ? styles.mobilePanelOpen : ""}`}>
         <div className={styles.mobilePanelInner}>
           <div className={styles.mobileLinks}>
             {navItems.map((i) => (
@@ -189,10 +191,10 @@ export default function AdminNavbar({ admin: adminProp }) {
           <div className={styles.mobileActions}>
             <button
               className={styles.mobileActionBtn}
-              onClick={() => navigate("/admin/settings")}
+              onClick={() => navigate("/")}
               type="button"
             >
-              <FaCog /> <span>Settings</span>
+              <FaCog /> <span>View shop</span>
             </button>
 
             <button className={styles.mobileLogoutBtn} onClick={logout} type="button">

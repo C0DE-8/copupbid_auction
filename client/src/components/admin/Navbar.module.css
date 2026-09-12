@@ -335,3 +335,27 @@
     width: min(1180px, calc(100% - 22px));
   }
 }
+/* A stable two-row header leaves every permitted module within reach. */
+.wrap { padding: 0; background: rgba(7,11,20,.96); }
+.bar { width: min(1320px, calc(100% - 48px)); border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 16px 0 12px; align-items: flex-start; position: relative; }
+.left { display: contents; }
+.brandBtn { height: 44px; padding-left: 6px; }
+.brandText { font-weight: 750; }
+.right { margin-left: auto; min-height: 44px; padding-bottom: 58px; }
+.nav { position: absolute; left: 0; right: 0; bottom: 0; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0 12px; gap: 4px; border-top: 1px solid rgba(255,255,255,.08); scrollbar-width: thin; }
+.link, .active { flex: 0 0 auto; font-weight: 600; padding: 10px 12px; border-radius: 8px; }
+.adminName { font-weight: 650; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adminRole { font-weight: 500; margin-top: 4px; }
+.ghostBtn, .logoutBtn { min-height: 42px; font-weight: 650; }
+.mobilePanel { display: none; }
+@media (max-width: 900px) {
+  .bar { width: calc(100% - 32px); padding: 12px 0; align-items: center; }
+  .right { padding-bottom: 0; }
+  .mobilePanelOpen { display: block; max-height: calc(100dvh - 86px); overflow-y: auto; margin-top: 0; background: rgba(7,11,20,.96); }
+  .mobileLinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mobileLink, .mobileLinkActive { font-weight: 600; padding: 8px; }
+  .mobileIcon { flex: 0 0 30px; }
+}
+@media (max-width: 400px) { .mobileLinks { grid-template-columns: 1fr; } }
+.link, .active { padding-inline: 10px; }
+.nav { gap: 2px; }

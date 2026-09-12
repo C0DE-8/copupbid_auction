@@ -352,3 +352,11 @@
   .title { font-size: 34px; }
   .thumbs { grid-template-columns: repeat(3, 1fr); }
 }
+
+.fallback { height: auto; min-height: 260px; justify-content: center; padding: 32px; position: relative; overflow: hidden; }
+.fallback::after { content: ""; position: absolute; width: 230px; height: 230px; right: -60px; top: -90px; border: 38px solid rgba(255,255,255,.12); border-radius: 50%; pointer-events: none; }
+.fallbackTop { font-size: 10px; letter-spacing: .12em; font-weight: 700; }
+.fallbackTitle { font-size: clamp(26px,3vw,38px); font-weight: 750; letter-spacing: -.035em; line-height: 1.12; }
+.fallbackSub { max-width: 370px; line-height: 1.6; color: #06302c; }
+.fallback .cta { align-self: flex-start; margin-top: 8px; padding: 12px 20px; font-weight: 650; }
+@media (max-width: 640px) { .fallback { min-height: 240px; padding: 24px; } }

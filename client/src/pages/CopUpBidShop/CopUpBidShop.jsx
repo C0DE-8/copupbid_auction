@@ -682,6 +682,11 @@ export default function CopUpBidShop({ mode = "home" }) {
         />
 
         <main className={styles.main}>
+          <header className={styles.pageIntro}>
+            <div><p className={styles.eyebrow}>{isHomeMode ? "THE COPUPBID MARKETPLACE" : "FIND YOUR NEXT FAVORITE"}</p>
+            <h1>{isHomeMode ? "Great finds. More possibilities." : "Explore the shop"}</h1>
+            <p>{isHomeMode ? "Shop your favorites or join an auction. It all starts here." : "Browse products, compare prices, and pay with CopUpCoin."}</p></div>
+          </header>
           <section className={styles.searchPanel} id="shop-categories">
             <CategoryChips
               categories={categories}
@@ -732,7 +737,7 @@ export default function CopUpBidShop({ mode = "home" }) {
                   onClick={() => navigate("/shop?deal=featured#shop-featured")}
                 >
                   <span>Flash deals</span>
-                  <strong>{filteredFeatured.length + filteredAllProducts.length} live products</strong>
+                  <strong>Featured finds</strong>
                   <small>Shop now</small>
                 </button>
                 <button type="button" className={styles.promoCard} onClick={() => goProtected("/how-to-play")}>
@@ -959,7 +964,7 @@ export default function CopUpBidShop({ mode = "home" }) {
           >
             <div className={styles.aboutSeoHeader}>
               <span>Nigeria's auction marketplace</span>
-              <h1 id="about-copupbid">CopUpBid - bid, shop, and win with CopUpCoin</h1>
+              <h2 id="about-copupbid">CopUpBid - bid, shop, and win with CopUpCoin</h2>
               <p>
                 CopUpBid is an online auction e-commerce website for Nigerian shoppers who want a
                 smarter way to discover products, join live auctions, and shop from one trusted

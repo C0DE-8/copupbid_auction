@@ -625,3 +625,34 @@
 /* @media (min-width: 1360px){
   .grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
 } */
+/* Long editors keep their heading visible and scroll within the viewport. */
+.modalOverlay { padding: 20px; z-index: 1000; outline: none; overscroll-behavior: contain; }
+.modal, .modalLarge { display: flex; flex-direction: column; max-height: calc(100dvh - 40px); color-scheme: dark; }
+.modalHeader, .modalHead { flex: 0 0 auto; padding: 20px; }
+.modalTitle { font-size: 20px; font-weight: 750; line-height: 1.35; }
+.modalBody, .modalBodyGrid { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px; scrollbar-gutter: stable; }
+.modalFooter, .modalActions { flex-wrap: wrap; gap: 10px; }
+.modalFooter button, .modalActions button { min-height: 44px; justify-content: center; }
+@media (max-width: 620px) {
+  .modalOverlay { padding: 8px; }
+  .modal, .modalLarge { max-height: calc(100dvh - 16px); }
+  .modalBody, .modalBodyGrid, .modalHeader, .modalHead { padding: 16px; }
+  .priceGrid, .formGrid { grid-template-columns: minmax(0, 1fr); }
+  .formRow, .listRow { flex-wrap: wrap; }
+  .modalFooter button, .modalActions button { flex: 1 1 auto; }
+}
+
+.cardTop { display: grid; grid-template-columns: 112px minmax(0, 1fr); }
+.imgWrap { width: 112px; height: 100%; min-height: 170px; }
+.cardBody { min-width: 0; }
+.cardTitle { white-space: normal; line-height: 1.4; overflow-wrap: anywhere; }
+.priceRow { grid-template-columns: 1fr; }
+.priceBox { min-height: auto; }
+.cardActions { flex-wrap: wrap; }
+.formGrid { gap: 18px; }
+.input, .textarea { font-weight: 500; line-height: 1.5; }
+.label, .labelFull { font-size: 13px; font-weight: 650; }
+@media (max-width: 620px) { .cardTop { grid-template-columns: 96px minmax(0,1fr); } .imgWrap { width: 96px; height: 100%; } }
+
+.modal, .modalLarge { color: rgba(233,233,255,.96); }
+.modalLarge > .modalFooter { position: static; flex: 0 0 auto; margin: 0; padding: 16px 20px; }

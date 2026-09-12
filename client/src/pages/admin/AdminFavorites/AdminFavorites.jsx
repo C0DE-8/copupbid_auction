@@ -339,7 +339,7 @@ function AdminFavoritesInner() {
           <section className={styles.card}>
             <div className={styles.cardHead}>
               <div className={styles.cardTitle}>Favorites Summary</div>
-              <div className={styles.mutedSmall}>GET /api/admin/favorites/summary</div>
+              <div className={styles.mutedSmall}>Customer interest across your catalog.</div>
             </div>
 
             {loading ? (
@@ -450,7 +450,7 @@ function AdminFavoritesInner() {
         <Modal
           open={detailOpen}
           title={`Product Favorites${detail?.product?.name ? ` • ${detail.product.name}` : ""}`}
-          subtitle="GET /api/admin/products/:productId/favorites"
+          subtitle="Customers who saved this product."
           onClose={closeDetail}
           disableClose={busy}
           size="lg"

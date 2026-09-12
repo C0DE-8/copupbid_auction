@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 // Pages
 import CopUpBidShop from "./pages/CopUpBidShop/CopUpBidShop";
@@ -52,9 +52,15 @@ import CookieConsent from "./components/CookieConsent/CookieConsent";
 import Privacy from "./pages/Privacy/Privacy";
 import Terms from "./pages/Privacy/Terms";
 
+function PageFrame({ children }) {
+  const { pathname } = useLocation();
+  return <div className={pathname.startsWith("/admin") ? "admin-workspace" : undefined}>{children}</div>;
+}
+
 export default function App() {
   return (
     <Router>
+      <PageFrame>
       <Routes>
         {/* ================= AUTH ROUTES ================= */}
         <Route path="/auth/login" element={<Login />} />
@@ -188,6 +194,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
       </Routes>
+      </PageFrame>
       <CookieConsent />
     </Router>
   );

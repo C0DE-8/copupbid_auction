@@ -902,3 +902,39 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Give the catalog priority and retain the existing teal, gold and neutral palette. */
+.page { padding-top: 100px; }
+.shell { grid-template-columns: 220px minmax(0, 1fr) 264px; gap: 24px; }
+.main { gap: 24px; }
+.pageIntro { padding: 8px 0 0; }
+.eyebrow { color: #008f85; font-size: 10px; font-weight: 750; letter-spacing: .14em; margin: 0 0 10px; }
+.pageIntro h1 { margin: 0; font-size: clamp(24px, 2.4vw, 34px); line-height: 1.15; letter-spacing: -.035em; font-weight: 750; }
+.pageIntro p:last-child { margin: 10px 0 0; color: #6d657a; font-size: 14px; line-height: 1.6; }
+.searchPanel { padding: 16px; box-shadow: 0 4px 18px rgba(48,38,83,.04); }
+.grid { gap: 18px; align-items: stretch; }
+.promoCard { padding: 18px; min-height: 110px; }
+.promoCard strong { font-weight: 700; margin: 8px 0 12px; }
+.sectionTitle, .featuredTitle { font-size: 22px; font-weight: 750; letter-spacing: -.025em; }
+.railCard, .serviceGrid { box-shadow: 0 4px 18px rgba(48,38,83,.04); }
+.aboutSeoHeader h2 { margin: 0; color: #241d33; font-size: 28px; letter-spacing: -.025em; line-height: 1.2; }
+@media (max-width: 1260px) {
+  .shell { grid-template-columns: 210px minmax(0,1fr); }
+  .cartRail { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 980px) {
+  .shell { grid-template-columns: minmax(0,1fr); }
+  .page { padding-top: 94px; }
+}
+@media (max-width: 640px) {
+  .shell { width: calc(100% - 28px); }
+  .main { gap: 20px; }
+  .grid { gap: 12px; }
+  .promoGrid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .promoCard { min-height: 116px; padding: 12px; border-bottom: 0; border-right: 1px solid rgba(36,28,54,.08); }
+  .promoCard span, .promoCard small { font-size: 10px; }
+  .promoCard strong { font-size: 13px; line-height: 1.35; }
+  .cartRail { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 520px) { .page { padding-top: 126px; } }
+@media (max-width: 520px) { .page { padding-top: 88px; } }

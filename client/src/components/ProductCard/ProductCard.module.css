@@ -595,3 +595,17 @@
     display: block;
   }
 }
+
+.card { min-width: 0; height: 100%; display: flex; flex-direction: column; box-shadow: 0 4px 16px rgba(48,38,83,.05); }
+.cardBody, .homeCard .cardBody { flex: 1; display: flex; flex-direction: column; padding: 16px; }
+.actionsRow { margin-top: auto; padding-top: 14px; }
+.mainImg { object-fit: contain; padding: 12px; }
+.cardTitle { font-weight: 700; }
+.priceCash { font-size: 16px; font-variant-numeric: tabular-nums; }
+.btnGhost { font-weight: 650; min-height: 44px; }
+@media (max-width: 640px) {
+  .cardBody, .homeCard .cardBody { padding: 11px; }
+  .priceCash { font-size: 14px; }
+  .viewPill { display: none; }
+  .cardTitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
+}

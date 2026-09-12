@@ -252,7 +252,7 @@ function AdminOrdersInner() {
 
     openConfirm({
       title: `Update Order #${o.id}?`,
-      subtitle: "PATCH /api/admin/orders/:id/status",
+      subtitle: "Review the order status changes before saving.",
       tone: "warn",
       confirmText: "Yes, update",
       cancelText: "Cancel",
@@ -356,7 +356,7 @@ function AdminOrdersInner() {
           <section className={styles.card}>
             <div className={styles.cardHead}>
               <div className={styles.cardTitle}>Order List</div>
-              <div className={styles.mutedSmall}>GET /api/admin/orders</div>
+              <div className={styles.mutedSmall}>Track purchases and fulfillment.</div>
             </div>
 
             {loading ? (
@@ -438,7 +438,7 @@ function AdminOrdersInner() {
         <Modal
           open={detailOpen}
           title={`Order Details${detail?.order?.id ? ` #${detail.order.id}` : ""}`}
-          subtitle="GET /api/admin/orders/:id"
+          subtitle="Review customer details, fulfillment, and payment status."
           onClose={closeDetail}
           disableClose={busy}
           size="lg"
@@ -646,7 +646,7 @@ function AdminOrdersInner() {
           <div style={{ display: "grid", gap: 8 }}>
             <div style={{ color: "rgba(233,233,255,.92)", fontWeight: 800 }}>{confirm.message}</div>
             <div style={{ color: "rgba(233,233,255,.62)", fontSize: 12 }}>
-              This calls PATCH /api/admin/orders/:id/status and updates only provided fields.
+              Only the fields you changed will be updated.
             </div>
           </div>
         </Modal>

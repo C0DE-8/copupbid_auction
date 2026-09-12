@@ -206,7 +206,7 @@ function AdminPayAccountInner() {
   const confirmSave = () => {
     openConfirm({
       title: current ? "Update pay account?" : "Setup pay account?",
-      subtitle: "PATCH /api/admin/pay-account",
+      subtitle: "Review the receiving account details before saving.",
       tone: "warn",
       confirmText: current ? "Yes, update" : "Yes, setup",
       cancelText: "Cancel",

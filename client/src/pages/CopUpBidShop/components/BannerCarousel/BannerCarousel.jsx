@@ -113,9 +113,9 @@ export default function BannerCarousel({
     return (
       <div className={styles.wrap}>
         <div className={styles.fallback}>
-          <div className={styles.fallbackTop}>{brand}</div>
-          <div className={styles.fallbackTitle}>Shop • Bid • Win</div>
-          <div className={styles.fallbackSub}>No banner is active yet.</div>
+          <div className={styles.fallbackTop}>DISCOVER SOMETHING GOOD</div>
+          <div className={styles.fallbackTitle}>Your next great find<br />starts here.</div>
+          <div className={styles.fallbackSub}>Everyday essentials and exciting finds. Explore the shop with CopUpCoin.</div>
 
           <button className={styles.cta} type="button" onClick={onCtaClick}>
             <FiGrid style={{ marginRight: 8 }} />

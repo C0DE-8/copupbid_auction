@@ -3,7 +3,7 @@ import {
   ShoppingCart,
   UserRound,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import coinImg from "../../assets/copupcoin.png";
 import UserToolbar from "../UserToolbar/UserToolbar";
@@ -134,6 +134,11 @@ export default function Header() {
           </div>
         </a>
 
+        <nav className={styles.primaryNav} aria-label="Main navigation">
+          <NavLink to="/" end>Discover</NavLink>
+          <NavLink to="/shop">Shop</NavLink>
+          <NavLink to="/auctions">Auctions</NavLink>
+        </nav>
         <nav className={styles.actions} aria-label="Header actions">
           <button
             type="button"

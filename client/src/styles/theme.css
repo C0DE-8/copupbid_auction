@@ -155,3 +155,21 @@ textarea::placeholder {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Consistent spacing and readable controls across the existing admin palette. */
+.admin-workspace { color-scheme: dark; }
+.admin-workspace main { min-width: 0; }
+.admin-workspace table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.admin-workspace th { text-align: left; font-size: 12px; letter-spacing: .035em; }
+.admin-workspace td { line-height: 1.5; }
+.admin-workspace th, .admin-workspace td { padding: 14px 16px; }
+.admin-workspace input:not([type="checkbox"]):not([type="radio"]),
+.admin-workspace select { min-height: 44px; }
+.admin-workspace button { font-weight: 650; }
+.admin-workspace button:disabled { cursor: not-allowed; opacity: .55; }
+.admin-workspace input:focus-visible, .admin-workspace select:focus-visible,
+.admin-workspace textarea:focus-visible { outline: 2px solid var(--cb-primary); outline-offset: 2px; }
+.admin-workspace h1 { letter-spacing: -.025em; }
+@media (max-width: 520px) {
+  body:has(nav[aria-label="Main navigation"]) { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+}

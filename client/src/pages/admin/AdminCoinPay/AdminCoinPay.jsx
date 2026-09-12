@@ -249,7 +249,7 @@ function AdminCoinPayInner() {
 
     openConfirm({
       title: action === "approve" ? "Approve this coin purchase?" : "Reject this coin purchase?",
-      subtitle: `PATCH /api/admin/coin-purchases/${purchaseId}`,
+      subtitle: "Review the purchase and your decision before confirming.",
       tone: action === "approve" ? "warn" : "danger",
       confirmText: action === "approve" ? "Yes, approve" : "Yes, reject",
       cancelText: "Cancel",
@@ -390,7 +390,7 @@ function AdminCoinPayInner() {
           <section className={styles.card}>
             <div className={styles.cardHead}>
               <div className={styles.cardTitle}>Purchase Requests</div>
-              <div className={styles.mutedSmall}>GET /api/admin/coin-purchases</div>
+              <div className={styles.mutedSmall}>Review incoming CopUpCoin payments.</div>
             </div>
 
             {loading ? (
@@ -575,7 +575,7 @@ function AdminCoinPayInner() {
         <Modal
           open={detailOpen}
           title={`Coin Purchase Details${detail?.id ? ` #${detail.id}` : ""}`}
-          subtitle="From GET /api/admin/coin-purchases"
+          subtitle="Review payment proof and purchase details."
           onClose={closeDetails}
           disableClose={busy}
           size="lg"
@@ -720,8 +720,8 @@ function AdminCoinPayInner() {
           }
           subtitle={
             noteModal.action === "approve"
-              ? "PATCH /api/admin/coin-purchases/:id  { action:'approve', admin_note }"
-              : "PATCH /api/admin/coin-purchases/:id  { action:'reject', admin_note }"
+              ? "Add a note and confirm that the payment has been received."
+              : "Record why this payment could not be approved."
           }
           onClose={closeNoteModal}
           disableClose={busy}

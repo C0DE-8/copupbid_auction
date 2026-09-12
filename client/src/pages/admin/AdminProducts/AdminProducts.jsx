@@ -1,3 +1,4 @@
+import DialogFrame from "../../../components/ui/DialogFrame";
 // ✅ FULL UPDATED FILE: AdminProducts.jsx
 // ✅ Featured ones will still show ⭐ because your card uses p.is_featured
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
@@ -630,7 +631,7 @@ export default function AdminProducts() {
 
       {/* ───────────── Category Modal ───────────── */}
       {showCategoryModal ? (
-        <div className={styles.modalOverlay} onMouseDown={() => setShowCategoryModal(false)}>
+        <DialogFrame className={styles.modalOverlay} onClose={() => setShowCategoryModal(false)} label="Manage categories" disableClose={busy}>
           <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
@@ -638,7 +639,7 @@ export default function AdminProducts() {
                 <div className={styles.modalSub}>Create, rename, and delete categories.</div>
               </div>
 
-              <button className={styles.iconBtn} onClick={() => setShowCategoryModal(false)} type="button">
+              <button className={styles.iconBtn} onClick={() => setShowCategoryModal(false)} disabled={busy} aria-label="Close categories" type="button">
                 <FaTimes />
               </button>
             </div>
@@ -677,12 +678,12 @@ export default function AdminProducts() {
               </div>
             </div>
           </div>
-        </div>
+        </DialogFrame>
       ) : null}
 
       {/* ───────────── Product Modal ───────────── */}
       {showProductModal ? (
-        <div className={styles.modalOverlay} onMouseDown={() => setShowProductModal(false)}>
+        <DialogFrame className={styles.modalOverlay} onClose={() => setShowProductModal(false)} label="Product editor" disableClose={busy}>
           <div className={styles.modalLarge} onMouseDown={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
@@ -694,7 +695,7 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              <button className={styles.iconBtn} onClick={() => setShowProductModal(false)} type="button">
+              <button className={styles.iconBtn} onClick={() => setShowProductModal(false)} disabled={busy} aria-label="Close product editor" type="button">
                 <FaTimes />
               </button>
             </div>
@@ -842,19 +843,7 @@ export default function AdminProducts() {
                     </div>
                   ) : null}
 
-                  <div className={styles.modalFooter}>
-                    <button
-                      className={styles.softBtn}
-                      onClick={() => setShowProductModal(false)}
-                      disabled={busy}
-                      type="button"
-                    >
-                      <FaTimes /> Cancel
-                    </button>
-                    <button className={styles.primaryBtn} onClick={submitProduct} disabled={busy} type="button">
-                      <FaSave /> {busy ? "Saving..." : mode === "create" ? "Create" : "Save changes"}
-                    </button>
-                  </div>
+
                 </div>
               </div>
 
@@ -911,8 +900,21 @@ export default function AdminProducts() {
                 ) : null}
               </div>
             </div>
+                  <div className={styles.modalFooter}>
+                    <button
+                      className={styles.softBtn}
+                      onClick={() => setShowProductModal(false)}
+                      disabled={busy}
+                      type="button"
+                    >
+                      <FaTimes /> Cancel
+                    </button>
+                    <button className={styles.primaryBtn} onClick={submitProduct} disabled={busy} type="button">
+                      <FaSave /> {busy ? "Saving..." : mode === "create" ? "Create" : "Save changes"}
+                    </button>
+                  </div>
           </div>
-        </div>
+        </DialogFrame>
       ) : null}
     </div>
   );

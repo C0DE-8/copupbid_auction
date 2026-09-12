@@ -203,7 +203,7 @@ function AdminPayoutInner() {
 
     openConfirm({
       title: action === "approve" ? "Approve this payout?" : "Reject this payout?",
-      subtitle: `PATCH /api/admin/payouts/${payoutId}`,
+      subtitle: "Review the withdrawal and your decision before confirming.",
       tone: action === "approve" ? "warn" : "danger",
       confirmText: action === "approve" ? "Yes, approve" : "Yes, reject",
       cancelText: "Cancel",
@@ -328,7 +328,7 @@ function AdminPayoutInner() {
           <section className={styles.card}>
             <div className={styles.cardHead}>
               <div className={styles.cardTitle}>Payout Requests</div>
-              <div className={styles.mutedSmall}>GET /api/admin/payouts</div>
+              <div className={styles.mutedSmall}>Review and manage withdrawal requests.</div>
             </div>
 
             {loading ? (
@@ -451,7 +451,7 @@ function AdminPayoutInner() {
         <Modal
           open={detailOpen}
           title={`Payout Details${detail?.id ? ` #${detail.id}` : ""}`}
-          subtitle="From GET /api/admin/payouts"
+          subtitle="Review the withdrawal request and account details."
           onClose={closeDetails}
           disableClose={busy}
           size="lg"
@@ -533,8 +533,8 @@ function AdminPayoutInner() {
           }
           subtitle={
             noteModal.action === "approve"
-              ? "PATCH /api/admin/payouts/:payoutId  { action:'approve', admin_note }"
-              : "PATCH /api/admin/payouts/:payoutId  { action:'reject', admin_note }"
+              ? "Add a note before approving this withdrawal."
+              : "Record why this withdrawal could not be approved."
           }
           onClose={closeNoteModal}
           disableClose={busy}
